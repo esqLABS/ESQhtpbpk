@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ImporterConfiguration fileName="" namingConventions="{Molecule}.{Study Id}" version="17">
+  <Parameters>
+    <MappingDataFormatParameter columnName="TIME">
+      <MappedColumn name="Time">
+        <Unit columnName="TIME_UNIT" selectedUnit="h" />
+      </MappedColumn>
+    </MappingDataFormatParameter>
+    <MetaDataFormatParameter columnName="STUDY" metaDataId="Study Id" isColumn="1" />
+    <MetaDataFormatParameter columnName="SPECIES" metaDataId="Species" isColumn="1" />
+    <MetaDataFormatParameter columnName="GENDER" metaDataId="Gender" isColumn="1" />
+    <MetaDataFormatParameter columnName="TREATMENTDESC" metaDataId="Dose" isColumn="1" />
+    <MappingDataFormatParameter columnName="RESULT_NUMERIC">
+      <MappedColumn lloqColumn="LLOQ" name="Measurement">
+        <Unit columnName="RESULT_UNIT" selectedUnit="ng/mL" />
+      </MappedColumn>
+    </MappingDataFormatParameter>
+    <MetaDataFormatParameter columnName="COMPOUND_ID" metaDataId="Molecule" isColumn="1" />
+    <MappingDataFormatParameter columnName="RESULT_UNCERTAINTY">
+      <MappedColumn errorStdDev="Arithmetic Standard Deviation" name="Error">
+        <Unit columnName="RESULT_UNIT" selectedUnit="ng/mL" />
+      </MappedColumn>
+    </MappingDataFormatParameter>
+  </Parameters>
+  <LoadedSheets>
+    <LoadedSheetsChild>EXP_PK</LoadedSheetsChild>
+  </LoadedSheets>
+</ImporterConfiguration>

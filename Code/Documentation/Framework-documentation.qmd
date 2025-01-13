@@ -1,0 +1,428 @@
+---
+title: "HT PBPK Prediction Framework documentation"
+author: "ESQlabs"
+date: "`r Sys.Date()`"
+format: 
+  pdf:
+    toc: true # display toc
+    toc-depth: 3 # display more levels in toc
+    toc-title: Table of Content # override default "Content" toc title
+    number-sections: true # add number to sections
+    colorlinks: true # links format
+    geometry:
+      - top=25mm
+      - bottom=25mm
+      - left=20mm
+      - right=20mm
+    tbl-cap-location: top
+    fontfamily: "lmodern" # better font
+    include-in-header: 
+      text: |
+        \usepackage{typearea}
+---
+
+```{r, message=FALSE, include = FALSE}
+library(esqlabsR)
+```
+
+```{r loadDataFile, message=FALSE, include = FALSE}
+dataFilePath <- "../../Data/dummy-data.xlsx"
+dataCompoundProperties <- readExcel(dataFilePath, sheet = "Compound_Properties")
+dataADMEProperties <- readExcel(dataFilePath, sheet = "ADME_Properties")
+dataEXPPk <- readExcel(dataFilePath, sheet = "EXP_PK")
+```
+
+## Technical requirements
+
+-   Windows operating system (Linux not tested)
+
+-   R4.3x
+
+-   git (for installing packages) - <https://git-scm.com/download/win>
+
+-   R packages:
+
+    -   `{esqlabsR}` - <https://github.com/esqLABS/esqlabsR>
+    -   `{uuid}` - CRAN
+    -   `{pracma}` - CRAN
+    -   `{readr}` - CRAN
+
+## Installation
+
+Install the latest version of the
+[`{esqlabsR}`](https://github.com/esqLABS/esqlabsR) package and the
+dependencies by calling the following code:\
+
+```{r, eval=FALSE}
+install.packages("pak")
+pak::pak("esqLABS/esqlabsR@*release")
+```
+
+Install the reamaining package from CRAN by calling the following code:
+
+```{r, eval=FALSE}
+install.packages(c(
+  "uuid", "pracma",
+  "readr"
+))
+```
+
+## Workflow
+
+The high-throughput (HT) physiologically-based (PB) pharmacokinetics
+(PB) modeling framework is distributed as an R-Studio project with the
+required folder structure. For the correct execution of the implemented
+code, the working directory must be the `Code` subfolder.
+
+The framework requires the in vitro/in silico compound properties and
+the in vivo PK data to be present in an Excel file. The name and the
+location of the file is defined in the `ProjectConfiguration.xlsx`
+located in the root project folder.
+
+### Current framework limitations
+
+-   Only simulations of a small molecule structure are supported
+-   Only simulations of the rat species are supported
+-   Only single dose intravenous administration protocols are
+    implemented
+
+### Running simulations
+
+1)  Initialization of the framework is done by executing the script
+    `HTFramework.R`. It must be called once in an R session before
+    running the predictions. Within the script file, the scenarios
+    (representing the different calculation methods) can be specified.
+    Each study will be simulated using every specified scenario. The
+    script calls the function `initHTFramework()`, which loads the
+    simulations from the \`pkml\* files and returns the initialized
+    scenarios.
+
+    Simulation outputs can be defined in the `Scenarios.xlsx` file (see
+    workflow descirption
+    https://esqlabs.github.io/esqlabsR/articles/esqlabsR-design-scenarios.html).
+
+2)  After the framework has been initialized, the function
+    `createStudies()` is called to create a `Study` object for every
+    study defined in the input data file. The function returns a list of
+    `Study` objects. These objects can be viewed and modified.
+
+3)  Calling the function `runPredictions()` with the list of `Study`
+    objects and the list of scenarios will run the simulations. The
+    function will create and process a simulation for every study and
+    every scenario.
+
+## Implementation details
+
+### Generic PBPK model structure
+
+#### Individual
+
+A generic PBPK model is implemented in PK-Sim version 11.3.
+The project includes the species human, rat, dog, mouse, minipig, and
+monkey. This version of the HT-PBPK framework considers only the rat
+species. The simulation time will be set to the maximal meausured
+(reported in the column `TIME` of the `EXP_PK` sheet) plus 10%. The
+maximal measured value in the provided exemplary data set is
+`r max(dataEXPPk$TIME)` hours.
+
+#### Compound
+
+A generic compound named `Compound` is used for simulations. The
+distincition of small vs. large molecule will be defined in the R code
+by setting the value of the parameter `Compound|Is small molecule`. In
+the first version of the framework, only small molecules are simulated.
+
+The lipophilicity, the fraction unbound, of the compound will be set in
+the R script from the PhysChem data provided. As plasma binding partner,
+Albumin is assumed by default.
+
+For solubility, one value at a given pH (by default 7) will be provided.
+Solubility table (multiple solubility values at different pH) is not
+supported in this framework.
+
+Intestinal permeability will be calculated by PK-Sim unless a specific
+value is provided.
+
+Clearance will be implemented as two processes - glomerular filtration
+in the kidney and the liver plasma clearnace. For the liver clearance
+process, `In vitro liver microsomes - t1/2` will be used. For the
+glomerular filtration, a filtration fraction of 1 and 0 will be assumed
+for small and large molecules, respectively.
+
+No proteins - transporter or enzymes - are considered.
+
+#### Administration protocols
+
+Intravenous bolus, oral solution, and subcutaneous (administered into
+skin interstitial) will be implemented. For oral administration,
+solution will be assumed as the only available formulation.
+
+No food administration or other events will be implemented.
+
+::: callout-note
+Current implementation supports SD IV administration protocols only.
+:::
+
+#### Calculation methods
+
+For each combination of the partition coefficients (PC) and cellular
+permeabilities (CP) calculation methods implemented in PK-Sim, a
+separate simulation will be created. Additionally, separate simulations
+for the small molecules (SM) and large molecules (LM) model structures
+will be created. The combinations of PC/CP calculation methods are (in
+parenthesis - abbreviation used in output file names):
+
+-   PK-Sim Standard / PK-Sim Standard (`PKSim_PKSim`)
+
+-   PK-Sim Standard / Charge dependent Schmitt (`PKSim_Schmitt`)
+
+-   Rodgers and Rowland / PK-Sim Standard (`RR_PKSim`)
+
+-   Rodgers and Rowland / Charge dependent Schmitt (`RR_Schmitt`)
+
+-   Schmitt / PK-Sim Standard (`Schmitt_PKSim`)
+
+-   Schmitt / Charge dependent Schmitt (`Schmitt_Schmitt`)
+
+-   Poulin and Theil / PK-Sim Standard (`PT_PKSim`)
+
+-   Poulin and Theil / Charge dependent Schmitt (`PT_Schmitt`)
+
+-   Berezhkovskiy / PK-Sim Standard (`Berezh_PKSim`)
+
+-   Berezhkovskiy / Charge dependent Schmitt (`Berezh_Schmitt`)
+
+Note: CP calculation method "Charge dependent Schmitt normalized to
+PK-Sim" is not supported as it is not properly implemented in the
+current versions (11.3 and 12.0) if PK-Sim.
+
+### Input data structure
+
+The input data (i.e., compound properties and PK data) are provided in
+an Excel file with the sheets `Compound_Properties`,
+`ADME_Properties`, and `EXP_PK`.
+
+Each compound is defined by a unique identifier (ID) in the column
+`COMPOUND_ID`.
+
+#### `Compound_Properties`
+
+Physico-chemical (PhysChem) properties of the compound are provided in
+the sheet `Compound_Properties`. Available properties are defined in
+the column `PREDICTION_ENDPOINT`. The following properties are
+available:
+
+```{r}
+unique(dataCompoundProperties$PREDICTION_ENDPOINT)
+```
+
+The data will be mapped to model parameters as follows:
+
+-   `MW`: `Compound|Molecular weight`
+-   `F, Br, Cl, I`: Number of halogens (Br, Cl, F, I). 0 if not
+    available.
+-   `logD_Lipophilicity`: `Compound|Lipophilicity`
+-   `Acidic_PkA, Basic_PkA`: pKa values of the molecule. It is assumed
+    that up to three entries exist per compound. If more than three
+    entries exist, only the first three will be applied.
+-   `Caco2-TC7_Permeability`:
+    `Compound|Specific intestinal permeability (transcellular)`. If not
+    available, the value is calculated by PK-Sim based on the molecular
+    weight and the lipophilicity of the compound.
+-   `Solubility`: `Compound|Solubility at reference pH`
+
+It is assumed that all values are provided in units (defined in the
+column `RESULT_UNIT`) that are compatible with PK-Sim. Following units
+are available:
+
+```{r}
+unique(dataCompoundProperties$RESULT_UNIT)
+```
+
+#### `ADME_Properties`
+
+Species-specific compound properties are provided in the tab
+`ADME_Properties`. Only entries with `SPECIES == Rat` will be used by
+the framework.
+
+The following properties are available:
+
+```{r}
+unique(dataADMEProperties$PREDICTION_ENDPOINT)
+```
+
+The data will be mapped to model parameters as follows:
+
+-   `Microsomal_Half_Life_Full`:
+    `Compound-Total Hepatic Clearance-In vitro microsomes Rat|t1/2 (microsomal assay)`
+-   `Microsomal_Half_Life_Single`: Only used if
+    `Microsomal_Half_Life_Full` is not available.
+-   `Plasma_Protein_Binding`: Fraction bound to plasma proteins
+    (Albumin assumed).
+
+It is assumed that plasma protein binding is provided for each compound.
+
+#### Study protocols
+
+Study protocols are provided within the `EXP_PK` sheet. A separate
+simulation will be executed for each study defined in the `STUDY`
+column. Only studies for compounds that are defined in the sheets
+`Compound_Properties` and `ADME_Properties` and with
+`SPECIES == Rat` will be simulated.
+
+Administration protocols will be defined in the following columns:
+
+-   `TREATMENT_ROUTE` with options:
+
+    -   IV bolus
+
+    -   PO
+
+    -   SC
+
+-   `TREATMENT_REGIMEN` with options:
+
+    -   SD (single administration only, given at time = 0)
+
+    -   QD (once daily, given every 24h)
+
+    -   BID (twice daily, given every 8h)
+
+    -   QW (once weekly, given every 7 days)
+
+    -   Q2W (once every two weeks, given every 14 days)
+
+    -   Q4W (once every four weeks, given every 28 days)
+
+-   `TREATMENT_REPS` - numeric, total number of repititions
+
+::: callout-note
+Currently not implemented.
+:::
+
+For each unique study ID, one simulation will be performed, i.e., no
+individual simulations will be executed in case results for multiple
+individuals for the same study are available. The first entry in columns
+`TREATMENTDESC` and `DOSE` will be used for treatment parametrization.
+
+### In vitro data pre-processing
+
+-   Solubility is converted from molar concentration to mass
+    concentration using the molecular weight of the compound.
+
+-   Unit values `no unit` will be converted to "".
+
+-   All values are converted to [default OSPS
+    units](https://docs.open-systems-pharmacology.org/appendix/appendix#a.1.-dimensions-and-base-units)
+
+-   Remove compounds that have no plasma protein binding information
+
+-   PK-Sim models require plasma protein binding to be under 100%. For
+    all compounds with reported plasma protein binding of \>=100%,
+    replace the value by 99.9%. Current values are:
+
+```{r}
+summary(dataADMEProperties$RESULT_NUMERIC[dataADMEProperties$PREDICTION_ENDPOINT == "Plasma_Protein_Binding"])
+```
+
+### In vivo data pre-processing
+
+Duplicated time entries of the observed data are removed.
+
+## Framework outputs
+
+Each time the function `runPredictions()` is called, the framework
+generates the following outputs:
+
+-   A folder with the name `<timestamp>` located in the subfolder
+    `SimulationResults` of the output folder defined in the
+    `ProjectConfiguration.xlsx` (by default the `Results` folder of the
+    project).
+
+-   Within the `<timestamp>` folder, subfolder structure
+    `<CompoundID>/<StudyID>` is created.
+
+-   For each simulated study:
+
+    -   For each `Scenario` (defined by the variable `scenarioNames` in
+        the script `HTFramework.R`), which represents a combination of
+        PC and CP calculation methods:
+
+    -   Simulated results as a `scv` format file, the file name of the
+        form `<CompoundID>_<StudyID>_<Species>_SM_<PC>_<CP>`, where `SM`
+        stands for "Small molecule" (`LM` for "Large molecule"), `<PC>`
+        and `<CP>` are the partition coefficient and cellular
+        permeability calculation methods, respectively.
+
+    -   If `saveSimulation == TRUE`, the parametrized simulation as
+        `.pkml` file.
+
+    -   PK parameters as calculated by the standard function
+        [`calculatePKAnalyses()`](https://www.open-systems-pharmacology.org/OSPSuite-R/reference/calculatePKAnalyses.html)
+        implemented in the `{ospsuite}` package, stored as `csv` with
+        the file name
+        `<CompoundID>_<StudyID>_<Species>_SM_<PC>_<CP>_PKAnalyses`.
+
+    -   If `plotFigures == TRUE`, a multi-panel plot of the type:\
+        ![Example of a figure presenting the comparison of simulated
+        results with observed data](Figures/ExamplePlot.png)
+
+-   A `csv` file with the combined metrics calculated for the simulation
+    results of all studies and scenarios. The file is named
+    `Prediction_metrics.csv`, containing the following columns:
+
+    -   **obsFirstTime**: Time of the first observed data point
+
+    -   **obsFirstConc**: Concentration of the first observed data point
+
+    -   **simFirstConc**: Concentration of the first simulated data
+        point
+
+    -   **obsLastTime**: Time of the last observed data point
+
+    -   **obsLastConc**: Concentration of the last observed data point
+
+    -   **simLastConc**: Concentration of the last simulated data point
+
+    -   **foldC_first**: Fold difference between the first simulated and
+        observed data points, calculated as
+        $\frac{simFirstConc}{obsFirstConc}$\`
+
+    -   **foldC_last**: Fold difference between the last simulated and
+        observed data points, calculated as
+        $\frac{simLastConc}{obsLastConc}$\`
+
+    -   **obsCmax**: Maximum observed concentration
+
+    -   **simCmax**: Maximum simulated concentration
+
+    -   **cMaxFold**: Fold difference between the maximum simulated and
+        observed concentrations, calculated as
+        $\frac{simCmax}{obsCmax}$\`
+
+    -   **log residuals**: ${ln(simulated) - ln(observed)}$
+
+    -   **lin residuals**: $simulated - observed$
+
+    -   **observed_AUC**: Calculated for time points present in the
+        observed data using function `trapz()` from package `{pracma}`.
+
+    -   **simulated_AUC**: Calculated for time points present in the
+        simulated data using function `trapz()` from package `{pracma}`.
+
+        -   **AUCfold**: Fold difference between the simulated and
+            observed AUCs, calculated as
+            $\frac{simulated_AUC}{observed_AUC}$\`
+
+    -   **fold difference**:
+        $\frac{max(observed, simulated)}{min(observed, simulated)}$ for
+        each observed time point
+
+    -   **GMFE**: calculated as $e^{mean(abs(log\_residuals))}$
+
+    -   **RMSE**: calculated as $\sqrt{mean(lin\_residuals^2)}$
+
+    -   **RMedianSE**: calculated as $\sqrt{median(log\_residuals^2)}$
+
+    -   **share_x_fold**: % of points within $x$ fold. Calculated for
+        1.5, 2, 3, 5, 10 folds.
