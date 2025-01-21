@@ -1,0 +1,19 @@
+Package: ESQhtpbpk
+Title: A package for more user-friendly definition of HT-PBPK pipelines
+Version: 0.0.0.9000
+Authors@R: c(
+    person("ESQlabs GmbH", role = c("cph", "fnd")),
+    person("Pavel", "Balazki", , email = "pavel.balazki@esqlabs.com", role = c("cre", "aut")),
+    person("Diane", "Lefaudeux", , email = "diane.lefaudeux@esqlabs.com", role = c("aut"))
+  )
+Description: A package for more user-friendly definition of HT-PBPK pipelines, but simplifying 
+    compound, protocol, studies definition and mapping to generic pbpk pkmls.
+License: GPL-2
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
