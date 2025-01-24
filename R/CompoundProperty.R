@@ -12,7 +12,7 @@ CompoundProperty <- R6::R6Class(
       if (missing(value)) {
         return(private$.name)
       } else {
-        stop("Name is read-only")
+        stop(messages$readOnly("name"))
       }
     },
 
@@ -21,7 +21,7 @@ CompoundProperty <- R6::R6Class(
       if (missing(value)) {
         return(private$.dimension)
       } else {
-        stop("Dimension is read-only")
+        stop(messages$readOnly("dimension"))
       }
     },
     #' @field value Value of the property.
@@ -31,7 +31,7 @@ CompoundProperty <- R6::R6Class(
       } else {
         if (!is.null(private$.enum)) {
           if (!(value %in% names(private$.enum))) {
-            stop(paste("Value", value, "is not allowed for", private$.name))
+            stop(messages$valueEnumError(private$.name, value))
           }
           private$.value <- private$.enum[value]
         } else if (!is.null(private$.check)) {
@@ -56,7 +56,7 @@ CompoundProperty <- R6::R6Class(
       if (missing(value)) {
         return(private$.path)
       } else {
-        stop("Path is read-only")
+        stop(messages$readOnly("path"))
       }
     },
     #' @field enum Enums to convert from user friendly value to PK-Sim allowed value
@@ -64,7 +64,7 @@ CompoundProperty <- R6::R6Class(
       if (missing(value)) {
         return(private$.enum)
       } else {
-        stop("Enum is read-only")
+        stop(messages$readOnly("enum"))
       }
     },
     #' @field check Function to check validity of given value, must take value and unit as arguments
@@ -73,7 +73,7 @@ CompoundProperty <- R6::R6Class(
       if (missing(value)) {
         return(private$.check)
       } else {
-        stop("Check is read-only")
+        stop(messages$readOnly("check"))
       }
     }
   ),
@@ -109,20 +109,20 @@ CompoundProperty <- R6::R6Class(
 
       # check validity of enum
       if (!is.null(enum) && (!is.list(enum) || is.null(names(enum)))) {
-        stop("Supplied 'enum' is not valid.")
+        stop(messages$notValid("enum"))
       }
       private$.enum <- enum
 
       # check validity of constraint function
       if (!is.null(check) && !is.function(check)) {
-        stop("Supplied 'check' is not a valid.")
+        stop(messages$notValid("check"))
       }
       private$.check <- check
 
       # check validity of value (with either enum or check function)
       if (!is.null(private$.enum)) {
         if (!(value %in% names(private$.enum))) {
-          stop(paste("Value", value, "is not allowed for", private$.name))
+          stop(messages$valueEnumError(private$.name, value))
         }
         private$.value <- private$.enum[value]
       } else if (!is.null(private$.check)) {
