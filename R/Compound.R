@@ -28,11 +28,9 @@ Compound <- R6::R6Class(
           name = "Lipophilicity",
           path = paste(name, "Lipophilicity", sep = "|"),
           dimension = ospsuite::ospDimensions$`Log Units`,
+          value = 0,
           check = function(value, unit) {
-            valid <- (value >= -10 && value <= 10)
-            if (!valid) {
-              stop("Value must be betwen -10 and 10")
-            }
+            .checkValueInRangeEq("Lipophilicity", value, 0, 10)
           }
         ),
         CompoundProperty$new(
@@ -42,15 +40,9 @@ Compound <- R6::R6Class(
           value = 1,
           check = function(value, unit) {
             if (unit == "") {
-              valid <- (value >= 0 && value <= 1)
-              if (!valid) {
-                stop("Value must be betwen 0 and 1")
-              }
+              .checkValueInRangeEq("Fraction unbound", value, 0, 1)
             } else if (unit == "%") {
-              valid <- (value >= 0 && value <= 100)
-              if (!valid) {
-                stop("Value must be betwen 0 and 100 %")
-              }
+              .checkValueInRangeEq("Fraction unbound", value, 0, 100)
             }
           }
         ),
@@ -80,10 +72,7 @@ Compound <- R6::R6Class(
           dimension = ospsuite::ospDimensions$Dimensionless,
           value = 0,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 10)
-            if (!valid) {
-              stop("Value must be betwen 0 and 10")
-            }
+            .checkValueInRangeEq("Bromine count", value, 0, 10)
           }
         ),
         CompoundProperty$new(
@@ -92,22 +81,7 @@ Compound <- R6::R6Class(
           dimension = ospsuite::ospDimensions$Dimensionless,
           value = 0,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 10)
-            if (!valid) {
-              stop("Value must be betwen 0 and 10")
-            }
-          }
-        ),
-        CompoundProperty$new(
-          name = "Chlorine count",
-          path = paste(name, "Cl", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            valid <- (value >= 0 && value <= 10)
-            if (!valid) {
-              stop("Value must be betwen 0 and 10")
-            }
+            .checkValueInRangeEq("Chlorine count", value, 0, 10)
           }
         ),
         CompoundProperty$new(
@@ -116,10 +90,7 @@ Compound <- R6::R6Class(
           dimension = ospsuite::ospDimensions$Dimensionless,
           value = 0,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 10)
-            if (!valid) {
-              stop("Value must be betwen 0 and 10")
-            }
+            .checkValueInRangeEq("Fluorine count", value, 0, 10)
           }
         ),
         CompoundProperty$new(
@@ -128,10 +99,7 @@ Compound <- R6::R6Class(
           dimension = ospsuite::ospDimensions$Dimensionless,
           value = 0,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 10)
-            if (!valid) {
-              stop("Value must be betwen 0 and 10")
-            }
+            .checkValueInRangeEq("Iodine count", value, 0, 10)
           }
         ),
         CompoundProperty$new(
@@ -140,10 +108,7 @@ Compound <- R6::R6Class(
           dimension = ospsuite::ospDimensions$Dimensionless,
           value = 0,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 14)
-            if (!valid) {
-              stop("Value must be betwen 0 and 14")
-            }
+            .checkValueInRangeEq("pKa value 0", value, 0, 14)
           }
         ),
         CompoundProperty$new(
@@ -159,10 +124,7 @@ Compound <- R6::R6Class(
           dimension = ospsuite::ospDimensions$Dimensionless,
           value = 0,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 14)
-            if (!valid) {
-              stop("Value must be betwen 0 and 14")
-            }
+            .checkValueInRangeEq("pKa value 1", value, 0, 14)
           }
         ),
         CompoundProperty$new(
@@ -178,10 +140,7 @@ Compound <- R6::R6Class(
           dimension = ospsuite::ospDimensions$Dimensionless,
           value = 0,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 14)
-            if (!valid) {
-              stop("Value must be betwen 0 and 14")
-            }
+            .checkValueInRangeEq("pKa value 2", value, 0, 14)
           }
         ),
         CompoundProperty$new(
@@ -197,10 +156,7 @@ Compound <- R6::R6Class(
           dimension  = ospsuite::ospDimensions$Dimensionless,
           value = 7,
           check = function(value, unit) {
-            valid <- (value >= 0 && value <= 14)
-            if (!valid) {
-              stop("Value must be betwen 0 and 14")
-            }
+            .checkValueInRangeEq("Reference pH", value, 0, 14)
           }
         ),
         CompoundProperty$new(
