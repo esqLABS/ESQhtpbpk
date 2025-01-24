@@ -1,4 +1,4 @@
-# Compound property print
+# compoundProperty `print` method works
 
     Code
       prop$print()
@@ -9,7 +9,7 @@
          Value: 100 
          Unit: mg/l 
 
-# Compound property transformation to base units
+# `toBaseUnit` method (transformation to base units) works
 
     Code
       prop$toBaseUnit()
