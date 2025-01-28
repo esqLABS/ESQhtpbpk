@@ -23,150 +23,32 @@ Compound <- R6::R6Class(
       self$ID <- ID
       self$name <- name
 
-      private$.allProperties <- list(
+      template <- readr::read_file(system.file("extdata", "generic_compound_template.json", package = "ESQhtpbpk"))
+      filled_template <- glue::glue(template, .open = "${", .close = "}$")
+      generic_compound <- jsonlite::fromJSON(filled_template, simplifyVector = T, simplifyDataFrame = FALSE)
+
+
+      private$.allProperties <- lapply(generic_compound$CompoundProperties, \(x) {
         CompoundProperty$new(
-          name = "Lipophilicity",
-          path = paste(name, "Lipophilicity", sep = "|"),
-          dimension = ospsuite::ospDimensions$`Log Units`,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("Lipophilicity", value, 0, 10)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Fraction unbound",
-          path = paste(name, "Fraction unbound (plasma, reference value)", sep = "|"),
-          dimension = ospsuite::ospDimensions$`Fraction`,
-          value = 1,
-          check = function(value, unit) {
-            if (unit == "") {
-              .checkValueInRangeEq("Fraction unbound", value, 0, 1)
-            } else if (unit == "%") {
-              .checkValueInRangeEq("Fraction unbound", value, 0, 100)
+          name = x$name,
+          path = x$path,
+          dimension = x$dimension,
+          value = x$value,
+          unit = x$unit,
+          check = if (!is.null(x$min) && !is.null(x$max)) {
+            function(value, unit) {
+              .checkValueInRangeEq(x$name, x$dimension, value, unit, x$min, x$max, x$rangeUnit)
             }
+          } else {
+            NULL
+          },
+          enum = if (!is.null(x$enum)) {
+            get(x$enum)
+          } else {
+            NULL
           }
-        ),
-        CompoundProperty$new(
-          name = "Plasma protein binding partner",
-          path = paste(name, "Plasma protein binding partner", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = "Albumin",
-          enum = PPBPartner
-        ),
-        CompoundProperty$new(
-          name = "Is small molecule",
-          path = paste(name, "Is small molecule", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 1
-        ),
-        CompoundProperty$new(
-          name = "Molecular weight",
-          path = paste(name, "Molecular weight", sep = "|"),
-          dimension = ospsuite::ospDimensions$`Molecular weight`,
-          value = 100,
-          unit = "g/mol"
-        ),
-        CompoundProperty$new(
-          name = "Bromine count",
-          path = paste(name, "Br", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("Bromine count", value, 0, 10)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Chlorine count",
-          path = paste(name, "Cl", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("Chlorine count", value, 0, 10)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Fluorine count",
-          path = paste(name, "F", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("Fluorine count", value, 0, 10)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Iodine count",
-          path = paste(name, "I", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("Iodine count", value, 0, 10)
-          }
-        ),
-        CompoundProperty$new(
-          name = "pKa value 0",
-          path = paste(name, "pKa value 0", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("pKa value 0", value, 0, 14)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Compound type 0",
-          path = paste(name, "Compound type 0", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = "Neutral",
-          enum = CompoundType
-        ),
-        CompoundProperty$new(
-          name = "pKa value 1",
-          path = paste(name, "pKa value 1", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("pKa value 1", value, 0, 14)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Compound type 1",
-          path = paste(name, "Compound type 1", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = "Neutral",
-          enum = CompoundType
-        ),
-        CompoundProperty$new(
-          name = "pKa value 2",
-          path = paste(name, "pKa value 2", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = 0,
-          check = function(value, unit) {
-            .checkValueInRangeEq("pKa value 2", value, 0, 14)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Compound type 2",
-          path = paste(name, "Compound type 2", sep = "|"),
-          dimension = ospsuite::ospDimensions$Dimensionless,
-          value = "Neutral",
-          enum = CompoundType
-        ),
-        CompoundProperty$new(
-          name = "Reference pH",
-          path = paste(name, "Reference pH", sep = "|"),
-          dimension  = ospsuite::ospDimensions$Dimensionless,
-          value = 7,
-          check = function(value, unit) {
-            .checkValueInRangeEq("Reference pH", value, 0, 14)
-          }
-        ),
-        CompoundProperty$new(
-          name = "Solubility",
-          path = paste(name, "Solubility at reference pH", sep = "|"),
-          dimension = ospsuite::ospDimensions$`Concentration (mass)`,
-          value = 1,
-          unit = "mg/l"
         )
-      )
+      })
 
       names(private$.allProperties) <- sapply(private$.allProperties, \(x) x$name)
       private$.allPropertyPaths <- sapply(private$.allProperties, \(x) x$path)
