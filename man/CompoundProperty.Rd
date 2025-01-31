@@ -51,7 +51,10 @@ Initialize a new instance of the class.
   value = 0,
   unit = NULL,
   enum = NULL,
-  check = NULL
+  check = NULL,
+  min = NULL,
+  max = NULL,
+  rangeUnit = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -71,7 +74,14 @@ Initialize a new instance of the class.
 \item{\code{enum}}{(Optional) Enum to convert from user friendly value to PK-Sim allowed value}
 
 \item{\code{check}}{(Optional) Function to check validity of given value, must take value and unit as arguments
-and must return an error if the value is not valid
+and must return an error if the value is not valid}
+
+\item{\code{min}}{(Optional) Min value allowed to check validity of given value}
+
+\item{\code{max}}{(Optional) Max value allowed to check validity of given value}
+
+\item{\code{rangeUnit}}{(Optional) Unit in which the min/max range is given
+(if not given, the unit is assumed to be the same as the unit of the property).
 valid).}
 }
 \if{html}{\out{</div>}}

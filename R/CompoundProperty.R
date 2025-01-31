@@ -89,9 +89,14 @@ CompoundProperty <- R6::R6Class(
     #' @param enum (Optional) Enum to convert from user friendly value to PK-Sim allowed value
     #' @param check (Optional) Function to check validity of given value, must take value and unit as arguments
     #' and must return an error if the value is not valid
+    #' @param min (Optional) Min value allowed to check validity of given value
+    #' @param max (Optional) Max value allowed to check validity of given value
+    #' @param rangeUnit (Optional) Unit in which the min/max range is given
+    #' (if not given, the unit is assumed to be the same as the unit of the property).
+
     #' valid).
     #' @return A new `CompoundProperty` object.
-    initialize = function(name, path, dimension, value = 0, unit = NULL, enum = NULL, check = NULL) {
+    initialize = function(name, path, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, min = NULL, max = NULL, rangeUnit = NULL) {
       private$.name <- name
       private$.path <- path
 
@@ -99,13 +104,11 @@ CompoundProperty <- R6::R6Class(
       ospsuite::validateDimension(dimension)
       private$.dimension <- dimension
 
-      # check validity of unit with dimension
-      if (!is.null(unit)) {
-        ospsuite::validateUnit(unit, dimension)
-        private$.unit <- unit
-      } else {
-        private$.unit <- ospsuite::getBaseUnit(dimension)
+      # check and set validity of unit with dimension
+      if (is.null(unit)) {
+        unit <- ospsuite::getBaseUnit(dimension)
       }
+      self$unit <- unit
 
       # check validity of enum
       if (!is.null(enum) && (!is.list(enum) || is.null(names(enum)))) {
@@ -114,23 +117,18 @@ CompoundProperty <- R6::R6Class(
       private$.enum <- enum
 
       # check validity of constraint function
+      if (is.null(check) && !is.null(min) && !is.null(max)) {
+        check <- function(value, unit) {
+          .checkValueInRangeEq(name, dimension, value, unit, min, max, rangeUnit)
+        }
+      }
       if (!is.null(check) && !is.function(check)) {
         stop(messages$notValid("check"))
       }
       private$.check <- check
 
-      # check validity of value (with either enum or check function)
-      if (!is.null(private$.enum)) {
-        if (!(value %in% names(private$.enum))) {
-          stop(messages$valueEnumError(private$.name, value))
-        }
-        private$.value <- private$.enum[value]
-      } else if (!is.null(private$.check)) {
-        private$.check(value, private$.unit)
-        private$.value <- value
-      } else {
-        private$.value <- value
-      }
+      # set and validate value
+      self$value <- value
     },
 
     # Return the value of the property in base unit

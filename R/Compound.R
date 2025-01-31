@@ -23,33 +23,11 @@ Compound <- R6::R6Class(
       self$ID <- ID
       self$name <- name
 
+      # replace with given ${name}$ in template by given name
       template <- readr::read_file(system.file("extdata", "generic_compound_template.json", package = "ESQhtpbpk"))
       filled_template <- glue::glue(template, .open = "${", .close = "}$")
-      generic_compound <- jsonlite::fromJSON(filled_template, simplifyVector = T, simplifyDataFrame = FALSE)
 
-
-      private$.allProperties <- lapply(generic_compound$CompoundProperties, \(x) {
-        CompoundProperty$new(
-          name = x$name,
-          path = x$path,
-          dimension = x$dimension,
-          value = x$value,
-          unit = x$unit,
-          check = if (!is.null(x$min) && !is.null(x$max)) {
-            function(value, unit) {
-              .checkValueInRangeEq(x$name, x$dimension, value, unit, x$min, x$max, x$rangeUnit)
-            }
-          } else {
-            NULL
-          },
-          enum = if (!is.null(x$enum)) {
-            get(x$enum)
-          } else {
-            NULL
-          }
-        )
-      })
-
+      private$.allProperties <- private$.initializePropertiesFromJSON(filled_template)
       names(private$.allProperties) <- sapply(private$.allProperties, \(x) x$name)
       private$.allPropertyPaths <- sapply(private$.allProperties, \(x) x$path)
     },
@@ -149,6 +127,29 @@ Compound <- R6::R6Class(
   ),
   private = list(
     .allProperties = list(),
-    .allPropertyPaths = c()
+    .allPropertyPaths = c(),
+    .initializePropertiesFromJSON = function(json) {
+      generic_compound <- jsonlite::fromJSON(json, simplifyVector = T, simplifyDataFrame = FALSE)
+
+      properties <- lapply(generic_compound$CompoundProperties, \(x) {
+        CompoundProperty$new(
+          name = x$name,
+          path = x$path,
+          dimension = x$dimension,
+          value = x$value,
+          unit = x$unit,
+          check = NULL,
+          enum = if (!is.null(x$enum)) {
+            get(x$enum)
+          } else {
+            NULL
+          },
+          min = x$min,
+          max = x$max,
+          rangeUnit = x$rangeUnit
+        )
+      })
+      return(properties)
+    }
   )
 )
