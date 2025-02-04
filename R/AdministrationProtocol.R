@@ -13,7 +13,7 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.UUID
       } else {
-        error("UUID is read-only")
+        cli::cli_abort(messages$readOnly("UUID"))
       }
     },
     Route = function(value) {
@@ -21,7 +21,8 @@ SimpleProtocol <- R6::R6Class(
         private$.Route
       } else {
         if (!(value %in% names(AdminType))) {
-          cli::cli_abort("Supplied route {.code {value}} is not valid. Route must be one of {.code {names(AdminType)}}.")
+          msg <- messages$valueEnumError("route", value, allowed = names(DoseInterval))
+          cli::cli_abort("{msg}")
         } else {
           private$.Route <- value
         }
@@ -33,7 +34,8 @@ SimpleProtocol <- R6::R6Class(
         private$.DoseInterval
       } else {
         if (!(value %in% names(AdminInterval))) {
-          cli::cli_abort("Supplied dosing interval {.code {value}} is not valid. Dosing interval must be one of {.code {names(AdminInterval)}}.")
+          msg <- messages$valueEnumError("dosing interval", value, allowed = names(DoseInterval))
+          cli::cli_abort("{msg}")
         } else {
           private$.DoseInterval <- value
         }
@@ -339,12 +341,7 @@ SimpleProtocol <- R6::R6Class(
         # return(allParamPaths)
         allParamPaths <- c(allParamPaths, wantedAdmin$time[i])
       }
-
-     #
-     # for (interval in self$DoseInterval) {
-     #
-     #   AdminInterval[[self$DoseInterval]]$time_interval
-     #     time <-
+      return(allParamPaths)
     },
 
 
