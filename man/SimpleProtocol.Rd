@@ -14,6 +14,34 @@ Description of an administration protocol
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{UUID}}{Unique identifier (read-only)}
+
+\item{\code{Route}}{Route of administration}
+
+\item{\code{DoseInterval}}{Dosing interval}
+
+\item{\code{Dose}}{Dose}
+
+\item{\code{DoseUnit}}{Dose unit}
+
+\item{\code{StartTime}}{Starting time of administration}
+
+\item{\code{StartTimeUnit}}{Time unit of administration starting time}
+
+\item{\code{EndTime}}{End time of administration}
+
+\item{\code{EndTimeUnit}}{Time unit of administration end time}
+
+\item{\code{InfusionTime}}{Duration of infusion}
+
+\item{\code{InfusionTimeUnit}}{Time unit of infusion duration}
+
+\item{\code{WaterVolPerBW}}{Water volume per body weight}
+
+\item{\code{WaterVolPerBWUnit}}{Unit or water volume per body weight}
+
+\item{\code{Formulation}}{Formulation to use with protocol}
+
+\item{\code{Path}}{Prefix path for the administration}
 }
 \if{html}{\out{</div>}}
 }
@@ -21,6 +49,7 @@ Description of an administration protocol
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-SimpleProtocol-new}{\code{SimpleProtocol$new()}}
+\item \href{#method-SimpleProtocol-extractProtocol}{\code{SimpleProtocol$extractProtocol()}}
 \item \href{#method-SimpleProtocol-getAllParameterPaths}{\code{SimpleProtocol$getAllParameterPaths()}}
 \item \href{#method-SimpleProtocol-print}{\code{SimpleProtocol$print()}}
 }
@@ -32,7 +61,7 @@ Description of an administration protocol
 Initialize a new instance of the class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$new(
-  path,
+  path = "Events|AdvancedProtocol",
   route = "IV Bolus",
   dosingInterval = "Single",
   dose = 0,
@@ -44,24 +73,77 @@ Initialize a new instance of the class
   infusionTime = NULL,
   infusionTimeUnit = NULL,
   waterVolPerBW = NULL,
-  waterVolPerBWUnit = NULL,
-  targetOrgan = NULL,
-  targetCompartment = NULL
+  waterVolPerBWUnit = NULL
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{Prefix for the path of administration in the simulations}
+
+\item{\code{route}}{Route of administration}
+
+\item{\code{dosingInterval}}{Dosing interval}
+
+\item{\code{dose}}{Dose}
+
+\item{\code{doseUnit}}{Unit of dose}
+
+\item{\code{startTime}}{Starting time of administration}
+
+\item{\code{startTimeUnit}}{Time unit of administration starting time}
+
+\item{\code{endTime}}{End time of administration}
+
+\item{\code{endTimeUnit}}{Time unit of administration end time}
+
+\item{\code{infusionTime}}{Infusion duration (for IV infusion)}
+
+\item{\code{infusionTimeUnit}}{Time unit of infusion duration (for IV infusion )}
+
+\item{\code{waterVolPerBW}}{Water volume per body weight (for oral administration)}
+
+\item{\code{waterVolPerBWUnit}}{Unit of water volume per body weight (for oral administration)}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A new \code{SimpleProtocol} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-SimpleProtocol-extractProtocol"></a>}}
+\if{latex}{\out{\hypertarget{method-SimpleProtocol-extractProtocol}{}}}
+\subsection{Method \code{extractProtocol()}}{
+Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$extractProtocol()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-getAllParameterPaths"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-getAllParameterPaths}{}}}
 \subsection{Method \code{getAllParameterPaths()}}{
+Extract all parameter paths needed to be changed in the simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$getAllParameterPaths()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$getAllParameterPaths(path = self$Path)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{Prefix path for the administration}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A character vector with all parameter paths.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-print"></a>}}
@@ -69,15 +151,8 @@ A new \code{SimpleProtocol} object.
 \subsection{Method \code{print()}}{
 Print the object to the console
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$print(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$print()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Rest arguments.}
-}
-\if{html}{\out{</div>}}
-}
 }
 }
