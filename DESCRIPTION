@@ -15,9 +15,17 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    cli,
+    dplyr,
+    glue,
+    jsonlite,
     ospsuite (>= 12.1.0),
     ospsuite.utils,
-    R6
+    purrr,
+    R6,
+    readr,
+    stringr,
+    uuid
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
