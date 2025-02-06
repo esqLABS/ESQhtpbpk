@@ -9,12 +9,13 @@ permissions: write-all
 
 jobs:
   bump-dev-version: # only do that when actually merging in main/develop branch
-  if: github.event_name != 'pull_request'
-  uses: Open-Systems-Pharmacology/Workflows/.github/workflows/bump_dev_version_tag_branch.yaml@main
-  with:
-    app-id: ${{ vars.ACTIONS_MANAGER_APPID }}
-  secrets:
-    private-key: ${{ secrets.ACTIONS_MANAGER_TOKEN }}
+    if: github.event_name != 'pull_request'
+    uses: Open-Systems-Pharmacology/Workflows/.github/workflows/bump_dev_version_tag_branch.yaml@main
+    with:
+      app-id: ${{ vars.ACTIONS_MANAGER_APPID }}
+    secrets:
+      private-key: ${{ secrets.ACTIONS_MANAGER_TOKEN }}
+
 
   R-CMD-Check:
     if: ${{ !cancelled() }}
