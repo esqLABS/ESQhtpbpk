@@ -31,7 +31,7 @@ CompoundProperty <- R6::R6Class(
       } else {
         if (!is.null(private$.enum)) {
           if (!(value %in% names(private$.enum))) {
-            stop(messages$valueEnumError(private$.name, value))
+            stop(messages$valueEnumError(private$.name, value, allowed = names(private$.enum)))
           }
           private$.value <- private$.enum[value]
         } else if (!is.null(private$.check)) {
