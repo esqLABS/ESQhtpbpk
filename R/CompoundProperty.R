@@ -140,6 +140,26 @@ CompoundProperty <- R6::R6Class(
         unit = self$unit
       ))
     },
+    #' @description
+    #' Convert to snapshot
+    toSnapshot = function() {
+      snap <- list(
+        Name = self$name,
+        Parameters = list(
+          list(
+            Name = self$name,
+            Value = self$value,
+            Unit = self$unit
+          )
+        )
+      )
+      # if no unit remove unit (dimensionless value)
+      if (snap$Parameters[[1]]$Unit == "") {
+        snap$Parameters[[1]] <- purrr::discard_at(snap$Parameters[[1]], "Unit")
+      }
+
+      return(snap)
+    },
 
     #' @description
     #' Print the object to the console

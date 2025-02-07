@@ -29,3 +29,32 @@ AdminInterval <- list(
   "6-6-6-6" = list(pksim = "DI_6_6_6_6", human = "Every 6 hours"),
   "6-6-12" = list(pksim = "DI_6_6_12", human = "Every 6 hours twice then 12 hours after")
 )
+
+#' @keywords internal
+FormulationType <- ospsuite.utils::enum(
+  c(
+    "Dissolved" = "Formulation_Dissolved",
+    "Weibull" = "Formulation_Tablet_Weibull",
+    "Lint80" = "Formulation_Tablet_Lint80",
+    "Particle" = "Formulation_Particles",
+    "Table" = "Formulation_Table",
+    "ZeroOrder" = "Formulation_ZeroOrder",
+    "FirstOrder" = "Formulation_FirstOrder"
+  )
+)
+
+#' @keywords internal
+ParticleSizeDistributionType = ospsuite.utils::enum(
+  c(
+    "Monodisperse" = 0,
+    "Polydisperse" = 1
+  )
+)
+
+#' @keywords internal
+ParticleSizeDistribution = ospsuite.utils::enum(
+  c(
+    "Normal" = 0,
+    "LogNormal" = 1
+  )
+)

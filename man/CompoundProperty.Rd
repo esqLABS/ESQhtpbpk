@@ -35,6 +35,7 @@ and must return an error if value is not valid}
 \itemize{
 \item \href{#method-CompoundProperty-new}{\code{CompoundProperty$new()}}
 \item \href{#method-CompoundProperty-toBaseUnit}{\code{CompoundProperty$toBaseUnit()}}
+\item \href{#method-CompoundProperty-toSnapshot}{\code{CompoundProperty$toSnapshot()}}
 \item \href{#method-CompoundProperty-print}{\code{CompoundProperty$print()}}
 }
 }
@@ -97,6 +98,16 @@ A new \code{CompoundProperty} object.
 Return the value of the property in base unit
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CompoundProperty$toBaseUnit()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CompoundProperty-toSnapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-CompoundProperty-toSnapshot}{}}}
+\subsection{Method \code{toSnapshot()}}{
+Convert to snapshot
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CompoundProperty$toSnapshot()}\if{html}{\out{</div>}}
 }
 
 }

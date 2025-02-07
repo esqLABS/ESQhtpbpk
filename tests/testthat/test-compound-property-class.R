@@ -31,3 +31,9 @@ test_that("`toBaseUnit` method (transformation to base units) works", {
     prop$toBaseUnit()
   })
 })
+
+test_that("`toSnapshot` method works", {
+  expect_snapshot({
+    prop$toSnapshot()
+  })
+})

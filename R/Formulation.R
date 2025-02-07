@@ -1,0 +1,279 @@
+#' @title Formulations
+#' @docType class
+#' @description  Description of a formulation
+#' @format NULL
+#' @export
+Formulation <- R6::R6Class(
+  "Formulation",
+  cloneable = FALSE,
+  inherit = ospsuite.utils::Printable,
+  active = list(
+    #' @field Type Type of Formulation
+    Type = function(value) {
+      if (missing(value)) {
+        return(private$.Type)
+      } else {
+        if (!(value %in% names(FormulationType))) {
+          msg <- messages$valueEnumError(
+            name = "Formulation type",
+            value = value,
+            allowed = names(FormulationType)
+          )
+          cli::cli_abort(msg)
+        } else {
+          private$.Type <- value
+        }
+      }
+    },
+    #' @field Name Name of formulation
+    Name = function(value) {
+      if (missing(value)) {
+        private$.Name
+      } else {
+        if (!is.null(value) && !is.character(value)) {
+          cli::cli_abort("Supplied Name is not valid.")
+        } else {
+          private$.Name <- value
+        }
+      }
+    },
+    #' @field Parameters Parameters of the formulation
+    Parameters = function(value) {
+      if (missing(value)) {
+        private$.Parameters
+      } else {
+        cli::cli_abort(messages$readOnly("Parameters"))
+      }
+    }
+  ),
+  public = list(
+    #' @description
+    #' Initialize a new instance of the class Formulation
+    #' @param type Type of the formulation
+    #' @param name Name of the formulation
+    #' @return A new `Formulation` object.
+    initialize = function(type, name = "Formulation") {
+      self$Name <- name
+      self$Type <- type
+    },
+    # Add a new property
+    #' @description
+    #' Add a new property/parameter for the formulation
+    #' @param name Name of the property to add.
+    #' @param path Corresponding path in the simulation pkml of the property to add.
+    #' @param dimension Dimension of the property to add.
+    #' @param value Value for the property.
+    #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
+    #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
+    #' @param check (Optional) Function to check the validity of the supplied value for the property.
+    addParameter = function(name, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
+      if (name %in% names(private$.Parameters)) {
+        stop("Property '", name, "' already exists.")
+      }
+      private$.Parameters[[name]] <- CompoundProperty$new(
+        name = name,
+        path = paste0("{protocolName}|{formulationName}|", name),
+        dimension = dimension,
+        value = value,
+        unit = unit,
+        enum = enum,
+        check = check
+      )
+    },
+    #' @description
+    #' Get the paths of all parameters defined for the formulation, using protocolName and formulationName
+    #' @param protocolName Name of the protocol in the simulation
+    #' @param formulationName Name of the formulation in the simulation
+    #' @return A character vector with the paths of all parameters
+    getAllPropertyPaths = function(protocolName = NULL, formulationName = NULL) {
+      if (is.null(protocolName) || is.null(formulationName)) {
+        purrr::list_c(
+          purrr::map(self$Parameters, \(x) {
+            x$path
+          })
+        )
+      } else {
+        unlist(
+          purrr::map(self$Parameters, \(x) {
+            glue::glue(x$path)
+          }),
+          use.names = F
+        )
+      }
+    },
+    #' @description
+    #' Convert the object to a snapshot
+    #' @return A snapshot representation of the formulation
+    toSnapshot = function() {
+      snap <- list(
+        Name = self$Name,
+        FormulationType = FormulationType[[self$Type]],
+        Parameters = purrr::map(
+          self$Parameters,
+          \(x) {
+            x$toSnapshot()
+          }
+        )
+      )
+      # if no parameter remove field
+      if (length(snap$Parameters) == 0) {
+        snap <- purrr::discard_at(snap, "Parameters")
+      }
+
+      return(snap)
+    },
+
+    #' @description
+    #' Print the object to the console
+    #' @param ... Rest arguments.
+    print = function(...) {
+      cli::cli_text("Formulation Name: ", self$Name)
+      cli::cli_text("Formulation Type: ", self$Type)
+
+      for (param in private$.Parameters) {
+        if (is.list(param$enum) && !is.null(names(param$enum))) {
+          private$printLine(param$name, names(param$value))
+        } else {
+          private$printLine(param$name, paste(param$value, param$unit))
+        }
+      }
+      invisible(self)
+    }
+  ),
+  private = list(
+    .Name = NULL,
+    .Type = NULL,
+    .Parameters = list()
+  )
+)
+
+#' @export
+createDissolvedFormulation <- function(
+    name = "Dissolved") {
+  Formulation$new(
+    name = name,
+    type = "Dissolved"
+  )
+}
+
+#' @export
+createWeibullFormulation <- function(
+    name = "Weibull",
+    dissolutionTime50 = 240, dissolutionTime50Unit = "min",
+    lagTime = 0, lagTimeUnit = "min",
+    shape = 0.92,
+    suspension = TRUE) {
+  formulation <- Formulation$new(
+    name = name,
+    type = "Weibull"
+  )
+  formulation$addParameter(
+    name = "Dissolution time (50% dissolved)",
+    dimension = "Time",
+    value = dissolutionTime50,
+    unit = dissolutionTime50Unit
+  )
+  formulation$addParameter(
+    name = "Lag time",
+    dimension = "Time",
+    value = lagTime,
+    unit = lagTimeUnit
+  )
+  formulation$addParameter(
+    name = "Dissolution shape",
+    dimension = "Dimensionless",
+    value = shape
+  )
+  formulation$addParameter(
+    name = "Use as suspension",
+    dimension = "Dimensionless",
+    value = as.numeric(suspension)
+  )
+
+  return(formulation)
+}
+
+#' @export
+createLint80Formulation <- function(
+    name = "Lint80",
+    dissolutionTime80 = 240, dissolutionTime80Unit = "min",
+    lagTime = 0, lagTimeUnit = "min",
+    suspension = TRUE) {
+  formulation <- Formulation$new(
+    name = name,
+    type = "Lint80"
+  )
+  formulation$addParameter(
+    name = "Dissolution time (80% dissolved)",
+    dimension = "Time",
+    value = dissolutionTime80,
+    unit = dissolutionTime80Unit
+  )
+  formulation$addParameter(
+    name = "Lag time",
+    dimension = "Time",
+    value = lagTime,
+    unit = lagTimeUnit
+  )
+  formulation$addParameter(name = "Use as suspension", dimension = "Dimensionless", value = as.numeric(suspension))
+
+  return(formulation)
+}
+
+#' @export
+createParticleDissolutionFormulation <- function(
+    name = "ParticleDissolution",
+    thickness = 30, thicknessUnit = "µm",
+    distributionType = "Monodisperse", distribution = "Normal",
+    radius = 10, radiusUnit = "µm", radiusSD = 3, radiusCV = 1.5, radiusMin = 1, radiusMax = 19,
+    nBins = 3) {
+  formulation <- Formulation$new(
+    name = name,
+    type = "Particle"
+  )
+  formulation$addParameter(name = "Thickness (unstirred water layer)", dimension = "Length", value = thickness, unit = thicknessUnit)
+  formulation$addParameter(name = "Type of particle size distribution", dimension = "Dimensionless", value = distributionType, enum = ParticleSizeDistributionType)
+  # for monodisperse
+  if (distributionType == "Monodisperse") {
+    formulation$addParameter(name = "Particle radius (mean)", dimension = "Length", value = radius, unit = radiusUnit)
+  } else { # polydisperse
+    formulation$addParameter(name = "Particle size distribution", dimension = "Dimensionless", value = distribution, enum = ParticleSizeDistribution)
+    if (distribution == "Normal") {
+      formulation$addParameter(name = "Particle radius (mean)", dimension = "Length", value = radius, unit = radiusUnit)
+      formulation$addParameter(name = "Particle radius (SD)", dimension = "Length", value = radiusSD, unit = radiusUnit)
+    } else {
+      formulation$addParameter(name = "Particle radius (geomean)", dimension = "Length", value = radius, unit = radiusUnit)
+      formulation$addParameter(name = "Coefficient of variation", dimension = "Dimensionless", value = radiusCV)
+    }
+    formulation$addParameter(name = "Particle radius (min)", dimension = "Length", value = radiusMin, unit = radiusUnit)
+    formulation$addParameter(name = "Particle radius (max)", dimension = "Length", value = radiusMax, unit = radiusUnit)
+    formulation$addParameter(name = "Number of bins", dimension = "Dimensionless", value = nBins)
+  }
+
+  return(formulation)
+}
+
+#' @export
+createZeroOrderFormulation <- function(
+    name = "ZeroOrder",
+    endTime = 60, endTimeUnit = "min") {
+  formulation <- Formulation$new(
+    name = name,
+    type = "ZeroOrder"
+  )
+  formulation$addParameter(name = "End time", dimension = "Time", value = endTime, unit = endTimeUnit)
+  return(formulation)
+}
+
+#' @export
+createFirstOrderFormulation <- function(
+    name = "FirstOrder",
+    tHalf = 0.01, tHalfUnit = "min") {
+  formulation <- Formulation$new(
+    ID,
+    name = name,
+    type = "FirstOrder"
+  )
+  formulation$addParameter(name = "t1/2", dimension = "Time", value = tHalf, unit = tHalfUnit)
+  return(formulation)
+}
