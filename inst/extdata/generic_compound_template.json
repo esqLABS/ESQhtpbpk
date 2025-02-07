@@ -2,7 +2,7 @@
   [
     {
       "name": "Lipophilicity",
-      "path": "${name}$|Lipophilicity",
+      "parName": "Lipophilicity",
       "dimension": "Log Units",
       "value": 0,
       "unit": "Log Units",
@@ -12,7 +12,7 @@
     },
     {
       "name": "Fraction unbound",
-      "path": "${name}$|Fraction unbound (plasma, reference value)",
+      "parName": "Fraction unbound (plasma, reference value)",
       "dimension": "Fraction",
       "value": 1,
       "unit": "",
@@ -22,27 +22,27 @@
     },
     {
       "name": "Plasma protein binding partner",
-      "path": "${name}$|Plasma protein binding partner",
+      "parName": "Plasma protein binding partner",
       "dimension": "Dimensionless",
       "value": "Albumin",
       "enum": "PPBPartner"
     },
     {
       "name": "Is small molecule",
-      "path": "${name}$|Is small molecule",
+      "parName": "Is small molecule",
       "dimension": "Dimensionless",
       "value": 1
     },
     {
       "name": "Molecular weight",
-      "path": "${name}$|Molecular weight",
+      "parName": "Molecular weight",
       "dimension": "Molecular weight",
       "value": 100,
       "unit": "g/mol"
     },
     {
       "name": "Bromine count",
-      "path": "${name}$|Br",
+      "parName": "Br",
       "dimension": "Dimensionless",
       "value": 0,
       "min": 0,
@@ -50,7 +50,7 @@
     },
     {
       "name": "Chlorine count",
-      "path": "${name}$|Cl",
+      "parName": "Cl",
       "dimension": "Dimensionless",
       "value": 0,
       "min": 0,
@@ -58,7 +58,7 @@
     },
     {
       "name": "Fluorine count",
-      "path": "${name}$|F",
+      "parName": "F",
       "dimension": "Dimensionless",
       "value": 0,
       "min": 0,
@@ -66,7 +66,7 @@
     },
     {
       "name": "Iodine count",
-      "path": "${name}$|I",
+      "parName": "I",
       "dimension": "Dimensionless",
       "value": 0,
       "min": 0,
@@ -74,7 +74,7 @@
     },
     {
       "name": "pKa value 0",
-      "path": "${name}$|pKa value 0",
+      "parName": "pKa value 0",
       "dimension": "Dimensionless",
       "value": 0,
       "min": 0,
@@ -82,14 +82,14 @@
     },
     {
       "name": "Compound type 0",
-      "path": "${name}$|Compound type 0",
+      "parName": "Compound type 0",
       "dimension": "Dimensionless",
       "value": "Neutral",
       "enum": "CompoundType"
     },
     {
       "name": "pKa value 1",
-      "path": "${name}$|pKa value 1",
+      "parName": "pKa value 1",
       "dimension": "Dimensionless",
       "value": 0,
       "min": 0,
@@ -97,14 +97,14 @@
     },
     {
       "name": "Compound type 1",
-      "path": "${name}$|Compound type 1",
+      "parName": "Compound type 1",
       "dimension": "Dimensionless",
       "value": "Neutral",
       "enum": "CompoundType"
     },
     {
       "name": "pKa value 2",
-      "path": "${name}$|pKa value 2",
+      "parName": "pKa value 2",
       "dimension": "Dimensionless",
       "value": 0,
       "min": 0,
@@ -112,14 +112,14 @@
     },
     {
       "name": "Compound type 2",
-      "path": "${name}$|Compound type 2",
+      "parName": "Compound type 2",
       "dimension": "Dimensionless",
       "value": "Neutral",
       "enum": "CompoundType"
     },
     {
       "name": "Reference pH",
-      "path": "${name}$|Reference pH",
+      "parName": "Reference pH",
       "dimension": "Dimensionless",
       "value": 7,
       "min": 0,
@@ -127,7 +127,7 @@
     },
     {
       "name": "Solubility",
-      "path": "${name}$|Solubility at reference pH",
+      "parName": "Solubility at reference pH",
       "dimension": "Concentration (mass)",
       "value": 1,
       "unit": "mg/l"

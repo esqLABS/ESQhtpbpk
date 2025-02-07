@@ -115,6 +115,29 @@ test_that("getAllParameterPaths works", {
   )
 })
 
+test_that("Adding a different formulation with the same name doesn't work", {
+  prot <- AdvancedProtocol$new()
+  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+  prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 2, startTime = 0)
+
+  suppressWarnings({
+    po <- SimpleProtocol$new(dose = 5, doseUnit = "mg/kg", route = "Oral")
+    formulation <- createWeibullFormulation(name = "Weibull", lagTime = 60)
+    po$setFormulation(formulation)
+  })
+  suppressWarnings({
+    po2 <- SimpleProtocol$new(dose = 1, doseUnit = "mg/kg", route = "Oral")
+    formulation <- createWeibullFormulation(name = "Weibull")
+    po2$setFormulation(formulation)
+  })
+  prot$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
+
+  expect_error(
+    prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2),
+    "Formulation name `Weibull` is already used for a different formulation."
+  )
+})
+
 test_that("print method works", {
   prot <- AdvancedProtocol$new()
   prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
@@ -122,14 +145,27 @@ test_that("print method works", {
 
   suppressWarnings({iv <- SimpleProtocol$new(route = "IV Infusion", dose = 10, doseUnit = "mg")})
   suppressWarnings({iv_area <- SimpleProtocol$new(dose = 1, doseUnit = "mg/m²")})
-  suppressWarnings({po <- SimpleProtocol$new(dose = 5, doseUnit = "mg/kg", route = "Oral")})
+  suppressWarnings({
+    po <- SimpleProtocol$new(dose = 5, doseUnit = "mg/kg", route = "Oral")
+    formulation <- createWeibullFormulation(name = "Weibull1", lagTime = 60)
+    po$setFormulation(formulation)
+  })
+  suppressWarnings({
+    po2 <- SimpleProtocol$new(dose = 1, doseUnit = "mg/kg", route = "Oral")
+    formulation <- createWeibullFormulation(name = "Weibull2")
+    po2$setFormulation(formulation)
+  })
 
   prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv)
   prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv_area)
-  prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po)
+  prot$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
+  prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2)
 
   expect_snapshot(
     prot
+  )
+  expect_snapshot(
+    prot$extractProtocol()
   )
 })
 

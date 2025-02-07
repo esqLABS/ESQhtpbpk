@@ -19,7 +19,7 @@ Imports:
     dplyr,
     glue,
     jsonlite,
-    ospsuite (>= 12.1.0),
+    ospsuite (>= 12.1.0.9008),
     ospsuite.utils,
     purrr,
     R6,

@@ -340,6 +340,26 @@ test_that("getAllParameterPaths works.", {
   expect_snapshot(prot$getAllParameterPaths())
 })
 
+test_that("setFormulation method works.", {
+  suppressWarnings({
+    prot <- SimpleProtocol$new(
+      route = "Oral",
+      dosingInterval = "24",
+      dose = 1,
+      doseUnit = "mg/kg",
+      startTime = 60,
+      startTimeUnit = "min",
+      endTime = 48,
+      endTimeUnit = "h"
+    )
+  })
+
+  formulation <- createWeibullFormulation(name = "Weibull")
+
+  expect_no_message(prot$setFormulation(formulation))
+  expect_snapshot(prot)
+})
+
 test_that("Print method works.", {
   expect_snapshot(
     SimpleProtocol$new(

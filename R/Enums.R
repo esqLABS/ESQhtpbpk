@@ -58,3 +58,22 @@ ParticleSizeDistribution = ospsuite.utils::enum(
     "LogNormal" = 1
   )
 )
+
+#' @keywords internal
+PCMethods <- ospsuite.utils::enum(
+  c(
+    "PK-Sim" = "PK-Sim Standard",
+    "RR" = "Rodgers and Rowland",
+    "PT" = "Poulin and Theil",
+    "Schmitt" = "Schmitt",
+    "Berezhkovskiy" = "Berezhkovskiy"
+  )
+)
+
+#' @keywords internal
+CPMethods <- ospsuite.utils::enum(
+  c(
+    "PK-Sim" = "PK-Sim Standard",
+    "Schmitt" = "Charge dependent Schmitt"
+  )
+)

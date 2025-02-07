@@ -4,7 +4,6 @@
 #' @format NULL
 Formulation <- R6::R6Class(
   "Formulation",
-  cloneable = FALSE,
   inherit = ospsuite.utils::Printable,
   active = list(
     #' @field Type Type of Formulation
@@ -73,13 +72,15 @@ Formulation <- R6::R6Class(
     #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
-    addParameter = function(name, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
+    addParameter = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
       if (name %in% names(private$.Parameters)) {
         stop("Property '", name, "' already exists.")
       }
+      path <- ifelse(!is.null(path), path, paste0("{protocolName}|{formulationName}|", parName))
       private$.Parameters[[name]] <- Property$new(
         name = name,
-        path = paste0("{protocolName}|{formulationName}|", name),
+        parName = parName,
+        path = path,
         dimension = dimension,
         value = value,
         unit = unit,
@@ -152,7 +153,8 @@ Formulation <- R6::R6Class(
   private = list(
     .Name = NULL,
     .Type = NULL,
-    .Parameters = list()
+    .Parameters = list(),
+    deep_clone = function(...) {.myDeepClone(...)}
   )
 )
 
@@ -194,23 +196,27 @@ createWeibullFormulation <- function(
   )
   formulation$addParameter(
     name = "Dissolution time (50% dissolved)",
+    parName = "Dissolution time (50% dissolved)",
     dimension = "Time",
     value = dissolutionTime50,
     unit = dissolutionTime50Unit
   )
   formulation$addParameter(
     name = "Lag time",
+    parName = "Lag time",
     dimension = "Time",
     value = lagTime,
     unit = lagTimeUnit
   )
   formulation$addParameter(
     name = "Dissolution shape",
+    parName = "Dissolution shape",
     dimension = "Dimensionless",
     value = shape
   )
   formulation$addParameter(
     name = "Use as suspension",
+    parName = "Use as suspension",
     dimension = "Dimensionless",
     value = as.numeric(suspension)
   )
@@ -240,18 +246,21 @@ createLint80Formulation <- function(
   )
   formulation$addParameter(
     name = "Dissolution time (80% dissolved)",
+    parName = "Dissolution time (80% dissolved)",
     dimension = "Time",
     value = dissolutionTime80,
     unit = dissolutionTime80Unit
   )
   formulation$addParameter(
     name = "Lag time",
+    parName = "Lag time",
     dimension = "Time",
     value = lagTime,
     unit = lagTimeUnit
   )
   formulation$addParameter(
     name = "Use as suspension",
+    parName = "Use as suspension",
     dimension = "Dimensionless",
     value = as.numeric(suspension)
   )
@@ -288,12 +297,14 @@ createParticleDissolutionFormulation <- function(
   )
   formulation$addParameter(
     name = "Thickness (unstirred water layer)",
+    parName = "Thickness (unstirred water layer)",
     dimension = "Length",
     value = thickness,
     unit = thicknessUnit
   )
   formulation$addParameter(
     name = "Type of particle size distribution",
+    parName = "Type of particle size distribution",
     dimension = "Dimensionless",
     value = distributionType,
     enum = ParticleSizeDistributionType
@@ -302,6 +313,7 @@ createParticleDissolutionFormulation <- function(
   if (distributionType == "Monodisperse") {
     formulation$addParameter(
       name = "Particle radius (mean)",
+      parName = "Particle radius (mean)",
       dimension = "Length",
       value = radius,
       unit = radiusUnit
@@ -309,6 +321,7 @@ createParticleDissolutionFormulation <- function(
   } else { # polydisperse
     formulation$addParameter(
       name = "Particle size distribution",
+      parName = "Particle size distribution",
       dimension = "Dimensionless",
       value = distribution,
       enum = ParticleSizeDistribution
@@ -316,12 +329,14 @@ createParticleDissolutionFormulation <- function(
     if (distribution == "Normal") {
       formulation$addParameter(
         name = "Particle radius (mean)",
+        parName = "Particle radius (mean)",
         dimension = "Length",
         value = radius,
         unit = radiusUnit
       )
       formulation$addParameter(
         name = "Particle radius (SD)",
+        parName = "Particle radius (SD)",
         dimension = "Length",
         value = radiusSD,
         unit = radiusUnit
@@ -329,30 +344,35 @@ createParticleDissolutionFormulation <- function(
     } else {
       formulation$addParameter(
         name = "Particle radius (geomean)",
+        parName = "Particle radius (geomean)",
         dimension = "Length",
         value = radius,
         unit = radiusUnit
       )
       formulation$addParameter(
         name = "Coefficient of variation",
+        parName = "Coefficient of variation",
         dimension = "Dimensionless",
         value = radiusCV
       )
     }
     formulation$addParameter(
       name = "Particle radius (min)",
+      parName = "Particle radius (min)",
       dimension = "Length",
       value = radiusMin,
       unit = radiusUnit
     )
     formulation$addParameter(
       name = "Particle radius (max)",
+      parName = "Particle radius (max)",
       dimension = "Length",
       value = radiusMax,
       unit = radiusUnit
     )
     formulation$addParameter(
       name = "Number of bins",
+      parName = "Number of bins",
       dimension = "Dimensionless",
       value = nBins
     )
@@ -378,6 +398,7 @@ createZeroOrderFormulation <- function(
   )
   formulation$addParameter(
     name = "End time",
+    parName = "End time",
     dimension = "Time",
     value = endTime,
     unit = endTimeUnit
@@ -402,6 +423,7 @@ createFirstOrderFormulation <- function(
   )
   formulation$addParameter(
     name = "t1/2",
+    parName = "t1/2",
     dimension = "Time",
     value = tHalf,
     unit = tHalfUnit

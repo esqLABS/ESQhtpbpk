@@ -55,6 +55,7 @@
       * Dose Interval: Single Dose
       * Start Time: 0 h
       * Volume of water per body weight: 3.5 ml/kg
+      * Formulation: Dissolved
 
 ---
 
@@ -69,6 +70,7 @@
       * Dose Interval: Single Dose
       * Start Time: 0 h
       * Volume of water per body weight: 5 ml/kg
+      * Formulation: Dissolved
 
 ---
 
@@ -88,11 +90,11 @@
     Code
       tmp
     Output
-      # A tibble: 2 x 4
-        type         time parameters formulationName
-        <chr>       <dbl> <list>     <lgl>          
-      1 IV Infusion    60 <SmplPrtc> NA             
-      2 IV Infusion  1500 <SmplPrtc> NA             
+      # A tibble: 2 x 6
+        type         time parameters formulationType formulationName formulation
+        <chr>       <dbl> <list>     <lgl>           <lgl>           <lgl>      
+      1 IV Infusion    60 <SmplPrtc> NA              NA              NA         
+      2 IV Infusion  1500 <SmplPrtc> NA              NA              NA         
 
 ---
 
@@ -125,32 +127,45 @@
     Code
       prot$getAllParameterPaths()
     Output
-      [1] "Events|AdvancedProtocol|IV Infusion|Application_1|ProtocolSchemaItem|Dose"         
-      [2] "Events|AdvancedProtocol|IV Infusion|Application_1|ProtocolSchemaItem|Start time"   
-      [3] "Events|AdvancedProtocol|IV Infusion|Application_1|ProtocolSchemaItem|Infusion time"
-      [4] "Events|AdvancedProtocol|IV Infusion|Application_2|ProtocolSchemaItem|Dose"         
-      [5] "Events|AdvancedProtocol|IV Infusion|Application_2|ProtocolSchemaItem|Start time"   
-      [6] "Events|AdvancedProtocol|IV Infusion|Application_2|ProtocolSchemaItem|Infusion time"
+      [1] "Events|{ProtocolName}|IV Infusion|Application_1|ProtocolSchemaItem|Dose"         
+      [2] "Events|{ProtocolName}|IV Infusion|Application_1|ProtocolSchemaItem|Start time"   
+      [3] "Events|{ProtocolName}|IV Infusion|Application_1|ProtocolSchemaItem|Infusion time"
+      [4] "Events|{ProtocolName}|IV Infusion|Application_2|ProtocolSchemaItem|Dose"         
+      [5] "Events|{ProtocolName}|IV Infusion|Application_2|ProtocolSchemaItem|Start time"   
+      [6] "Events|{ProtocolName}|IV Infusion|Application_2|ProtocolSchemaItem|Infusion time"
 
 ---
 
     Code
       prot$getAllParameterPaths()
     Output
-      [1] "Events|AdvancedProtocol|IV Bolus|Application_1|ProtocolSchemaItem|DosePerBodySurfaceArea"
-      [2] "Events|AdvancedProtocol|IV Bolus|Application_1|ProtocolSchemaItem|Start time"            
+      [1] "Events|{ProtocolName}|IV Bolus|Application_1|ProtocolSchemaItem|DosePerBodySurfaceArea"
+      [2] "Events|{ProtocolName}|IV Bolus|Application_1|ProtocolSchemaItem|Start time"            
 
 ---
 
     Code
       prot$getAllParameterPaths()
     Output
-      [1] "Events|AdvancedProtocol|OralDissolved|Application_1|ProtocolSchemaItem|DosePerBodyWeight"          
-      [2] "Events|AdvancedProtocol|OralDissolved|Application_1|ProtocolSchemaItem|Start time"                 
-      [3] "Events|AdvancedProtocol|OralDissolved|Application_1|ProtocolSchemaItem|Volume of water/body weight"
-      [4] "Events|AdvancedProtocol|OralDissolved|Application_2|ProtocolSchemaItem|DosePerBodyWeight"          
-      [5] "Events|AdvancedProtocol|OralDissolved|Application_2|ProtocolSchemaItem|Start time"                 
-      [6] "Events|AdvancedProtocol|OralDissolved|Application_2|ProtocolSchemaItem|Volume of water/body weight"
+      [1] "Events|{ProtocolName}|OralDissolved|Application_1|ProtocolSchemaItem|DosePerBodyWeight"          
+      [2] "Events|{ProtocolName}|OralDissolved|Application_1|ProtocolSchemaItem|Start time"                 
+      [3] "Events|{ProtocolName}|OralDissolved|Application_1|ProtocolSchemaItem|Volume of water/body weight"
+      [4] "Events|{ProtocolName}|OralDissolved|Application_2|ProtocolSchemaItem|DosePerBodyWeight"          
+      [5] "Events|{ProtocolName}|OralDissolved|Application_2|ProtocolSchemaItem|Start time"                 
+      [6] "Events|{ProtocolName}|OralDissolved|Application_2|ProtocolSchemaItem|Volume of water/body weight"
+
+# setFormulation method works.
+
+    Code
+      prot
+    Message
+      * Route: Oral
+      * Dose: 1 mg/kg
+      * Dose Interval: Once each 24 hours
+      * Start Time: 60 min
+      * End Time: 48 h
+      * Volume of water per body weight: 3.5 ml/kg
+      * Formulation: Weibull
 
 # Print method works.
 
@@ -180,4 +195,5 @@
       * Dose Interval: Single Dose
       * Start Time: 60 min
       * Volume of water per body weight: 3.5 ml/kg
+      * Formulation: Dissolved
 

@@ -2,7 +2,7 @@ test_that("Property creation works", {
   expect_no_error({
     Property$new(
       name = "Solubility",
-      path = "Compound|Solubility at reference pH",
+      parName = "Solubility at reference pH",
       dimension = "Concentration (mass)",
       unit = "mg/l",
       value = 100,
@@ -13,7 +13,7 @@ test_that("Property creation works", {
 
 prop <- Property$new(
   name = "Solubility",
-  path = "Compound|Solubility at reference pH",
+  parName = "Solubility at reference pH",
   dimension = "Concentration (mass)",
   unit = "mg/l",
   value = 100,

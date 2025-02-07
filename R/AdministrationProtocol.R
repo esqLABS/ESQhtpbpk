@@ -5,7 +5,6 @@
 #' @export
 SimpleProtocol <- R6::R6Class(
   "SimpleProtocol",
-  cloneable = FALSE,
   inherit = ospsuite.utils::Printable,
   active = list(
     #' @field UUID Unique identifier (read-only)
@@ -165,14 +164,6 @@ SimpleProtocol <- R6::R6Class(
         }
       }
     },
-    #' @field Formulation Formulation to use with protocol
-    Formulation = function(value) {
-      if (missing(value)) {
-        private$.Formulation
-      } else {
-        private$.Formulation <- value
-      }
-    },
     # #' @field TargetOrgan Target organ for user defined administration
     # TargetOrgan = function(value) {
     #   if (missing(value)) {
@@ -208,11 +199,41 @@ SimpleProtocol <- R6::R6Class(
           private$.Path <- value
         }
       }
+    },
+    #' @field Name Prefix path for the administration
+    Name = function(value) {
+      if (missing(value)) {
+        private$.Name
+      } else {
+        if (!is.null(value) && !is.character(value)) {
+          cli::cli_abort("Supplied Name is not valid.")
+        } else {
+          private$.Name <- value
+        }
+      }
+    },
+    #' @field Formulation Formulation to use with protocol
+    Formulation = function(value) {
+      if (missing(value)) {
+        private$.Formulation
+      } else {
+        ospsuite.utils::validateIsOfType(value, "Formulation", nullAllowed = TRUE)
+        private$.Formulation <- value
+      }
+    },
+    #' @field FormulationKey FormulationKey mapping of the protocol
+    FormulationKey = function(value) {
+      if (missing(value)) {
+        private$.FormulationKey
+      } else {
+        private$.FormulationKey <- value
+      }
     }
   ),
   public = list(
     #' @description
     #' Initialize a new instance of the class
+    #' @param name Prefix for the path of administration in the simulations
     #' @param path Prefix for the path of administration in the simulations
     #' @param route Route of administration
     #' @param dosingInterval Dosing interval
@@ -230,7 +251,8 @@ SimpleProtocol <- R6::R6Class(
     # #' @param targetCompartment Target compartment (for user defined administration)
     #' @return A new `SimpleProtocol` object.
     initialize = function(
-        path = "Events|AdvancedProtocol",
+        name = "Protocol",
+        path = NULL,
         route = "IV Bolus",
         dosingInterval = "Single",
         dose = 0,
@@ -246,7 +268,8 @@ SimpleProtocol <- R6::R6Class(
       ) {
 
       private$.UUID <- uuid::UUIDgenerate()
-      self$Path <- path
+      self$Name <- name
+      self$Path <- "Events|{ProtocolName}"
       self$Route <- route
       self$DoseInterval <- dosingInterval
       self$Dose <- dose
@@ -322,7 +345,8 @@ SimpleProtocol <- R6::R6Class(
 
       # Formulation are only needed for Oral and User defined routes, and set to `Dissolved` by default
       if (self$Route %in% c("Oral",  "Custom")) {
-        private$.Formulation <- "Dissolved"
+        private$.Formulation <- createDissolvedFormulation(name = "Dissolved")
+        private$.FormulationKey <- "Formulation"
       }
 
       # # For custom route set default target is not given
@@ -338,6 +362,17 @@ SimpleProtocol <- R6::R6Class(
       # }
 
       private$.UUID <- uuid::UUIDgenerate()
+    },
+    #' @description
+    #' Add a formulation to oral or user defined protocol
+    #' @param formulation Formulation to add to the protocol
+    #' @return The updated `SimpleProtocol` object.
+    setFormulation = function(formulation) {
+      if (self$Route %in% c("Oral", "Custom")) {
+        self$Formulation <- formulation
+      } else {
+        cli::cli_abort("Formulation can only be set for `Oral` and `Custom` routes.")
+      }
     },
     #' @description
     #' Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
@@ -372,7 +407,9 @@ SimpleProtocol <- R6::R6Class(
         type = self$Route,
         time = adminTimes[adminTimes < endTime],
         parameters = list(self),
-        formulationName = ifelse(is.null(self$Formulation), NA, self$Formulation)
+        formulationType = ifelse(is.null(self$Formulation), NA, self$Formulation$Type),
+        formulationName = ifelse(is.null(self$Formulation), NA, self$Formulation$Name),
+        formulation = ifelse(is.null(self$Formulation), NA, list(self$Formulation))
       )
 
       return(wantedAdmin)
@@ -383,7 +420,7 @@ SimpleProtocol <- R6::R6Class(
     #' @return A character vector with all parameter paths.
     getAllParameterPaths = function(path = self$Path) {
       allParamPaths <- c()
-      mainPath <- paste(path, paste0(self$Route, self$Formulation), sep = "|")
+      mainPath <- paste(path, paste0(self$Route, self$Formulation$Name), sep = "|")
 
       wantedAdmin <- self$extractProtocol()
 
@@ -408,6 +445,73 @@ SimpleProtocol <- R6::R6Class(
       return(allParamPaths)
     },
     #' @description
+    #' Convert to snapshot
+    toSnapshot = function() {
+      data <- list(
+        Name = self$Name,
+        ApplicationType = AdminType[[self$Route]]$pksim,
+        DosingInterval = AdminInterval[[self$DoseInterval]]$pksim,
+        Parameters = list(
+          list(
+            Name = "Start time",
+            Value = self$StartTime,
+            Unit = self$StartTimeUnit
+          ),
+          list(
+            Name = "InputDose",
+            Value = self$Dose,
+            Unit = self$DoseUnit
+          )
+        )
+      )
+      # add formulationKey if not null
+      if (!is.null(self$FormulationKey)) {
+        data$FormulationKey <- self$FormulationKey
+      }
+
+      # add all existing parameters
+      if (!is.null(self$EndTime)) {
+        data$Parameters <- c(
+          data$Parameters,
+          list(
+            list(
+              Name = "End time",
+              Value = self$EndTime,
+              Unit = self$EndTimeUnit
+            )
+          )
+        )
+      }
+
+      if (!is.null(self$InfusionTime)) {
+        data$Parameters <- c(
+          data$Parameters,
+          list(
+            list(
+              Name = "Infusion time",
+              Value = self$InfusionTime,
+              Unit = self$InfusionTimeUnit
+            )
+          )
+        )
+      }
+
+      if (!is.null(self$WaterVolPerBW)) {
+        data$Parameters <- c(
+          data$Parameters,
+          list(
+            list(
+              Name = "Volume of water/body weight",
+              Value = self$WaterVolPerBW,
+              Unit = self$WaterVolPerBWUnit
+            )
+          )
+        )
+      }
+
+      return(data)
+    },
+    #' @description
     #' Print the object to the console
     print = function() {
       ul <- cli::cli_ul()
@@ -426,6 +530,9 @@ SimpleProtocol <- R6::R6Class(
       }
       if (self$Route == "Custom") {
         cli::cli_li(paste("Target:", paste(self$TagetOrgan, self$TargetCompartment, sep = "|")))
+      }
+      if (self$Route %in% c("Oral", "Custom")) {
+        cli::cli_li(paste("Formulation:", self$Formulation$Name))
       }
       cli::cli_end(ul)
     }
@@ -455,8 +562,10 @@ SimpleProtocol <- R6::R6Class(
     .WaterVolumePerBW = NULL,
     .WaterVolumePerBWUnit = NULL,
     .Formulation = NULL,
+    .FormulationKey = NULL,
     # Path of the application protocol
-    .Path = NULL
+    .Path = NULL,
+    .Name = NULL
     # .TargetOrgan = NULL,
     # .TargetCompartment = NULL
   )
@@ -469,7 +578,6 @@ SimpleProtocol <- R6::R6Class(
 #' @export
 AdvancedProtocol <- R6::R6Class(
   "AdvancedProtocol",
-  cloneable = FALSE,
   inherit = ospsuite.utils::Printable,
   active = list(
     #' @field UUID Unique identifier (read-only)
@@ -478,6 +586,18 @@ AdvancedProtocol <- R6::R6Class(
         private$.UUID
       } else {
         cli::cli_abort(messages$readOnly("UUID"))
+      }
+    },
+    #' @field Name Protocol name
+    Name = function(value) {
+      if (missing(value)) {
+        private$.Name
+      } else {
+        if (!is.null(value) && !is.character(value)) {
+          cli::cli_abort("Supplied Name is not valid.")
+        } else {
+          private$.Name <- value
+        }
       }
     },
     #' @field Schemas List of schemas for the advanced protocol
@@ -499,15 +619,36 @@ AdvancedProtocol <- R6::R6Class(
           private$.Path <- value
         }
       }
+    },
+    #' @field Formulations Formulations used with protocol
+    Formulations = function(value) {
+      if (missing(value)) {
+        unique(purrr::compact(unlist(lapply(private$.Schemas, \(x) {lapply(x$SchemaItems, \(y){y$Formulation})}), recursive = T)))
+      } else {
+        cli::cli_abort(messages$readOnly("Formulations"))
+      }
+    },
+    #' @field FormulationsKey Formulations Key used with protocol
+    FormulationsKey = function(value) {
+      if (missing(value)) {
+        unique(purrr::compact(unlist(lapply(private$.Schemas, \(x) {lapply(x$SchemaItems, \(y){y$FormulationKey})}), recursive = T)))
+      } else {
+        cli::cli_abort(messages$readOnly("FormulationsKey"))
+      }
     }
   ),
   public = list(
     #' @description
     #' Initialize a new instance of the class
+    #' @param name Name of the protocol
     #' @param path Prefix for the path of administration in the simulations
     #' @return A new `AdvancedProtocol` object.
-    initialize = function(path = "Events|AdvancedProtocol") {
+    initialize = function(name = "Protocol", path = NULL) {
       private$.UUID <- uuid::UUIDgenerate()
+      self$Name <- name
+      if (is.null(path)) {
+        path <- "Events|{ProtocolName}"
+      }
       self$Path = path
     },
     #' @description
@@ -544,13 +685,35 @@ AdvancedProtocol <- R6::R6Class(
     #' @param schemaName Name of the schema to add the protocol to
     #' @return The updated `AdvancedProtocol` object.
     addProtocolToSchema = function(protocol, schemaName) {
+      # check that schema exists
       schemaIndex <- which(sapply(private$.Schemas, \(x) {x$Name}) == schemaName)
       if (length(schemaIndex) == 0) {
         cli::cli_abort("Could not find schema {.var {schemaName}}.")
       }
+      # check that protocol is single
       if (!("SimpleProtocol" %in% class(protocol)) || protocol$DoseInterval != "Single") {
         cli::cli_abort("Only `SimpleProtocol` objects with a `Single` dose interval can be added to a schema.")
       }
+      # check that if protocol contains a formulation, the formulation name is not already used for a different formulation
+      if (!is.null(protocol$Formulation)) {
+        # check that name is unused or that formulation is identical
+        existingForm <- self$Formulations
+        if (protocol$Formulation$Name %in% purrr::list_c(purrr::map(existingForm, ~ .x$Name))) {
+          identicalIdx <- which(purrr::list_c(existingForm, ~ .x$Name) == protocol$Formulation$Name)
+          for (idx in identicalIdx) {
+            if (!identical(existingForm[[idx]], protocol$Formulation)) {
+              cli::cli_abort("Formulation name {.var {protocol$Formulation$Name}} is already used for a different formulation.")
+            }
+          }
+          protocol$FormulationKey <- paste0("Formulation", identicalIdx)
+        } else {
+          # update protocol with correct formulation key
+          protocol$FormulationKey <- paste0("Formulation", length(existingForm) + 1)
+        }
+      }
+
+      # rename protocol to ensure uniqueness
+      protocol$Name <- paste0("Schema Item ", length(private$.Schemas[[schemaIndex]]$SchemaItems) + 1)
       private$.Schemas[[schemaIndex]]$SchemaItems <- c(private$.Schemas[[schemaIndex]]$SchemaItems, protocol)
       return(invisible(self))
     },
@@ -581,12 +744,25 @@ AdvancedProtocol <- R6::R6Class(
             type = wantedAdminProt$type,
             time = wantedAdminProt$time + schemaTimes,
             parameters = wantedAdminProt$parameters,
-            formulationName = wantedAdminProt$formulationName
+            formulationType = wantedAdminProt$formulationType,
+            formulationName = wantedAdminProt$formulationName,
+            formulation = wantedAdminProt$formulation
           )
         }
         wantedAdmin[[schemaIdx]] <- dplyr::bind_rows(wantedAdmin[[schemaIdx]])
       }
       wantedAdmin <- dplyr::bind_rows(wantedAdmin)
+      uniqueFormulations <- unique(wantedAdmin$formulation) %>% purrr::compact()
+      wantedAdmin <- wantedAdmin %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(
+          formulationKey = ifelse(
+            is.null(formulation),
+            NA,
+            paste0("Formulation", which(purrr::list_c(purrr::map(uniqueFormulations, \(x) {identical(x, formulation)}))))
+          )
+        )
+
       return(wantedAdmin)
     },
     #' @description
@@ -633,6 +809,45 @@ AdvancedProtocol <- R6::R6Class(
       return(allParamPaths)
     },
     #' @description
+    #' Convert to snapshot
+    toSnapshot = function() {
+      data <- list(
+        Name = self$Name,
+        DosingInterval = "Single",
+        Schemas = purrr::map(
+          self$Schemas,
+          \(x) {
+            list(
+              Name = x$Name,
+              SchemaItems = purrr::map(
+                x$SchemaItems,
+                \(y) {
+                  y$toSnapshot()
+                }
+              ),
+              Parameters = list(
+                list(
+                  Name = "Start time",
+                  Value = x$StartTime,
+                  Unit = x$TimeUnit
+                ),
+                list(
+                  Name = "NumberOfRepetitions",
+                  Value = x$NumberOfRepetitions
+                ),
+                list(
+                  Name = "TimeBetweenRepetitions",
+                  Value = x$TimeBetweenRepetitions,
+                  Unit = x$TimeUnit
+                )
+              )
+            )
+          }
+        )
+      )
+      return(data)
+    },
+    #' @description
     #' Print the object to the console
     print = function() {
       purrr::map(self$Schemas, \(x) {
@@ -654,6 +869,13 @@ AdvancedProtocol <- R6::R6Class(
   private = list(
     .UUID = NULL,
     .Path = NULL,
-    .Schemas = NULL
+    .Name = NULL,
+    .Schemas = NULL,
+    # copy = function() {
+    #   new <- self$clone(deep = TRUE)
+    #   new$.__enclos_env__$private$.Schemas <- lapply(private$.allProperties, \(x) x$clone(deep = TRUE))
+    #   return(new)
+    # }
+    deep_clone = function(...) {.myDeepClone(...)}
   )
 )

@@ -4,7 +4,6 @@
 #' @format NULL
 Property <- R6::R6Class(
   "Property",
-  cloneable = FALSE,
   inherit = ospsuite.utils::Printable,
   active = list(
     #' @field name Name of the property
@@ -51,6 +50,14 @@ Property <- R6::R6Class(
         private$.unit <- value
       }
     },
+    #' @field parName Parameter name of the property in the simulation pkmls
+    parName = function(value) {
+      if (missing(value)) {
+        return(private$.parName)
+      } else {
+        stop(messages$readOnly("parName"))
+      }
+    },
     #' @field path Path of the property in the simulation pkmls
     path = function(value) {
       if (missing(value)) {
@@ -82,7 +89,7 @@ Property <- R6::R6Class(
     #' @description
     #' Initialize a new instance of the class.
     #' @param name Name of the property.
-    #' @param path Path of the property in the simulation pkmls.
+    #' @param parName Parameter name of the property in the simulation pkmls.
     #' @param dimension Dimension of the property.
     #' @param value Value of the property
     #' @param unit Unit of the property.
@@ -92,12 +99,17 @@ Property <- R6::R6Class(
     #' @param min (Optional) Min value allowed to check validity of given value
     #' @param max (Optional) Max value allowed to check validity of given value
     #' @param rangeUnit (Optional) Unit in which the min/max range is given
+    #' @param path path of the property in the simulation pkmls. Default to `CompoundName|parName`
     #' (if not given, the unit is assumed to be the same as the unit of the property).
 
     #' valid).
     #' @return A new `Property` object.
-    initialize = function(name, path, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, min = NULL, max = NULL, rangeUnit = NULL) {
+    initialize = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, min = NULL, max = NULL, rangeUnit = NULL, path = NULL) {
       private$.name <- name
+      private$.parName <- parName
+      if (is.null(path)) {
+        path <- paste0("{compoundName}|", parName)
+      }
       private$.path <- path
 
       # check validity of dimension
@@ -144,18 +156,13 @@ Property <- R6::R6Class(
     #' Convert to snapshot
     toSnapshot = function() {
       snap <- list(
-        Name = self$name,
-        Parameters = list(
-          list(
-            Name = self$name,
-            Value = self$value,
-            Unit = self$unit
-          )
-        )
+        Name = self$parName,
+        Value = self$value,
+        Unit = self$unit
       )
-      # if no unit remove unit (dimensionless value)
-      if (snap$Parameters[[1]]$Unit == "") {
-        snap$Parameters[[1]] <- purrr::discard_at(snap$Parameters[[1]], "Unit")
+
+      if (snap$Unit == "") {
+        snap <- purrr::discard_at(snap, "Unit")
       }
 
       return(snap)
@@ -164,10 +171,15 @@ Property <- R6::R6Class(
     #' @description
     #' Print the object to the console
     #' @param ... Rest arguments.
-    print = function(...) {
+    print = function(compoundName = NULL) {
       private$printClass()
-      private$printLine("Name", self$name)
-      private$printLine("Path", self$path)
+      private$printLine("Property Name", self$name)
+      private$printLine("Parameter name", self$parName)
+      if (!is.null(compoundName)) {
+        private$printLine("Path", glue::glue(self$path))
+      } else {
+        private$printLine("Path", self$path)
+      }
       if (is.list(private$.enum) && !is.null(names(private$.enum))) {
         private$printLine("Value", names(self$value))
       } else {
@@ -180,6 +192,7 @@ Property <- R6::R6Class(
   ),
   private = list(
     .name = NULL,
+    .parName = NULL,
     .path = NULL,
     .dimension = NULL,
     .unit = NULL,

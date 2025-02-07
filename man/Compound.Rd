@@ -19,6 +19,19 @@ Description of a compound
 }
 \if{html}{\out{</div>}}
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{PartitionCoefficientMethod}}{Method used to calculate the partition coefficient}
+
+\item{\code{CellularPermeabilityMethod}}{Method used to calculate the cellular permeability coefficient}
+
+\item{\code{Protocol}}{Protocol used for compoud}
+
+\item{\code{name}}{Name of the compound as used in the generic simulation}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -26,9 +39,14 @@ Description of a compound
 \item \href{#method-Compound-getProperty}{\code{Compound$getProperty()}}
 \item \href{#method-Compound-setPropertyValue}{\code{Compound$setPropertyValue()}}
 \item \href{#method-Compound-addProperty}{\code{Compound$addProperty()}}
+\item \href{#method-Compound-addProcessProperty}{\code{Compound$addProcessProperty()}}
+\item \href{#method-Compound-removeProcessProperty}{\code{Compound$removeProcessProperty()}}
 \item \href{#method-Compound-removeProperty}{\code{Compound$removeProperty()}}
+\item \href{#method-Compound-setProtocol}{\code{Compound$setProtocol()}}
+\item \href{#method-Compound-toSnapshot}{\code{Compound$toSnapshot()}}
 \item \href{#method-Compound-getAllPropertyPaths}{\code{Compound$getAllPropertyPaths()}}
 \item \href{#method-Compound-print}{\code{Compound$print()}}
+\item \href{#method-Compound-clone}{\code{Compound$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -37,7 +55,7 @@ Description of a compound
 \subsection{Method \code{new()}}{
 Initialize a new instance of the class Compound
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$new(ID, name = "Compound")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Compound$new(ID, name = "Compound", PCMethod = "PK-Sim", CPMethod = "PK-Sim")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -102,12 +120,13 @@ Add a new property for the compound.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Compound$addProperty(
   name,
-  path,
+  parName,
   dimension,
   value = 0,
   unit = NULL,
   enum = NULL,
-  check = NULL
+  check = NULL,
+  path = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -116,7 +135,10 @@ Add a new property for the compound.
 \describe{
 \item{\code{name}}{Name of the property to add.}
 
-\item{\code{path}}{Corresponding path in the simulation pkml of the property to add.}
+\item{\code{parName}}{Corresponding parameter name in the simulation pkml of the property to add.}
+
+\item{\code{parName}}{Corresponding full path of the parameter in the simulation pkml of the property to add
+(default to NULL to create it automatically based on parName).}
 
 \item{\code{dimension}}{Dimension of the property to add.}
 
@@ -130,6 +152,53 @@ Add a new property for the compound.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-addProcessProperty"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-addProcessProperty}{}}}
+\subsection{Method \code{addProcessProperty()}}{
+Add a new process for the compound.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$addProcessProperty(
+  name,
+  processName,
+  parName,
+  dimension,
+  value = 0,
+  unit = NULL,
+  enum = NULL,
+  check = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{Name of the property to add.}
+
+\item{\code{processName}}{Corresponding parameter name in the simulation pkml of the property to add.}
+
+\item{\code{dimension}}{Dimension of the property to add.}
+
+\item{\code{value}}{Value for the property.}
+
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+
+\item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
+
+\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-removeProcessProperty"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-removeProcessProperty}{}}}
+\subsection{Method \code{removeProcessProperty()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$removeProcessProperty(name)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-removeProperty"></a>}}
@@ -147,6 +216,32 @@ Remove a property from the compound.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-setProtocol"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-setProtocol}{}}}
+\subsection{Method \code{setProtocol()}}{
+Set the administration protocol to be used for a compound
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$setProtocol(protocol)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{protocol}}{administration protocol to use for the compound. Must be an object of class \code{SimpleProtocol} or \code{AdvancedProtocol}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-toSnapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-toSnapshot}{}}}
+\subsection{Method \code{toSnapshot()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$toSnapshot()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-getAllPropertyPaths"></a>}}
@@ -174,6 +269,23 @@ Print the object to the console
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Rest arguments.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
 }
 \if{html}{\out{</div>}}
 }

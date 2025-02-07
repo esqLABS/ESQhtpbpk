@@ -29,6 +29,7 @@ Description of a formulation
 \item \href{#method-Formulation-getAllPropertyPaths}{\code{Formulation$getAllPropertyPaths()}}
 \item \href{#method-Formulation-toSnapshot}{\code{Formulation$toSnapshot()}}
 \item \href{#method-Formulation-print}{\code{Formulation$print()}}
+\item \href{#method-Formulation-clone}{\code{Formulation$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -61,6 +62,7 @@ Add a new property/parameter for the formulation
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Formulation$addParameter(
   name,
+  parName,
   dimension,
   value = 0,
   unit = NULL,
@@ -138,6 +140,23 @@ Print the object to the console
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Rest arguments.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Formulation-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Formulation-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Formulation$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
 }
 \if{html}{\out{</div>}}
 }

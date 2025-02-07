@@ -20,6 +20,8 @@
          Compound type 2: Neutral 
          Reference pH: 7  
          Solubility: 1 mg/l 
+         Partition Coefficient Method: PK-Sim Standard 
+         Cellular Permeability Method: PK-Sim Standard 
 
 # `addProperty` method works
 
@@ -44,6 +46,8 @@
          Reference pH: 7  
          Solubility: 1 mg/l 
          Total Hepatic Clearance half life: 0.1 1/min 
+         Partition Coefficient Method: PK-Sim Standard 
+         Cellular Permeability Method: PK-Sim Standard 
 
 # `removeProperty` works
 
@@ -67,6 +71,8 @@
          Compound type 2: Neutral 
          Reference pH: 7  
          Total Hepatic Clearance half life: 0.1 1/min 
+         Partition Coefficient Method: PK-Sim Standard 
+         Cellular Permeability Method: PK-Sim Standard 
 
 # `getProperty` works
 
@@ -74,8 +80,9 @@
       myCompound$getProperty("Plasma protein binding partner")
     Output
       Property: 
-         Name: Plasma protein binding partner 
-         Path: Compound|Plasma protein binding partner 
+         Property Name: Plasma protein binding partner 
+         Parameter name: Plasma protein binding partner 
+         Path: {compoundName}|Plasma protein binding partner 
          Value: Albumin 
 
 # `setProperty` works
@@ -84,8 +91,9 @@
       myCompound$getProperty("Lipophilicity")
     Output
       Property: 
-         Name: Lipophilicity 
-         Path: Compound|Lipophilicity 
+         Property Name: Lipophilicity 
+         Parameter name: Lipophilicity 
+         Path: {compoundName}|Lipophilicity 
          Value: 0.5 
          Unit: Log Units 
 
