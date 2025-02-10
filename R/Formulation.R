@@ -147,6 +147,11 @@ Formulation <- R6::R6Class(
   )
 )
 
+#' @title Create dissolved formulation
+#' @description
+#' Create a dissolved formulation
+#' @param name Name of the formulation to create
+#' @return A new `Formulation` object.
 #' @export
 createDissolvedFormulation <- function(
     name = "Dissolved") {
@@ -156,6 +161,17 @@ createDissolvedFormulation <- function(
   )
 }
 
+#' @title Create Weibull tablet formulation
+#' @description
+#' Create a Weibull formulation
+#' @param name Name of the formulation to create
+#' @param dissolutionTime50 Time to achieve 50% dissolution (default 240)
+#' @param dissolutionTime50Unit Time unit for dissolutionTime50 (default min)
+#' @param lagTime lag time before dissolution starts (default 0)
+#' @param lagTimeUnit Time unit for lagTime (default min)
+#' @param shape dissolution shape parameter (default 0.92)
+#' @param suspension Boolean, whether to use as suspension (default True)
+#' @return A new `Formulation` object.
 #' @export
 createWeibullFormulation <- function(
     name = "Weibull",
@@ -193,6 +209,16 @@ createWeibullFormulation <- function(
   return(formulation)
 }
 
+#' @title Create Lint80 tablet formulation
+#' @description
+#' Create a Lint80 formulation
+#' @param name Name of the formulation to create
+#' @param dissolutionTime80 Time to achieve 80% dissolution (default 240)
+#' @param dissolutionTime80Unit Time unit for dissolutionTime80 (default min)
+#' @param lagTime lag time before dissolution starts (default 0)
+#' @param lagTimeUnit Time unit for lagTime (default min)
+#' @param suspension Boolean, whether to use as suspension (default True)
+#' @return A new `Formulation` object.
 #' @export
 createLint80Formulation <- function(
     name = "Lint80",
@@ -220,6 +246,22 @@ createLint80Formulation <- function(
   return(formulation)
 }
 
+#' @title Create particle dissolution tablet formulation
+#' @description
+#' Create a  particle dissolution formulation
+#' @param name Name of the formulation to create
+#' @param thickness Thickness of unstirred water layer (default 30)
+#' @param thicknessUnit Unit for thickness of unstirred water layer (default µm)
+#' @param distributionType Type of distribution, either "Monodisperse" or "Polydisperse" (default "Monodisperse")
+#' @param distribution Distribution for polydisperse type, either "Normal" or "LogNormal" (default "Normal")
+#' @param radius Particle distribution radius, mean or geomean depending on distribution (default 10)
+#' @param radiusUnit Unit for particle distribution radius (default µm)
+#' @param radiusSD Particle distribution radius standard deviation, for polydisperse normal only (default 3)
+#' @param radiusCV Particle distribution radius coefficient of variation, for polydisperse log-normal only (default 3)
+#' @param radiusMin Mininum particle radius, for polydispersed only (default 1)
+#' @param radiusMax Maximum particle radius, for polydispersed only (default 19)
+#' @param nBins Number of bins for polydisperse only (default 3)
+#' @return A new `Formulation` object.
 #' @export
 createParticleDissolutionFormulation <- function(
     name = "ParticleDissolution",
@@ -253,6 +295,13 @@ createParticleDissolutionFormulation <- function(
   return(formulation)
 }
 
+#' @title Create particle ZeroOrder formulation
+#' @description
+#' Create a  ZeroOrder formulation
+#' @param name Name of the formulation to create
+#' @param endTime Time of administration end (default 60)
+#' @param endTimeUnit Unit for time of administration end (default min)
+#' @return A new `Formulation` object.
 #' @export
 createZeroOrderFormulation <- function(
     name = "ZeroOrder",
@@ -265,6 +314,13 @@ createZeroOrderFormulation <- function(
   return(formulation)
 }
 
+#' @title Create particle FirstOrder formulation
+#' @description
+#' Create a  FirstOrder formulation
+#' @param name Name of the formulation to create
+#' @param tHalf Half-life of the drug release process (default 0.01)
+#' @param tHalfUnit Unit of half-life of the drug release process (default min)
+#' @return A new `Formulation` object.
 #' @export
 createFirstOrderFormulation <- function(
     name = "FirstOrder",
