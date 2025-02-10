@@ -2,4 +2,11 @@
 
 export(AdvancedProtocol)
 export(Compound)
+export(Formulation)
 export(SimpleProtocol)
+export(createDissolvedFormulation)
+export(createFirstOrderFormulation)
+export(createLint80Formulation)
+export(createParticleDissolutionFormulation)
+export(createWeibullFormulation)
+export(createZeroOrderFormulation)
