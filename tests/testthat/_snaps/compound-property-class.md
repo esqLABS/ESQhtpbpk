@@ -1,9 +1,9 @@
-# compoundProperty `print` method works
+# Property `print` method works
 
     Code
       prop$print()
     Output
-      CompoundProperty: 
+      Property: 
          Name: Solubility 
          Path: Compound|Solubility at reference pH 
          Value: 100 

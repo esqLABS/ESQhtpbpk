@@ -1,6 +1,6 @@
-test_that("compoundProperty creation works", {
+test_that("Property creation works", {
   expect_no_error({
-    CompoundProperty$new(
+    Property$new(
       name = "Solubility",
       path = "Compound|Solubility at reference pH",
       dimension = "Concentration (mass)",
@@ -11,7 +11,7 @@ test_that("compoundProperty creation works", {
   })
 })
 
-prop <- CompoundProperty$new(
+prop <- Property$new(
   name = "Solubility",
   path = "Compound|Solubility at reference pH",
   dimension = "Concentration (mass)",
@@ -20,7 +20,7 @@ prop <- CompoundProperty$new(
   check = function(value, unit) {if (value < 0) {stop("Solubility must be > 0")}}
 )
 
-test_that("compoundProperty `print` method works", {
+test_that("Property `print` method works", {
   expect_snapshot({
     prop$print()
   })

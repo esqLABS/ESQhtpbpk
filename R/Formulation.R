@@ -70,7 +70,7 @@ Formulation <- R6::R6Class(
       if (name %in% names(private$.Parameters)) {
         stop("Property '", name, "' already exists.")
       }
-      private$.Parameters[[name]] <- CompoundProperty$new(
+      private$.Parameters[[name]] <- Property$new(
         name = name,
         path = paste0("{protocolName}|{formulationName}|", name),
         dimension = dimension,

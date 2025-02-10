@@ -73,7 +73,7 @@
     Code
       myCompound$getProperty("Plasma protein binding partner")
     Output
-      CompoundProperty: 
+      Property: 
          Name: Plasma protein binding partner 
          Path: Compound|Plasma protein binding partner 
          Value: Albumin 
@@ -83,7 +83,7 @@
     Code
       myCompound$getProperty("Lipophilicity")
     Output
-      CompoundProperty: 
+      Property: 
          Name: Lipophilicity 
          Path: Compound|Lipophilicity 
          Value: 0.5 
