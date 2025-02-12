@@ -148,8 +148,10 @@ Study <- R6::R6Class(
     #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.
     setGenericModel = function(modelPath) {
       # ensure it exist and is a pkml file
-      if (!file.exists(modelPath) || !grepl(".pkml$", modelPath)) {
-        cli::cli_abort("Model path does not exist or is not a pkml file.")
+      if (!is.null(modelPath)) {
+        if (!file.exists(modelPath) || !grepl(".pkml$", modelPath)) {
+          cli::cli_abort("Model path does not exist or is not a pkml file.")
+        }
       }
       private$.genericModel <- modelPath
     },
@@ -158,12 +160,16 @@ Study <- R6::R6Class(
     #' @param ... Rest arguments.
     print = function(...) {
       private$printClass()
-      cli::cli_text("ID:", self$ID)
-      cli::cli_text("Individual:", self$Individual)
+      cli::cli_text("ID: ", self$ID)
+      cli::cli_text("Individual: ", self$Individual)
       if (!is.null(self$Compounds)) {
+        cli::cli_par()
+        cli::cli_text("Compounds: ")
         purrr::map(self$Compounds,
           \(x) {
-            cli::cli_text(paste0("Compound ", x$Name, " with protocol ", x$Protocol$Name))
+            cli::cli_li(paste0(x$Name, " with protocol ", x$Protocol$Name))
+            ul1 <- cli::cli_ul()
+            x$print()
           }
 
         )

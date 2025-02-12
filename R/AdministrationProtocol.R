@@ -851,18 +851,20 @@ AdvancedProtocol <- R6::R6Class(
     #' Print the object to the console
     print = function() {
       purrr::map(self$Schemas, \(x) {
-        cli::cli_par()
+        ul1 <- cli::cli_ul()
         cli::cli_text("Schema: ", x$Name)
+        ul2 <- cli::cli_ul()
         cli::cli_li(paste0("Start time: ", x$StartTime, " ", x$TimeUnit))
         cli::cli_li(paste0("Number of repetitions: ", x$NumberOfRepetitions))
         cli::cli_li(paste0("Time between repetitions: ", x$TimeBetweenRepetitions, " ", x$TimeUnit))
         purrr::imap(x$SchemaItems, \(y, i) {
           cli::cli_text("Schema item ", i)
-          ul <- cli::cli_li()
+          ul3 <- cli::cli_ul()
           y$print()
-          cli::cli_end(ul)
+          cli::cli_end(ul3)
         })
-        cli::cli_end()
+        cli::cli_end(ul2)
+        cli::cli_end(ul1)
       })
     }
   ),

@@ -244,17 +244,24 @@ Compound <- R6::R6Class(
     #' Print the object to the console
     #' @param ... Rest arguments.
     print = function(...) {
+      cli::cli_li("Compound properties:")
+      ul <- cli::cli_ul()
       for (prop in private$.allProperties) {
         if (is.list(prop$enum) && !is.null(names(prop$enum))) {
-          private$printLine(prop$name, names(prop$value))
+          cli::cli_li(paste0(prop$name, ": ", names(prop$value)))
         } else {
-          private$printLine(prop$name, paste(prop$value, prop$unit))
+          cli::cli_li(paste0(prop$name, ": ", prop$value, " ", prop$unit))
         }
       }
-      private$printLine("Partition Coefficient Method", self$PartitionCoefficientMethod)
-      private$printLine("Cellular Permeability Method", self$CellularPermeabilityMethod)
+      cli::cli_li(paste0("Partition Coefficient Method: ",  self$PartitionCoefficientMethod))
+      cli::cli_li(paste0("Cellular Permeability Method: ",  self$CellularPermeabilityMethod))
+      cli::cli_end(ul)
       if (length(private$.protocol) != 0) {
-        private$printLine("Protocol", private$.protocol$UUID)
+        cli::cli_li(paste0("Protocol Properties: "))
+        ul <- cli::cli_ul()
+        cli::cli_li()
+        private$.protocol$print()
+        cli::cli_end(ul)
       }
       invisible(self)
     }
