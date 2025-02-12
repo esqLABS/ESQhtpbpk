@@ -52,6 +52,8 @@ Initialize a new instance of the class
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{name}}{Name of the protocol}
+
 \item{\code{path}}{Prefix for the path of administration in the simulations}
 }
 \if{html}{\out{</div>}}

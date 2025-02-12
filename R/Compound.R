@@ -42,13 +42,15 @@ Compound <- R6::R6Class(
   public = list(
     #' @field ID Id of the compound
     ID = NULL,
-    #' @field name Name of the compound as used in the generic simulation
+    #' @field Name Name of the compound as used in the generic simulation
     Name = NULL,
 
     #' @description
     #' Initialize a new instance of the class Compound
     #' @param ID Id of the compound
     #' @param name Name of the compound in the simulation pkmls
+    #' @param PCMethod Partition coefficient method to use for the compound
+    #' @param CPMethod Cellular permeability method to use for the compound
     #' @return A new `Compound` object.
     initialize = function(ID, name = "Compound", PCMethod = "PK-Sim", CPMethod = "PK-Sim") {
       self$ID <- ID
@@ -62,8 +64,7 @@ Compound <- R6::R6Class(
 
       private$.allProperties <- private$.initializePropertiesFromJSON(filled_template)
       names(private$.allProperties) <- sapply(private$.allProperties, \(x) x$name)
-      compoundName <- self$name
-      private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {glue::glue(x$path)})
+      private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {x$path})
     },
 
     # Getter
@@ -116,13 +117,13 @@ Compound <- R6::R6Class(
     #' Add a new property for the compound.
     #' @param name Name of the property to add.
     #' @param parName Corresponding parameter name in the simulation pkml of the property to add.
-    #' @param parName Corresponding full path of the parameter in the simulation pkml of the property to add
-    #' (default to NULL to create it automatically based on parName).
     #' @param dimension Dimension of the property to add.
     #' @param value Value for the property.
     #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
+    #' @param path Corresponding full path of the parameter in the simulation pkml of the property to add
+    #' (default to NULL to create it automatically based on parName).
     addProperty = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
       if (name %in% names(private$.allProperties)) {
         stop("Property '", name, "' already exists.")
@@ -138,8 +139,10 @@ Compound <- R6::R6Class(
         enum = enum,
         check = check
       )
-      compoundName <- self$name
-      private$.allPropertyPaths <- c(private$.allParameterPaths, glue::glue(path))
+      if (is.null(path)) {
+        path <- paste0("{compoundName}|", parName)
+      }
+      private$.allPropertyPaths <- c(private$.allParameterPaths, path)
     },
     # # Add a new process
     # #' @description
@@ -228,9 +231,13 @@ Compound <- R6::R6Class(
 
     #' @description
     #' Get the paths of all parameters defined for the compound
+    #' @param compoundName name of the compound in the simulations
     #' @return A character vector with the paths of all parameters
-    getAllPropertyPaths = function() {
-      private$.allPropertyPaths
+    getAllPropertyPaths = function(compoundName = NULL) {
+      if (is.null(compoundName)) {
+        compoundName <- self$Name
+      }
+      sapply(private$.allProperties, \(x) {glue::glue(x$path)})
     },
 
     #' @description

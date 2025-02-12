@@ -131,6 +131,13 @@ Add a formulation to oral or user defined protocol
 \if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$setFormulation(formulation)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{formulation}}{Formulation to add to the protocol}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 The updated \code{SimpleProtocol} object.
 }

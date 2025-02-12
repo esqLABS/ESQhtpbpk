@@ -170,7 +170,7 @@ Property <- R6::R6Class(
 
     #' @description
     #' Print the object to the console
-    #' @param ... Rest arguments.
+    #' @param compoundName compoundName in the simulation to replace placeholder in the path
     print = function(compoundName = NULL) {
       private$printClass()
       private$printLine("Property Name", self$name)

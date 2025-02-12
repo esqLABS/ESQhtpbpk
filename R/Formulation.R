@@ -66,12 +66,13 @@ Formulation <- R6::R6Class(
     #' @description
     #' Add a new property/parameter for the formulation
     #' @param name Name of the property to add.
-    #' @param path Corresponding path in the simulation pkml of the property to add.
+    #' @param parName Corresponding parameter name of the property to add in the simulation
     #' @param dimension Dimension of the property to add.
     #' @param value Value for the property.
     #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
+    #' @param path Corresponding path in the simulation pkml of the property to add. Default to `{protocolName}|{formulationName}|parName`
     addParameter = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
       if (name %in% names(private$.Parameters)) {
         stop("Property '", name, "' already exists.")

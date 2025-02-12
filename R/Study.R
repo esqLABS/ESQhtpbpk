@@ -36,7 +36,7 @@ Study <- R6::R6Class(
     }
   ),
   public = list(
-    # ID of the study
+    #' @field ID of the study
     ID = NULL,
     #' @description
     #' Initialize a new instance of the class
@@ -59,7 +59,10 @@ Study <- R6::R6Class(
     #' This is a union of all compounds and administration protocol parameters.
     #' @return A character vector with the paths of all parameters
     getAllParameterPaths = function() {
-      return(purrr::map(private$.compounds, \(x) x$getAllParameterPaths()))
+      paths <- purrr::map(private$.compounds, \(x) {
+        x$getAllParameterPaths()
+      })
+      return(paths)
     },
 
     #' @description
@@ -136,11 +139,13 @@ Study <- R6::R6Class(
     },
     #' @description
     #' Convert study to a snapshot
-    exportSnapshot = function(path) {
-      jsonlite::write_json(self$toSnapshot(), auto_unbox = T, pretty = T, path = path)
+    #' @param file file path to save the snapshot
+    exportSnapshot = function(file) {
+      jsonlite::write_json(self$toSnapshot(), auto_unbox = TRUE, pretty = TRUE, path = file)
     },
     #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)
+    #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.
     setGenericModel = function(modelPath) {
       # ensure it exist and is a pkml file
       if (!file.exists(modelPath) || !grepl(".pkml$", modelPath)) {

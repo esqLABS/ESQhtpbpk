@@ -10,6 +10,13 @@ Description of a study
 \section{Super class}{
 \code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{Study}
 }
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{ID}}{of the study}
+}
+\if{html}{\out{</div>}}
+}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -119,9 +126,16 @@ Convert study to a snapshot
 \subsection{Method \code{exportSnapshot()}}{
 Convert study to a snapshot
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$exportSnapshot(path)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Study$exportSnapshot(file)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{file path to save the snapshot}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setGenericModel"></a>}}
@@ -132,6 +146,13 @@ Set generic model to use if pre-generated (for example from MoBi with PD)
 \if{html}{\out{<div class="r">}}\preformatted{Study$setGenericModel(modelPath)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-print"></a>}}

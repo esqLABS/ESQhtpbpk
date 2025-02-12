@@ -77,6 +77,8 @@ Add a new property/parameter for the formulation
 \describe{
 \item{\code{name}}{Name of the property to add.}
 
+\item{\code{parName}}{Corresponding parameter name of the property to add in the simulation}
+
 \item{\code{dimension}}{Dimension of the property to add.}
 
 \item{\code{value}}{Value for the property.}
@@ -87,7 +89,7 @@ Add a new property/parameter for the formulation
 
 \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
 
-\item{\code{path}}{Corresponding path in the simulation pkml of the property to add.}
+\item{\code{path}}{Corresponding path in the simulation pkml of the property to add. Default to \code{{protocolName}|{formulationName}|parName}}
 }
 \if{html}{\out{</div>}}
 }

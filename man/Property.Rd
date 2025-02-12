@@ -129,7 +129,7 @@ Print the object to the console
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Rest arguments.}
+\item{\code{compoundName}}{compoundName in the simulation to replace placeholder in the path}
 }
 \if{html}{\out{</div>}}
 }
