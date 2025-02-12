@@ -699,7 +699,7 @@ AdvancedProtocol <- R6::R6Class(
         # check that name is unused or that formulation is identical
         existingForm <- self$Formulations
         if (protocol$Formulation$Name %in% purrr::list_c(purrr::map(existingForm, ~ .x$Name))) {
-          identicalIdx <- which(purrr::list_c(existingForm, ~ .x$Name) == protocol$Formulation$Name)
+          identicalIdx <- which(purrr::list_c(purrr::map(existingForm, ~ .x$Name)) == protocol$Formulation$Name)
           for (idx in identicalIdx) {
             if (!identical(existingForm[[idx]], protocol$Formulation)) {
               cli::cli_abort("Formulation name {.var {protocol$Formulation$Name}} is already used for a different formulation.")
