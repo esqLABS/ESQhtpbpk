@@ -94,7 +94,7 @@ Formulation <- R6::R6Class(
     #' @param protocolName Name of the protocol in the simulation
     #' @param formulationName Name of the formulation in the simulation
     #' @return A character vector with the paths of all parameters
-    getAllPropertyPaths = function(protocolName = NULL, formulationName = NULL) {
+    getAllPropertyPaths = function(protocolName = NULL, formulationName = self$Name) {
       if (is.null(protocolName) || is.null(formulationName)) {
         purrr::list_c(
           purrr::map(self$Parameters, \(x) {

@@ -33,6 +33,8 @@ Description of a study
 \item \href{#method-Study-getAllParameterPaths}{\code{Study$getAllParameterPaths()}}
 \item \href{#method-Study-addDataSets}{\code{Study$addDataSets()}}
 \item \href{#method-Study-getDataSets}{\code{Study$getDataSets()}}
+\item \href{#method-Study-setOutputInterval}{\code{Study$setOutputInterval()}}
+\item \href{#method-Study-addOutputInterval}{\code{Study$addOutputInterval()}}
 \item \href{#method-Study-toSnapshot}{\code{Study$toSnapshot()}}
 \item \href{#method-Study-exportSnapshot}{\code{Study$exportSnapshot()}}
 \item \href{#method-Study-setGenericModel}{\code{Study$setGenericModel()}}
@@ -108,6 +110,52 @@ Get the DataSet objects of the study
 
 \subsection{Returns}{
 A list of DataSet objects
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-setOutputInterval"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-setOutputInterval}{}}}
+\subsection{Method \code{setOutputInterval()}}{
+Clears the output interval from the simulation and adds a new one.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$setOutputInterval(startTime, endTime, timeUnit, resolution)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{startTime}}{start time of the interval in time units}
+
+\item{\code{endTime}}{end time of the interval in time units}
+
+\item{\code{timeUnit}}{time unit of the interval}
+
+\item{\code{resolution}}{resolution of the interval in pts/time units}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-addOutputInterval"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-addOutputInterval}{}}}
+\subsection{Method \code{addOutputInterval()}}{
+Adds an interval to the output schema of the study
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$addOutputInterval(startTime, endTime, timeUnit, resolution)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{startTime}}{start time of the interval in time units}
+
+\item{\code{endTime}}{end time of the interval in time units}
+
+\item{\code{timeUnit}}{time unit of the interval}
+
+\item{\code{resolution}}{resolution of the interval in pts/time units}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

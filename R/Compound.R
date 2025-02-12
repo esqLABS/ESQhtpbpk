@@ -237,7 +237,12 @@ Compound <- R6::R6Class(
       if (is.null(compoundName)) {
         compoundName <- self$Name
       }
-      sapply(private$.allProperties, \(x) {glue::glue(x$path)})
+      res <- sapply(private$.allProperties, \(x) {glue::glue(x$path)})
+
+      if (!is.null(self$Protocol)) {
+        res <- c(res, self$Protocol$getAllParameterPaths())
+      }
+      return(unique(unname(res)))
     },
 
     #' @description

@@ -41,7 +41,7 @@ Description of an administration protocol
 
 \item{\code{Path}}{Prefix path for the administration}
 
-\item{\code{Name}}{Prefix path for the administration}
+\item{\code{Name}}{Protocol name for the administration}
 
 \item{\code{Formulation}}{Formulation to use with protocol}
 
@@ -88,9 +88,9 @@ Initialize a new instance of the class
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{name}}{Prefix for the path of administration in the simulations}
+\item{\code{name}}{Protocol name for the path of administration in the simulations}
 
-\item{\code{path}}{Prefix for the path of administration in the simulations}
+\item{\code{path}}{Prefix for the path of administration in the simulations. (Defaults to Events|{protocolName})}
 
 \item{\code{route}}{Route of administration}
 

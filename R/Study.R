@@ -51,6 +51,7 @@ Study <- R6::R6Class(
       self$Compounds <- compounds
       self$setGenericModel(genericModel)
       self$Individual <- individual
+      private$.outputSchema <- self$addOutputInterval(startTime = 0, endTime = 24, timeUnit = "h", resolution = 4)
       return(self)
     },
 
@@ -59,9 +60,9 @@ Study <- R6::R6Class(
     #' This is a union of all compounds and administration protocol parameters.
     #' @return A character vector with the paths of all parameters
     getAllParameterPaths = function() {
-      paths <- purrr::map(private$.compounds, \(x) {
-        x$getAllParameterPaths()
-      })
+      paths <- purrr::list_c(purrr::map(private$.compounds, \(x) {
+        x$getAllPropertyPaths()
+      }))
       return(paths)
     },
 
@@ -82,6 +83,51 @@ Study <- R6::R6Class(
       return(private$.observedData)
     },
     #' @description
+    #' Clears the output interval from the simulation and adds a new one.
+    #' @param startTime start time of the interval in time units
+    #' @param endTime end time of the interval in time units
+    #' @param resolution resolution of the interval in pts/time units
+    #' @param timeUnit time unit of the interval
+    setOutputInterval = function(startTime, endTime, timeUnit, resolution) {
+      private$.outputSchema <- list()
+      self$addOutputInterval(startTime, endTime, timeUnit, resolution)
+    },
+    #' @description
+    #' Adds an interval to the output schema of the study
+    #' @param startTime start time of the interval in time units
+    #' @param endTime end time of the interval in time units
+    #' @param resolution resolution of the interval in pts/time units
+    #' @param timeUnit time unit of the interval
+    addOutputInterval  = function(startTime, endTime, timeUnit, resolution) {
+      ospsuite.utils::validateIsNumeric(c(startTime, endTime, resolution))
+      ospsuite::validateUnit(unit = timeUnit, dimension = "Time")
+
+      private$.outputSchema <- c(
+        private$.outputSchema,
+        list(
+          list(
+            Parameters = list(
+              list(
+                Name = "Start time",
+                Value = startTime,
+                Unit = timeUnit
+              ),
+              list(
+                Name = "End time",
+                Value = endTime,
+                Unit = timeUnit
+              ),
+              list(
+                Name = "Resolution",
+                Value = resolution,
+                Unit = paste0("pts/", timeUnit)
+              )
+            )
+          )
+        )
+      )
+    },
+    #' @description
     #' Convert study to a snapshot
     toSnapshot = function() {
       data <- list(
@@ -89,9 +135,15 @@ Study <- R6::R6Class(
         "Individuals" =  list(
           list(
             Name = self$Individual,
-            OriginData = list(
-                 Species = ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual),
-                 Population = ifelse(self$Individual %in% ospsuite::HumanPopulation,  self$Individual, c())
+            OriginData = purrr::compact(
+              list(
+                Species = ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual),
+                Population = if (self$Individual %in% ospsuite::HumanPopulation) {
+                  self$Individual
+                } else {
+                  NULL
+                }
+              )
             ),
             ExpressionProfiles = list()
           )
@@ -104,6 +156,7 @@ Study <- R6::R6Class(
             Name = self$ID,
             Model = "4Comp",
             Solver = c(),
+            OutputSchema = private$.outputSchema,
             Individual = self$Individual,
             Compounds = purrr::map(
               self$Compounds,
@@ -181,6 +234,7 @@ Study <- R6::R6Class(
     .compounds = NULL,
     .individual = NULL,
     .observedData = list(),
-    .genericModel = NULL
+    .genericModel = NULL,
+    .outputSchema = list()
   )
 )

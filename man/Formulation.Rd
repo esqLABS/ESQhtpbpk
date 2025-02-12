@@ -100,7 +100,10 @@ Add a new property/parameter for the formulation
 \subsection{Method \code{getAllPropertyPaths()}}{
 Get the paths of all parameters defined for the formulation, using protocolName and formulationName
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$getAllPropertyPaths(protocolName = NULL, formulationName = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Formulation$getAllPropertyPaths(
+  protocolName = NULL,
+  formulationName = self$Name
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
