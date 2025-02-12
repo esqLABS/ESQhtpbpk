@@ -24,6 +24,10 @@ test_that("Property `print` method works", {
   expect_snapshot({
     prop$print()
   })
+
+  expect_snapshot({
+    prop$print(compoundName = "Compound")
+  })
 })
 
 test_that("`toBaseUnit` method (transformation to base units) works", {

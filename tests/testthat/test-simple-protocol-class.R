@@ -386,3 +386,23 @@ test_that("Print method works.", {
     )
   )
 })
+
+test_that("toSnapshot method works.", {
+  prot <- SimpleProtocol$new(
+    route = "IV Infusion",
+    dosingInterval = "24",
+    dose = 1,
+    doseUnit = "mg",
+    startTime = 60,
+    startTimeUnit = "min",
+    endTime = 48,
+    endTimeUnit = "h",
+    infusionTime = 10,
+    infusionTimeUnit = "min"
+  )
+
+  expect_snapshot(
+    prot$toSnapshot()
+  )
+})
+

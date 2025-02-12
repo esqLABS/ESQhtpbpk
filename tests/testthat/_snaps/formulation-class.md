@@ -113,66 +113,38 @@
       $Parameters[[1]]$Name
       [1] "Dissolution time (50% dissolved)"
       
-      $Parameters[[1]]$Parameters
-      $Parameters[[1]]$Parameters[[1]]
-      $Parameters[[1]]$Parameters[[1]]$Name
-      [1] "Dissolution time (50% dissolved)"
-      
-      $Parameters[[1]]$Parameters[[1]]$Value
+      $Parameters[[1]]$Value
       [1] 240
       
-      $Parameters[[1]]$Parameters[[1]]$Unit
+      $Parameters[[1]]$Unit
       [1] "min"
-      
-      
       
       
       $Parameters[[2]]
       $Parameters[[2]]$Name
       [1] "Lag time"
       
-      $Parameters[[2]]$Parameters
-      $Parameters[[2]]$Parameters[[1]]
-      $Parameters[[2]]$Parameters[[1]]$Name
-      [1] "Lag time"
-      
-      $Parameters[[2]]$Parameters[[1]]$Value
+      $Parameters[[2]]$Value
       [1] 0
       
-      $Parameters[[2]]$Parameters[[1]]$Unit
+      $Parameters[[2]]$Unit
       [1] "min"
-      
-      
       
       
       $Parameters[[3]]
       $Parameters[[3]]$Name
       [1] "Dissolution shape"
       
-      $Parameters[[3]]$Parameters
-      $Parameters[[3]]$Parameters[[1]]
-      $Parameters[[3]]$Parameters[[1]]$Name
-      [1] "Dissolution shape"
-      
-      $Parameters[[3]]$Parameters[[1]]$Value
+      $Parameters[[3]]$Value
       [1] 0.92
-      
-      
       
       
       $Parameters[[4]]
       $Parameters[[4]]$Name
       [1] "Use as suspension"
       
-      $Parameters[[4]]$Parameters
-      $Parameters[[4]]$Parameters[[1]]
-      $Parameters[[4]]$Parameters[[1]]$Name
-      [1] "Use as suspension"
-      
-      $Parameters[[4]]$Parameters[[1]]$Value
+      $Parameters[[4]]$Value
       [1] 1
-      
-      
       
       
       
@@ -226,66 +198,38 @@
       $Parameters[[1]]$Name
       [1] "Dissolution time (50% dissolved)"
       
-      $Parameters[[1]]$Parameters
-      $Parameters[[1]]$Parameters[[1]]
-      $Parameters[[1]]$Parameters[[1]]$Name
-      [1] "Dissolution time (50% dissolved)"
-      
-      $Parameters[[1]]$Parameters[[1]]$Value
+      $Parameters[[1]]$Value
       [1] 240
       
-      $Parameters[[1]]$Parameters[[1]]$Unit
+      $Parameters[[1]]$Unit
       [1] "min"
-      
-      
       
       
       $Parameters[[2]]
       $Parameters[[2]]$Name
       [1] "Lag time"
       
-      $Parameters[[2]]$Parameters
-      $Parameters[[2]]$Parameters[[1]]
-      $Parameters[[2]]$Parameters[[1]]$Name
-      [1] "Lag time"
-      
-      $Parameters[[2]]$Parameters[[1]]$Value
+      $Parameters[[2]]$Value
       [1] 0
       
-      $Parameters[[2]]$Parameters[[1]]$Unit
+      $Parameters[[2]]$Unit
       [1] "min"
-      
-      
       
       
       $Parameters[[3]]
       $Parameters[[3]]$Name
       [1] "Dissolution shape"
       
-      $Parameters[[3]]$Parameters
-      $Parameters[[3]]$Parameters[[1]]
-      $Parameters[[3]]$Parameters[[1]]$Name
-      [1] "Dissolution shape"
-      
-      $Parameters[[3]]$Parameters[[1]]$Value
+      $Parameters[[3]]$Value
       [1] 0.92
-      
-      
       
       
       $Parameters[[4]]
       $Parameters[[4]]$Name
       [1] "Use as suspension"
       
-      $Parameters[[4]]$Parameters
-      $Parameters[[4]]$Parameters[[1]]
-      $Parameters[[4]]$Parameters[[1]]$Name
-      [1] "Use as suspension"
-      
-      $Parameters[[4]]$Parameters[[1]]$Value
+      $Parameters[[4]]$Value
       [1] 1
-      
-      
       
       
       
