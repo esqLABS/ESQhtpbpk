@@ -22,7 +22,7 @@ test_that("createLint80Formulation works", {
   expect_snapshot(formulation)
 })
 
-test_that("createParticleDissolutionFormulation works", {
+test_that("createParticleDissolutionFormulation for monodisperse works", {
   # Monodisperse
   expect_no_message({
     formulation <- createParticleDissolutionFormulation(
@@ -31,7 +31,9 @@ test_that("createParticleDissolutionFormulation works", {
     )
   })
   expect_snapshot(formulation)
+})
 
+test_that("createParticleDissolutionFormulation for polydisperse normal works", {
   # Polydisperse normal
   expect_no_message({
     formulation <- createParticleDissolutionFormulation(
@@ -41,7 +43,9 @@ test_that("createParticleDissolutionFormulation works", {
     )
   })
   expect_snapshot(formulation)
+})
 
+test_that("createParticleDissolutionFormulation for polydisperse lognormal works", {
   # Polydisperse lognormal
   expect_no_message({
     formulation <- createParticleDissolutionFormulation(
@@ -63,7 +67,7 @@ test_that("createZeroOrderFormulation works", {
 
 test_that("createFirstOrderFormulation works", {
   expect_no_message({
-    formulation <- createZeroOrderFormulation(name = "1stOrder")
+    formulation <- createFirstOrderFormulation(name = "1stOrder")
   })
 
   expect_snapshot(formulation)
@@ -112,5 +116,13 @@ test_that("getAllPropertyPaths method works", {
   )
   expect_snapshot(
     formulation$getAllPropertyPaths(protocolName = "Protocol", formulationName = formulation$Name)
+  )
+})
+
+test_that("toSnapshot method works", {
+  formulation <- createWeibullFormulation(name = "OralWeibull")
+
+  expect_snapshot(
+    formulation$toSnapshot()
   )
 })

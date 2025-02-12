@@ -93,9 +93,9 @@
       formulation
     Message
       Formulation Name: 1stOrder
-      Formulation Type: ZeroOrder
+      Formulation Type: FirstOrder
     Output
-         End time: 60 min 
+         t1/2: 0.01 min 
 
 # Export to snapshot works
 
@@ -209,4 +209,56 @@
       [2] "Protocol|OralWeibull|Lag time"                        
       [3] "Protocol|OralWeibull|Dissolution shape"               
       [4] "Protocol|OralWeibull|Use as suspension"               
+
+# toSnapshot method works
+
+    Code
+      formulation$toSnapshot()
+    Output
+      $Name
+      [1] "OralWeibull"
+      
+      $FormulationType
+      [1] "Formulation_Tablet_Weibull"
+      
+      $Parameters
+      $Parameters[[1]]
+      $Parameters[[1]]$Name
+      [1] "Dissolution time (50% dissolved)"
+      
+      $Parameters[[1]]$Value
+      [1] 240
+      
+      $Parameters[[1]]$Unit
+      [1] "min"
+      
+      
+      $Parameters[[2]]
+      $Parameters[[2]]$Name
+      [1] "Lag time"
+      
+      $Parameters[[2]]$Value
+      [1] 0
+      
+      $Parameters[[2]]$Unit
+      [1] "min"
+      
+      
+      $Parameters[[3]]
+      $Parameters[[3]]$Name
+      [1] "Dissolution shape"
+      
+      $Parameters[[3]]$Value
+      [1] 0.92
+      
+      
+      $Parameters[[4]]
+      $Parameters[[4]]$Name
+      [1] "Use as suspension"
+      
+      $Parameters[[4]]$Value
+      [1] 1
+      
+      
+      
 
