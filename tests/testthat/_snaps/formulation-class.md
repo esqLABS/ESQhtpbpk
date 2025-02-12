@@ -31,7 +31,7 @@
          Lag time: 0 min 
          Use as suspension: 1  
 
-# createParticleDissolutionFormulation works
+# createParticleDissolutionFormulation for monodisperse works
 
     Code
       formulation
@@ -43,7 +43,7 @@
          Type of particle size distribution: Monodisperse 
          Particle radius (mean): 10 µm 
 
----
+# createParticleDissolutionFormulation for polydisperse normal works
 
     Code
       formulation
@@ -60,7 +60,7 @@
          Particle radius (max): 19 µm 
          Number of bins: 3  
 
----
+# createParticleDissolutionFormulation for polydisperse lognormal works
 
     Code
       formulation
@@ -109,67 +109,67 @@
       [1] "Formulation_Tablet_Weibull"
       
       $Parameters
-      $Parameters$`Dissolution time (50% dissolved)`
-      $Parameters$`Dissolution time (50% dissolved)`$Name
+      $Parameters[[1]]
+      $Parameters[[1]]$Name
       [1] "Dissolution time (50% dissolved)"
       
-      $Parameters$`Dissolution time (50% dissolved)`$Parameters
-      $Parameters$`Dissolution time (50% dissolved)`$Parameters[[1]]
-      $Parameters$`Dissolution time (50% dissolved)`$Parameters[[1]]$Name
+      $Parameters[[1]]$Parameters
+      $Parameters[[1]]$Parameters[[1]]
+      $Parameters[[1]]$Parameters[[1]]$Name
       [1] "Dissolution time (50% dissolved)"
       
-      $Parameters$`Dissolution time (50% dissolved)`$Parameters[[1]]$Value
+      $Parameters[[1]]$Parameters[[1]]$Value
       [1] 240
       
-      $Parameters$`Dissolution time (50% dissolved)`$Parameters[[1]]$Unit
+      $Parameters[[1]]$Parameters[[1]]$Unit
       [1] "min"
       
       
       
       
-      $Parameters$`Lag time`
-      $Parameters$`Lag time`$Name
+      $Parameters[[2]]
+      $Parameters[[2]]$Name
       [1] "Lag time"
       
-      $Parameters$`Lag time`$Parameters
-      $Parameters$`Lag time`$Parameters[[1]]
-      $Parameters$`Lag time`$Parameters[[1]]$Name
+      $Parameters[[2]]$Parameters
+      $Parameters[[2]]$Parameters[[1]]
+      $Parameters[[2]]$Parameters[[1]]$Name
       [1] "Lag time"
       
-      $Parameters$`Lag time`$Parameters[[1]]$Value
+      $Parameters[[2]]$Parameters[[1]]$Value
       [1] 0
       
-      $Parameters$`Lag time`$Parameters[[1]]$Unit
+      $Parameters[[2]]$Parameters[[1]]$Unit
       [1] "min"
       
       
       
       
-      $Parameters$`Dissolution shape`
-      $Parameters$`Dissolution shape`$Name
+      $Parameters[[3]]
+      $Parameters[[3]]$Name
       [1] "Dissolution shape"
       
-      $Parameters$`Dissolution shape`$Parameters
-      $Parameters$`Dissolution shape`$Parameters[[1]]
-      $Parameters$`Dissolution shape`$Parameters[[1]]$Name
+      $Parameters[[3]]$Parameters
+      $Parameters[[3]]$Parameters[[1]]
+      $Parameters[[3]]$Parameters[[1]]$Name
       [1] "Dissolution shape"
       
-      $Parameters$`Dissolution shape`$Parameters[[1]]$Value
+      $Parameters[[3]]$Parameters[[1]]$Value
       [1] 0.92
       
       
       
       
-      $Parameters$`Use as suspension`
-      $Parameters$`Use as suspension`$Name
+      $Parameters[[4]]
+      $Parameters[[4]]$Name
       [1] "Use as suspension"
       
-      $Parameters$`Use as suspension`$Parameters
-      $Parameters$`Use as suspension`$Parameters[[1]]
-      $Parameters$`Use as suspension`$Parameters[[1]]$Name
+      $Parameters[[4]]$Parameters
+      $Parameters[[4]]$Parameters[[1]]
+      $Parameters[[4]]$Parameters[[1]]$Name
       [1] "Use as suspension"
       
-      $Parameters$`Use as suspension`$Parameters[[1]]$Value
+      $Parameters[[4]]$Parameters[[1]]$Value
       [1] 1
       
       
@@ -226,38 +226,66 @@
       $Parameters[[1]]$Name
       [1] "Dissolution time (50% dissolved)"
       
-      $Parameters[[1]]$Value
+      $Parameters[[1]]$Parameters
+      $Parameters[[1]]$Parameters[[1]]
+      $Parameters[[1]]$Parameters[[1]]$Name
+      [1] "Dissolution time (50% dissolved)"
+      
+      $Parameters[[1]]$Parameters[[1]]$Value
       [1] 240
       
-      $Parameters[[1]]$Unit
+      $Parameters[[1]]$Parameters[[1]]$Unit
       [1] "min"
+      
+      
       
       
       $Parameters[[2]]
       $Parameters[[2]]$Name
       [1] "Lag time"
       
-      $Parameters[[2]]$Value
+      $Parameters[[2]]$Parameters
+      $Parameters[[2]]$Parameters[[1]]
+      $Parameters[[2]]$Parameters[[1]]$Name
+      [1] "Lag time"
+      
+      $Parameters[[2]]$Parameters[[1]]$Value
       [1] 0
       
-      $Parameters[[2]]$Unit
+      $Parameters[[2]]$Parameters[[1]]$Unit
       [1] "min"
+      
+      
       
       
       $Parameters[[3]]
       $Parameters[[3]]$Name
       [1] "Dissolution shape"
       
-      $Parameters[[3]]$Value
+      $Parameters[[3]]$Parameters
+      $Parameters[[3]]$Parameters[[1]]
+      $Parameters[[3]]$Parameters[[1]]$Name
+      [1] "Dissolution shape"
+      
+      $Parameters[[3]]$Parameters[[1]]$Value
       [1] 0.92
+      
+      
       
       
       $Parameters[[4]]
       $Parameters[[4]]$Name
       [1] "Use as suspension"
       
-      $Parameters[[4]]$Value
+      $Parameters[[4]]$Parameters
+      $Parameters[[4]]$Parameters[[1]]
+      $Parameters[[4]]$Parameters[[1]]$Name
+      [1] "Use as suspension"
+      
+      $Parameters[[4]]$Parameters[[1]]$Value
       [1] 1
+      
+      
       
       
       

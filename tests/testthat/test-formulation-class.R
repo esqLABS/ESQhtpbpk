@@ -89,14 +89,6 @@ test_that("Create formulation with non character name does not work", {
   )
 })
 
-test_that("Paremeters are read-only", {
-  formulation <- createDissolvedFormulation(name = "Dissolved")
-  expect_error(
-    formulation$Parameters <- list(),
-    "'Parameters' is read-only"
-  )
-})
-
 test_that("Export to snapshot works", {
   formulation <- createWeibullFormulation(name = "OralWeibull")
   expect_snapshot(

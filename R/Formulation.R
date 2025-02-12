@@ -2,7 +2,6 @@
 #' @docType class
 #' @description  Description of a formulation
 #' @format NULL
-#' @export
 Formulation <- R6::R6Class(
   "Formulation",
   cloneable = FALSE,
@@ -21,6 +20,10 @@ Formulation <- R6::R6Class(
           )
           cli::cli_abort(msg)
         } else {
+          if (!is.null(private$.Type) && value != private$.Type) {
+            # remove all parameters
+            cli::cli_abort("Type can not be modified.")
+          }
           private$.Type <- value
         }
       }
@@ -42,7 +45,11 @@ Formulation <- R6::R6Class(
       if (missing(value)) {
         private$.Parameters
       } else {
-        cli::cli_abort(messages$readOnly("Parameters"))
+        if (!is.list(value) || !all(sapply(value, \(x) "Property" %in% class(x)))) {
+          cli::cli_abort("Supplied Parameters are not valid.")
+        } else {
+          private$.Parameters <- value
+        }
       }
     }
   ),
@@ -108,11 +115,13 @@ Formulation <- R6::R6Class(
       snap <- list(
         Name = self$Name,
         FormulationType = FormulationType[[self$Type]],
-        Parameters = purrr::map(
-          self$Parameters,
-          \(x) {
-            x$toSnapshot()
-          }
+        Parameters = unname(
+          purrr::map(
+            self$Parameters,
+            \(x) {
+              x$toSnapshot()
+            }
+          )
         )
       )
       # if no parameter remove field
@@ -241,7 +250,11 @@ createLint80Formulation <- function(
     value = lagTime,
     unit = lagTimeUnit
   )
-  formulation$addParameter(name = "Use as suspension", dimension = "Dimensionless", value = as.numeric(suspension))
+  formulation$addParameter(
+    name = "Use as suspension",
+    dimension = "Dimensionless",
+    value = as.numeric(suspension)
+  )
 
   return(formulation)
 }
@@ -273,23 +286,76 @@ createParticleDissolutionFormulation <- function(
     name = name,
     type = "Particle"
   )
-  formulation$addParameter(name = "Thickness (unstirred water layer)", dimension = "Length", value = thickness, unit = thicknessUnit)
-  formulation$addParameter(name = "Type of particle size distribution", dimension = "Dimensionless", value = distributionType, enum = ParticleSizeDistributionType)
+  formulation$addParameter(
+    name = "Thickness (unstirred water layer)",
+    dimension = "Length",
+    value = thickness,
+    unit = thicknessUnit
+  )
+  formulation$addParameter(
+    name = "Type of particle size distribution",
+    dimension = "Dimensionless",
+    value = distributionType,
+    enum = ParticleSizeDistributionType
+  )
   # for monodisperse
   if (distributionType == "Monodisperse") {
-    formulation$addParameter(name = "Particle radius (mean)", dimension = "Length", value = radius, unit = radiusUnit)
+    formulation$addParameter(
+      name = "Particle radius (mean)",
+      dimension = "Length",
+      value = radius,
+      unit = radiusUnit
+    )
   } else { # polydisperse
-    formulation$addParameter(name = "Particle size distribution", dimension = "Dimensionless", value = distribution, enum = ParticleSizeDistribution)
+    formulation$addParameter(
+      name = "Particle size distribution",
+      dimension = "Dimensionless",
+      value = distribution,
+      enum = ParticleSizeDistribution
+    )
     if (distribution == "Normal") {
-      formulation$addParameter(name = "Particle radius (mean)", dimension = "Length", value = radius, unit = radiusUnit)
-      formulation$addParameter(name = "Particle radius (SD)", dimension = "Length", value = radiusSD, unit = radiusUnit)
+      formulation$addParameter(
+        name = "Particle radius (mean)",
+        dimension = "Length",
+        value = radius,
+        unit = radiusUnit
+      )
+      formulation$addParameter(
+        name = "Particle radius (SD)",
+        dimension = "Length",
+        value = radiusSD,
+        unit = radiusUnit
+      )
     } else {
-      formulation$addParameter(name = "Particle radius (geomean)", dimension = "Length", value = radius, unit = radiusUnit)
-      formulation$addParameter(name = "Coefficient of variation", dimension = "Dimensionless", value = radiusCV)
+      formulation$addParameter(
+        name = "Particle radius (geomean)",
+        dimension = "Length",
+        value = radius,
+        unit = radiusUnit
+      )
+      formulation$addParameter(
+        name = "Coefficient of variation",
+        dimension = "Dimensionless",
+        value = radiusCV
+      )
     }
-    formulation$addParameter(name = "Particle radius (min)", dimension = "Length", value = radiusMin, unit = radiusUnit)
-    formulation$addParameter(name = "Particle radius (max)", dimension = "Length", value = radiusMax, unit = radiusUnit)
-    formulation$addParameter(name = "Number of bins", dimension = "Dimensionless", value = nBins)
+    formulation$addParameter(
+      name = "Particle radius (min)",
+      dimension = "Length",
+      value = radiusMin,
+      unit = radiusUnit
+    )
+    formulation$addParameter(
+      name = "Particle radius (max)",
+      dimension = "Length",
+      value = radiusMax,
+      unit = radiusUnit
+    )
+    formulation$addParameter(
+      name = "Number of bins",
+      dimension = "Dimensionless",
+      value = nBins
+    )
   }
 
   return(formulation)
@@ -310,7 +376,12 @@ createZeroOrderFormulation <- function(
     name = name,
     type = "ZeroOrder"
   )
-  formulation$addParameter(name = "End time", dimension = "Time", value = endTime, unit = endTimeUnit)
+  formulation$addParameter(
+    name = "End time",
+    dimension = "Time",
+    value = endTime,
+    unit = endTimeUnit
+  )
   return(formulation)
 }
 
@@ -326,10 +397,14 @@ createFirstOrderFormulation <- function(
     name = "FirstOrder",
     tHalf = 0.01, tHalfUnit = "min") {
   formulation <- Formulation$new(
-    ID,
     name = name,
     type = "FirstOrder"
   )
-  formulation$addParameter(name = "t1/2", dimension = "Time", value = tHalf, unit = tHalfUnit)
+  formulation$addParameter(
+    name = "t1/2",
+    dimension = "Time",
+    value = tHalf,
+    unit = tHalfUnit
+  )
   return(formulation)
 }
