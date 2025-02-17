@@ -409,7 +409,8 @@ SimpleProtocol <- R6::R6Class(
         parameters = list(self),
         formulationType = ifelse(is.null(self$Formulation), NA, self$Formulation$Type),
         formulationName = ifelse(is.null(self$Formulation), NA, self$Formulation$Name),
-        formulation = ifelse(is.null(self$Formulation), NA, list(self$Formulation))
+        formulation = ifelse(is.null(self$Formulation), NA, list(self$Formulation)),
+        formulationKey = ifelse(is.null(self$Formulation), NA, list(self$FormulationKey))
       )
 
       return(wantedAdmin)
