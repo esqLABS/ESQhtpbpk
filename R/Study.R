@@ -197,6 +197,21 @@ Study <- R6::R6Class(
       jsonlite::write_json(self$toSnapshot(), auto_unbox = TRUE, pretty = TRUE, path = file)
     },
     #' @description
+    #' Convert study to a pkml
+    #' @param file file path to save the pkml
+    exportPKML = function(file) {
+      temp_dir <- tempfile()
+      temp_file <- tempfile(tmpdir = temp_dir,  fileext = ".json")
+      if (!exists(temp_dir)) {
+        dir.create(temp_dir)
+      }
+      self$exportSnapshot(temp_file)
+
+      ospsuite::runSimulationsFromSnapshot(temp_file, exportPKML = TRUE, exportCSV = FALSE, output = temp_dir)
+
+      fs::file_copy(fs::path(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")), file)
+    },
+    #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)
     #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.
     setGenericModel = function(modelPath) {
