@@ -166,21 +166,21 @@
     Code
       formulation$getAllPropertyPaths()
     Output
-      [1] "{protocolName}|{formulationName}|Dissolution time (50% dissolved)"
-      [2] "{protocolName}|{formulationName}|Lag time"                        
-      [3] "{protocolName}|{formulationName}|Dissolution shape"               
-      [4] "{protocolName}|{formulationName}|Use as suspension"               
+      [1] "{protocolPrefix}|{formulationName}|Dissolution time (50% dissolved)"
+      [2] "{protocolPrefix}|{formulationName}|Lag time"                        
+      [3] "{protocolPrefix}|{formulationName}|Dissolution shape"               
+      [4] "{protocolPrefix}|{formulationName}|Use as suspension"               
 
 ---
 
     Code
-      formulation$getAllPropertyPaths(protocolName = "Protocol", formulationName = formulation$
-        Name)
+      formulation$getAllPropertyPaths(protocolPrefix = "Events|Protocol",
+        formulationName = formulation$Name)
     Output
-      [1] "Protocol|OralWeibull|Dissolution time (50% dissolved)"
-      [2] "Protocol|OralWeibull|Lag time"                        
-      [3] "Protocol|OralWeibull|Dissolution shape"               
-      [4] "Protocol|OralWeibull|Use as suspension"               
+      [1] "Events|Protocol|OralWeibull|Dissolution time (50% dissolved)"
+      [2] "Events|Protocol|OralWeibull|Lag time"                        
+      [3] "Events|Protocol|OralWeibull|Dissolution shape"               
+      [4] "Events|Protocol|OralWeibull|Use as suspension"               
 
 # toSnapshot method works
 

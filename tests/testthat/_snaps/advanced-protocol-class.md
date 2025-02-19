@@ -3,18 +3,18 @@
     Code
       tmp
     Output
-      # A tibble: 7 x 7
+      # A tibble: 7 x 9
       # Rowwise: 
-        type      time parameters formulationType formulationName formulation
-        <chr>    <dbl> <list>     <chr>           <chr>           <list>     
-      1 IV Bolus   720 <SmplPrtc> <NA>            <NA>            <NULL>     
-      2 IV Bolus   840 <SmplPrtc> <NA>            <NA>            <NULL>     
-      3 IV Bolus   960 <SmplPrtc> <NA>            <NA>            <NULL>     
-      4 IV Bolus  1080 <SmplPrtc> <NA>            <NA>            <NULL>     
-      5 IV Bolus  1200 <SmplPrtc> <NA>            <NA>            <NULL>     
-      6 Oral         0 <SmplPrtc> Dissolved       Dissolved       <Formultn> 
-      7 Oral       720 <SmplPrtc> Dissolved       Dissolved       <Formultn> 
-      # i 1 more variable: formulationKey <chr>
+        type   time parameters formulationType formulationName formulation allowedPath
+        <chr> <dbl> <list>     <chr>           <chr>           <list>      <list>     
+      1 Oral      0 <SmplPrtc> Dissolved       Dissolved       <Formultn>  <NULL>     
+      2 IV B~   720 <SmplPrtc> <NA>            <NA>            <NULL>      <NULL>     
+      3 Oral    720 <SmplPrtc> Dissolved       Dissolved       <Formultn>  <NULL>     
+      4 IV B~   840 <SmplPrtc> <NA>            <NA>            <NULL>      <NULL>     
+      5 IV B~   960 <SmplPrtc> <NA>            <NA>            <NULL>      <NULL>     
+      6 IV B~  1080 <SmplPrtc> <NA>            <NA>            <NULL>      <NULL>     
+      7 IV B~  1200 <SmplPrtc> <NA>            <NA>            <NULL>      <NULL>     
+      # i 2 more variables: path <list>, formulationKey <chr>
 
 ---
 
@@ -23,10 +23,12 @@
     Output
       [[1]]
     Message
-      * Route: Intravenous bolus
-      * Dose: 10 mg/kg
+      * Route: Oral
+      * Dose: 5 mg/kg
       * Dose Interval: Single Dose
       * Start Time: 0 h
+      * Volume of water per body weight: 3.5 ml/kg
+      * Formulation: Dissolved
     Output
       
       [[2]]
@@ -39,10 +41,12 @@
       
       [[3]]
     Message
-      * Route: Intravenous bolus
-      * Dose: 10 mg/kg
+      * Route: Oral
+      * Dose: 5 mg/kg
       * Dose Interval: Single Dose
       * Start Time: 0 h
+      * Volume of water per body weight: 3.5 ml/kg
+      * Formulation: Dissolved
     Output
       
       [[4]]
@@ -63,22 +67,18 @@
       
       [[6]]
     Message
-      * Route: Oral
-      * Dose: 5 mg/kg
+      * Route: Intravenous bolus
+      * Dose: 10 mg/kg
       * Dose Interval: Single Dose
       * Start Time: 0 h
-      * Volume of water per body weight: 3.5 ml/kg
-      * Formulation: Dissolved
     Output
       
       [[7]]
     Message
-      * Route: Oral
-      * Dose: 5 mg/kg
+      * Route: Intravenous bolus
+      * Dose: 10 mg/kg
       * Dose Interval: Single Dose
       * Start Time: 0 h
-      * Volume of water per body weight: 3.5 ml/kg
-      * Formulation: Dissolved
     Output
       
 
@@ -87,37 +87,37 @@
     Code
       prot$getAllParameterPaths()
     Output
-       [1] "Events|Protocol||Application_1|ProtocolSchemaItem|Dose"                                
-       [2] "Events|Protocol||Application_1|ProtocolSchemaItem|Start time"                          
-       [3] "Events|Protocol||Application_1|ProtocolSchemaItem|Infusion time"                       
-       [4] "Events|Protocol||Application_2|ProtocolSchemaItem|DosePerBodySurfaceArea"              
-       [5] "Events|Protocol||Application_2|ProtocolSchemaItem|Start time"                          
-       [6] "Events|Protocol||Application_3|ProtocolSchemaItem|Dose"                                
-       [7] "Events|Protocol||Application_3|ProtocolSchemaItem|Start time"                          
-       [8] "Events|Protocol||Application_3|ProtocolSchemaItem|Infusion time"                       
-       [9] "Events|Protocol||Application_4|ProtocolSchemaItem|DosePerBodySurfaceArea"              
-      [10] "Events|Protocol||Application_4|ProtocolSchemaItem|Start time"                          
-      [11] "Events|Protocol||Application_5|ProtocolSchemaItem|Dose"                                
-      [12] "Events|Protocol||Application_5|ProtocolSchemaItem|Start time"                          
-      [13] "Events|Protocol||Application_5|ProtocolSchemaItem|Infusion time"                       
-      [14] "Events|Protocol||Application_6|ProtocolSchemaItem|DosePerBodySurfaceArea"              
-      [15] "Events|Protocol||Application_6|ProtocolSchemaItem|Start time"                          
-      [16] "Events|Protocol||Application_7|ProtocolSchemaItem|Dose"                                
-      [17] "Events|Protocol||Application_7|ProtocolSchemaItem|Start time"                          
-      [18] "Events|Protocol||Application_7|ProtocolSchemaItem|Infusion time"                       
-      [19] "Events|Protocol||Application_8|ProtocolSchemaItem|DosePerBodySurfaceArea"              
-      [20] "Events|Protocol||Application_8|ProtocolSchemaItem|Start time"                          
-      [21] "Events|Protocol||Application_9|ProtocolSchemaItem|Dose"                                
-      [22] "Events|Protocol||Application_9|ProtocolSchemaItem|Start time"                          
-      [23] "Events|Protocol||Application_9|ProtocolSchemaItem|Infusion time"                       
-      [24] "Events|Protocol||Application_10|ProtocolSchemaItem|DosePerBodySurfaceArea"             
-      [25] "Events|Protocol||Application_10|ProtocolSchemaItem|Start time"                         
-      [26] "Events|Protocol|Dissolved|Application_1|ProtocolSchemaItem|DosePerBodyWeight"          
-      [27] "Events|Protocol|Dissolved|Application_1|ProtocolSchemaItem|Start time"                 
-      [28] "Events|Protocol|Dissolved|Application_1|ProtocolSchemaItem|Volume of water/body weight"
-      [29] "Events|Protocol|Dissolved|Application_2|ProtocolSchemaItem|DosePerBodyWeight"          
-      [30] "Events|Protocol|Dissolved|Application_2|ProtocolSchemaItem|Start time"                 
-      [31] "Events|Protocol|Dissolved|Application_2|ProtocolSchemaItem|Volume of water/body weight"
+       [1] "Events|Protocol|Dissolved|Application_1|ProtocolSchemaItem|DosePerBodyWeight"          
+       [2] "Events|Protocol|Dissolved|Application_1|ProtocolSchemaItem|Start time"                 
+       [3] "Events|Protocol|Dissolved|Application_1|ProtocolSchemaItem|Volume of water/body weight"
+       [4] "Events|Protocol|Application_2|ProtocolSchemaItem|Dose"                                 
+       [5] "Events|Protocol|Application_2|ProtocolSchemaItem|Start time"                           
+       [6] "Events|Protocol|Application_2|ProtocolSchemaItem|Infusion time"                        
+       [7] "Events|Protocol|Application_3|ProtocolSchemaItem|DosePerBodySurfaceArea"               
+       [8] "Events|Protocol|Application_3|ProtocolSchemaItem|Start time"                           
+       [9] "Events|Protocol|Dissolved|Application_4|ProtocolSchemaItem|DosePerBodyWeight"          
+      [10] "Events|Protocol|Dissolved|Application_4|ProtocolSchemaItem|Start time"                 
+      [11] "Events|Protocol|Dissolved|Application_4|ProtocolSchemaItem|Volume of water/body weight"
+      [12] "Events|Protocol|Application_5|ProtocolSchemaItem|Dose"                                 
+      [13] "Events|Protocol|Application_5|ProtocolSchemaItem|Start time"                           
+      [14] "Events|Protocol|Application_5|ProtocolSchemaItem|Infusion time"                        
+      [15] "Events|Protocol|Application_6|ProtocolSchemaItem|DosePerBodySurfaceArea"               
+      [16] "Events|Protocol|Application_6|ProtocolSchemaItem|Start time"                           
+      [17] "Events|Protocol|Application_7|ProtocolSchemaItem|Dose"                                 
+      [18] "Events|Protocol|Application_7|ProtocolSchemaItem|Start time"                           
+      [19] "Events|Protocol|Application_7|ProtocolSchemaItem|Infusion time"                        
+      [20] "Events|Protocol|Application_8|ProtocolSchemaItem|DosePerBodySurfaceArea"               
+      [21] "Events|Protocol|Application_8|ProtocolSchemaItem|Start time"                           
+      [22] "Events|Protocol|Application_9|ProtocolSchemaItem|Dose"                                 
+      [23] "Events|Protocol|Application_9|ProtocolSchemaItem|Start time"                           
+      [24] "Events|Protocol|Application_9|ProtocolSchemaItem|Infusion time"                        
+      [25] "Events|Protocol|Application_10|ProtocolSchemaItem|DosePerBodySurfaceArea"              
+      [26] "Events|Protocol|Application_10|ProtocolSchemaItem|Start time"                          
+      [27] "Events|Protocol|Application_11|ProtocolSchemaItem|Dose"                                
+      [28] "Events|Protocol|Application_11|ProtocolSchemaItem|Start time"                          
+      [29] "Events|Protocol|Application_11|ProtocolSchemaItem|Infusion time"                       
+      [30] "Events|Protocol|Application_12|ProtocolSchemaItem|DosePerBodySurfaceArea"              
+      [31] "Events|Protocol|Application_12|ProtocolSchemaItem|Start time"                          
 
 # print method works
 
@@ -163,28 +163,28 @@
     Code
       prot$extractProtocol()
     Output
-      # A tibble: 17 x 7
+      # A tibble: 17 x 9
       # Rowwise: 
          type         time parameters formulationType formulationName formulation
          <chr>       <dbl> <list>     <chr>           <chr>           <list>     
-       1 IV Infusion   720 <SmplPrtc> <NA>            <NA>            <NULL>     
-       2 IV Infusion   840 <SmplPrtc> <NA>            <NA>            <NULL>     
-       3 IV Infusion   960 <SmplPrtc> <NA>            <NA>            <NULL>     
-       4 IV Infusion  1080 <SmplPrtc> <NA>            <NA>            <NULL>     
-       5 IV Infusion  1200 <SmplPrtc> <NA>            <NA>            <NULL>     
-       6 IV Bolus      720 <SmplPrtc> <NA>            <NA>            <NULL>     
+       1 Oral            0 <SmplPrtc> Weibull         Weibull2        <Formultn> 
+       2 IV Infusion   720 <SmplPrtc> <NA>            <NA>            <NULL>     
+       3 IV Bolus      720 <SmplPrtc> <NA>            <NA>            <NULL>     
+       4 Oral          720 <SmplPrtc> Weibull         Weibull1        <Formultn> 
+       5 Oral          720 <SmplPrtc> Weibull         Weibull2        <Formultn> 
+       6 IV Infusion   840 <SmplPrtc> <NA>            <NA>            <NULL>     
        7 IV Bolus      840 <SmplPrtc> <NA>            <NA>            <NULL>     
-       8 IV Bolus      960 <SmplPrtc> <NA>            <NA>            <NULL>     
-       9 IV Bolus     1080 <SmplPrtc> <NA>            <NA>            <NULL>     
-      10 IV Bolus     1200 <SmplPrtc> <NA>            <NA>            <NULL>     
-      11 Oral          720 <SmplPrtc> Weibull         Weibull1        <Formultn> 
-      12 Oral          840 <SmplPrtc> Weibull         Weibull1        <Formultn> 
-      13 Oral          960 <SmplPrtc> Weibull         Weibull1        <Formultn> 
+       8 Oral          840 <SmplPrtc> Weibull         Weibull1        <Formultn> 
+       9 IV Infusion   960 <SmplPrtc> <NA>            <NA>            <NULL>     
+      10 IV Bolus      960 <SmplPrtc> <NA>            <NA>            <NULL>     
+      11 Oral          960 <SmplPrtc> Weibull         Weibull1        <Formultn> 
+      12 IV Infusion  1080 <SmplPrtc> <NA>            <NA>            <NULL>     
+      13 IV Bolus     1080 <SmplPrtc> <NA>            <NA>            <NULL>     
       14 Oral         1080 <SmplPrtc> Weibull         Weibull1        <Formultn> 
-      15 Oral         1200 <SmplPrtc> Weibull         Weibull1        <Formultn> 
-      16 Oral            0 <SmplPrtc> Weibull         Weibull2        <Formultn> 
-      17 Oral          720 <SmplPrtc> Weibull         Weibull2        <Formultn> 
-      # i 1 more variable: formulationKey <chr>
+      15 IV Infusion  1200 <SmplPrtc> <NA>            <NA>            <NULL>     
+      16 IV Bolus     1200 <SmplPrtc> <NA>            <NA>            <NULL>     
+      17 Oral         1200 <SmplPrtc> Weibull         Weibull1        <Formultn> 
+      # i 3 more variables: allowedPath <list>, path <list>, formulationKey <chr>
 
 # toSnapshot method works
 

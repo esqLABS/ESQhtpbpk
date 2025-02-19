@@ -90,11 +90,12 @@
     Code
       tmp
     Output
-      # A tibble: 2 x 6
+      # A tibble: 2 x 9
         type         time parameters formulationType formulationName formulation
         <chr>       <dbl> <list>     <lgl>           <lgl>           <lgl>      
       1 IV Infusion    60 <SmplPrtc> NA              NA              NA         
       2 IV Infusion  1500 <SmplPrtc> NA              NA              NA         
+      # i 3 more variables: formulationKey <lgl>, allowedPath <list>, path <list>
 
 ---
 
