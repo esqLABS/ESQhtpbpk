@@ -199,6 +199,11 @@ Study <- R6::R6Class(
               list(
                 Name = "Resolution",
                 Value = resolution,
+                # resolution = scenarioConfiguration$simulationTime[[i]][3] / toBaseUnit(
+                #   quantityOrDimension = ospDimensions$Time,
+                #   values = 1,
+                #   unit = scenarioConfiguration$simulationTimeUnit
+                # )
                 Unit = paste0("pts/", timeUnit)
               )
             )
@@ -219,6 +224,9 @@ Study <- R6::R6Class(
                 Species = ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual),
                 Population = if (self$Individual %in% ospsuite::HumanPopulation) {
                   self$Individual
+                } else if (self$Individual == "Human") {
+                  cli::cli_warn("Using default of `European_ICRP_2002` for population.")
+                  "European_ICRP_2002"
                 } else {
                   NULL
                 }
@@ -278,20 +286,25 @@ Study <- R6::R6Class(
     #' @description
     #' Convert study to a pkml
     #' @param file file path to save the pkml
-    exportPKML = function(file) {
+    #' @param overwrite if TRUE, overwrite existing file
+    exportPKML = function(file, overwrite = FALSE) {
       temp_dir <- tempfile()
       temp_file <- tempfile(tmpdir = temp_dir,  fileext = ".json")
-      if (!exists(temp_dir)) {
+      if (!dir.exists(temp_dir)) {
         dir.create(temp_dir)
       }
+
       self$exportSnapshot(temp_file)
 
       ospsuite::runSimulationsFromSnapshot(temp_file, exportPKML = TRUE, exportCSV = FALSE, output = temp_dir)
 
-      if (!exists(dirname(file))) {
+      if (!dir.exists(dirname(file))) {
         dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
       }
-      fs::file_copy(fs::path(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")), file)
+      if (!file.exists(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml"))) {
+        cli::cli_abort("Something went wrong with the export of the pkml file.")
+      }
+      fs::file_copy(path = fs::path(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")), new_path = file, overwrite = overwrite)
     },
     #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)

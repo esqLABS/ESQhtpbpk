@@ -449,7 +449,7 @@ createFirstOrderFormulation <- function(
     path = NULL) {
   formulation <- Formulation$new(
     name = name,
-    type = "FirstOrder",
+    type = "FirstOrder"
   )
   formulation$addParameter(
     name = "t1/2",

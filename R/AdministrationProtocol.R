@@ -796,7 +796,7 @@ AdvancedProtocol <- R6::R6Class(
         )
 
       # order wanted admin to set application number by default
-      wantedAdmin <- wantedAdmin %>% arrange(time)
+      wantedAdmin <- wantedAdmin %>% dplyr::arrange(time)
 
       # loop across admin to set admin number in time order if allowed path were not set
       if (all(is.null(unlist(wantedAdmin$allowedPath)))) {
@@ -811,13 +811,13 @@ AdvancedProtocol <- R6::R6Class(
           cli::cli_abort("Check your protocol, either all allowed path should be set or none.")
         }
 
-        wantedAdmin <- wantedAdmin %>% group_by(allowedPath)
+        wantedAdmin <- wantedAdmin %>% dplyr::group_by(allowedPath)
 
-        if (any(wantedAdmin %>% summarize(N = n() > length(unique(unlist(allowedPath)))) %>% pull(N))) {
+        if (any(wantedAdmin %>% dplyr::summarize(N = dplyr::n() > length(unique(unlist(allowedPath)))) %>% dplyr::pull(N))) {
           cli::cli_warn("For multiple admin path, should list all available paths for this type of administrations.")
         }
 
-        wantedAdmin <- wantedAdmin %>% mutate(path = unlist(allowedPath)[row_number()])
+        wantedAdmin <- wantedAdmin %>% dplyr::mutate(path = unlist(allowedPath)[dplyr::row_number()])
       }
 
       return(wantedAdmin)

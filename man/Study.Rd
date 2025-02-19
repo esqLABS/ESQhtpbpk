@@ -193,13 +193,15 @@ Convert study to a snapshot
 \subsection{Method \code{exportPKML()}}{
 Convert study to a pkml
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$exportPKML(file)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Study$exportPKML(file, overwrite = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{file}}{file path to save the pkml}
+
+\item{\code{overwrite}}{if TRUE, overwrite existing file}
 }
 \if{html}{\out{</div>}}
 }
