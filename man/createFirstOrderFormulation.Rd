@@ -7,7 +7,8 @@
 createFirstOrderFormulation(
   name = "FirstOrder",
   tHalf = 0.01,
-  tHalfUnit = "min"
+  tHalfUnit = "min",
+  path = NULL
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ createFirstOrderFormulation(
 \item{tHalf}{Half-life of the drug release process (default 0.01)}
 
 \item{tHalfUnit}{Unit of half-life of the drug release process (default min)}
+
+\item{path}{prefix of formulation path in the sim. NULL will defaults to \code{{protocolPrefix}|{formulationName}}}
 }
 \value{
 A new \code{Formulation} object.

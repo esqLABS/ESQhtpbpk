@@ -37,7 +37,9 @@ Description of a study
 \item \href{#method-Study-addOutputInterval}{\code{Study$addOutputInterval()}}
 \item \href{#method-Study-toSnapshot}{\code{Study$toSnapshot()}}
 \item \href{#method-Study-exportSnapshot}{\code{Study$exportSnapshot()}}
+\item \href{#method-Study-exportPKML}{\code{Study$exportPKML()}}
 \item \href{#method-Study-setGenericModel}{\code{Study$setGenericModel()}}
+\item \href{#method-Study-setSimulation}{\code{Study$setSimulation()}}
 \item \href{#method-Study-print}{\code{Study$print()}}
 }
 }
@@ -186,6 +188,23 @@ Convert study to a snapshot
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-exportPKML"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-exportPKML}{}}}
+\subsection{Method \code{exportPKML()}}{
+Convert study to a pkml
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$exportPKML(file)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{file path to save the pkml}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setGenericModel"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-setGenericModel}{}}}
 \subsection{Method \code{setGenericModel()}}{
@@ -198,6 +217,23 @@ Set generic model to use if pre-generated (for example from MoBi with PD)
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-setSimulation"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-setSimulation}{}}}
+\subsection{Method \code{setSimulation()}}{
+Set generic model to use if pre-generated (for example from MoBi with PD)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$setSimulation(simulation)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{simulation}}{simulation loaded from pkml (to check )}
 }
 \if{html}{\out{</div>}}
 }

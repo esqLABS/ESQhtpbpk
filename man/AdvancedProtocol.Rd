@@ -19,7 +19,8 @@ Description of an advanced administration protocol
 
 \item{\code{Schemas}}{List of schemas for the advanced protocol}
 
-\item{\code{Path}}{Prefix path for the administration}
+\item{\code{Path}}{Prefix path for the administration to create default path, otherwise for custom
+pkmls path should be provided for each schema item protocol}
 
 \item{\code{Formulations}}{Formulations used with protocol}
 
@@ -124,9 +125,16 @@ The updated \code{AdvancedProtocol} object.
 \subsection{Method \code{extractProtocol()}}{
 Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$extractProtocol()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$extractProtocol(path = self$Path)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{Prefix path for the administration.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
 }

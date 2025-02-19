@@ -11,7 +11,8 @@ createWeibullFormulation(
   lagTime = 0,
   lagTimeUnit = "min",
   shape = 0.92,
-  suspension = TRUE
+  suspension = TRUE,
+  path = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ createWeibullFormulation(
 \item{shape}{dissolution shape parameter (default 0.92)}
 
 \item{suspension}{Boolean, whether to use as suspension (default True)}
+
+\item{path}{prefix of formulation path in the sim. NULL will defaults to \code{{protocolPrefix}|{formulationName}}}
 }
 \value{
 A new \code{Formulation} object.
