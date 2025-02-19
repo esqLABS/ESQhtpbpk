@@ -63,7 +63,86 @@ Study <- R6::R6Class(
       paths <- purrr::list_c(purrr::map(private$.compounds, \(x) {
         x$getAllPropertyPaths()
       }))
+      if (!is.null(private$.simulation)) {
+        availablePaths <- ospsuite::getAllParameterPathsIn(private$.simulation)
+
+        if (!all(paths %in% availablePaths)) {
+          cli::cli_warn("Some paths were not found in the simulation. Please check.")
+        }
+
+        paths <- intersect(paths, availablePaths)
+      }
       return(paths)
+    #     compIdx <- seq_along(self$Compounds)[1]
+    #
+    #     wantedAdmin <- self$Compounds[[compIdx]]$Protocol$extractProtocol()
+    #     availableAdmins <- private$.simulation$allApplicationsFor(self$Compounds[[compIdx]]$Name)
+    #
+    #     availableAdmins <- tibble(
+    #       prefix = purrr::list_c(purrr::map(availableAdmins, ~ .x$startTime$parentContainer$path)),
+    #       container = purrr::map(availableAdmins, ~ .x$startTime$parentContainer)
+    #     )
+    #
+    #     availableAdmins <- availableAdmins %>% mutate(parameters = list(gsub(paste0(container[[1]]$path,"|"), "", ospsuite::getAllParameterPathsIn(container[[1]]), fixed = TRUE)))
+    #     availableAdmins <- availableAdmins %>% mutate(
+    #       type = if ("Infusion time" %in% parameters) {
+    #         "IV Infusion"
+    #       } else if ("Volume of water/body weight" %in% parameters) {
+    #         "Oral"
+    #       } else if () {
+    #
+    #       } else {
+    #         "IV Bolus"
+    #       }
+    #     )
+    #     # from available admin infer type, form, of admin to map to wantedAdmin
+    #     simParam <-
+    #
+    #
+    #     allParamPaths <- c()
+    #     protocolName <- self$Name
+    #     path <- glue::glue(path)
+    #
+    #     wantedAdmin <- self$extractProtocol()
+    #
+    #     # loop across formulationName
+    #     for (form in unique(wantedAdmin$formulationName)) {
+    #       if (is.na(form)) {
+    #         adminSubset <- wantedAdmin[is.na(wantedAdmin$formulationName), ]
+    #       } else {
+    #         adminSubset <- wantedAdmin[sapply(wantedAdmin$formulationName == form, isTRUE), ]
+    #       }
+    #
+    #       # sort admin subset by time
+    #       adminSubset <- adminSubset[order(adminSubset$time), ]
+    #       for (i in 1:nrow(adminSubset)) {
+    #         mainPath <- paste(path, paste0(na.omit(form)), sep = "|")
+    #
+    #         if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$Mass) {
+    #           doseParamName <- "Dose"
+    #         } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body weight`) {
+    #           doseParamName <- "DosePerBodyWeight"
+    #         } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body surface area`) {
+    #           doseParamName <- "DosePerBodySurfaceArea"
+    #         }
+    #
+    #         allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", doseParamName, sep = "|"))
+    #         allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Start time", sep = "|"))
+    #         if (!is.null(adminSubset$parameters[[i]]$InfusionTime)) {
+    #           allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Infusion time", sep = "|"))
+    #         }
+    #         if (!is.null(adminSubset$parameters[[i]]$WaterVolPerBW)) {
+    #           allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Volume of water/body weight", sep = "|"))
+    #         }
+    #       }
+    #     }
+    #     # add formulations parameters
+    #     if (!is.null(self$Formulations)) {
+    #       allParamPaths <- c(allParamPaths, unlist(sapply(self$Formulations, \(y){y$getAllPropertyPaths(protocolName = path)})))
+    #     }
+    #     return(unique(unname(allParamPaths)))
+    #   },
+
     },
 
     #' @description
@@ -209,6 +288,9 @@ Study <- R6::R6Class(
 
       ospsuite::runSimulationsFromSnapshot(temp_file, exportPKML = TRUE, exportCSV = FALSE, output = temp_dir)
 
+      if (!exists(dirname(file))) {
+        dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
+      }
       fs::file_copy(fs::path(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")), file)
     },
     #' @description
@@ -222,6 +304,13 @@ Study <- R6::R6Class(
         }
       }
       private$.genericModel <- modelPath
+    },
+    #' @description
+    #' Set generic model to use if pre-generated (for example from MoBi with PD)
+    #' @param simulation simulation loaded from pkml (to check )
+    setSimulation = function(simulation) {
+      ospsuite.utils::validateIsOfType(simulation, "Simulation")
+      private$.simulation <- simulation
     },
     #' @description
     #' Print the object to the console
@@ -250,6 +339,7 @@ Study <- R6::R6Class(
     .individual = NULL,
     .observedData = list(),
     .genericModel = NULL,
+    .simulation = NULL,
     .outputSchema = list()
   )
 )

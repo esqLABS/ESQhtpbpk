@@ -188,7 +188,7 @@ SimpleProtocol <- R6::R6Class(
     #     }
     #   }
     # },
-    #' @field Path Prefix path for the administration
+    #' @field Path Prefix path for the administration (if multiple admin give a vector of all available paths)
     Path = function(value) {
       if (missing(value)) {
         private$.Path
@@ -269,7 +269,8 @@ SimpleProtocol <- R6::R6Class(
 
       private$.UUID <- uuid::UUIDgenerate()
       self$Name <- name
-      self$Path <- "Events|{protocolName}"
+      self$Path <- path
+      # self$ApplicationIdx <- applicationIdx
       self$Route <- route
       self$DoseInterval <- dosingInterval
       self$Dose <- dose
@@ -410,24 +411,35 @@ SimpleProtocol <- R6::R6Class(
         formulationType = ifelse(is.null(self$Formulation), NA, self$Formulation$Type),
         formulationName = ifelse(is.null(self$Formulation), NA, self$Formulation$Name),
         formulation = ifelse(is.null(self$Formulation), NA, list(self$Formulation)),
-        formulationKey = ifelse(is.null(self$Formulation), NA, list(self$FormulationKey))
+        formulationKey = ifelse(is.null(self$Formulation), NA, list(self$FormulationKey)),
+        allowedPath = list(self$Path)
       )
+      wantedAdmin$path <- list(NULL)
+
+      mainPath <- self$Path
+      if (is.null(mainPath)) {
+        mainPath <- paste0('Events|{protocolName}|', paste0(self$Formulation$Name, "|", recycle0 = T), "Application_", 1:nrow(wantedAdmin))
+      }
+
+      if (nrow(wantedAdmin) > length(mainPath)) {
+        cli::cli_warn("For multiple admin path, should list all available paths for this type of administrations.")
+      }
+
+      for (i in seq_len(min(nrow(wantedAdmin), length(mainPath)))) {
+        wantedAdmin$path[[i]] <- mainPath[i]
+      }
 
       return(wantedAdmin)
     },
     #' @description
     #' Extract all parameter paths needed to be changed in the simulation
-    #' @param path Prefix path for the administration
+    #' @param path Prefix path for the administration (if multiple admin give a vector of all available paths)
     #' @return A character vector with all parameter paths.
     getAllParameterPaths = function(path = self$Path) {
       allParamPaths <- c()
 
-      protocolName <- self$Name
-      path <- glue::glue(path)
-      if (is.null(self$Formulation$Name)) {
-        mainPath <- path
-      } else {
-        mainPath <- paste(path, self$Formulation$Name, sep = "|")
+      if (is.null(path)) {
+        path <- "Events|{protocolName}"
       }
 
       wantedAdmin <- self$extractProtocol()
@@ -440,21 +452,23 @@ SimpleProtocol <- R6::R6Class(
         doseParamName <- "DosePerBodySurfaceArea"
       }
 
-      for (i in 1:nrow(wantedAdmin)) {
-        allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", doseParamName, sep = "|"))
-        allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Start time", sep = "|"))
-        if (!is.null(self$InfusionTime)) {
-          allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Infusion time", sep = "|"))
-        }
-        if (!is.null(self$WaterVolPerBW)) {
-          allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Volume of water/body weight", sep = "|"))
+      for (i in seq_len(nrow(wantedAdmin))) {
+        if (!is.null(wantedAdmin$path[[i]])) {
+          allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", doseParamName, sep = "|"))
+          allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", "Start time", sep = "|"))
+          if (!is.null(self$InfusionTime)) {
+            allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", "Infusion time", sep = "|"))
+          }
+          if (!is.null(self$WaterVolPerBW)) {
+            allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", "Volume of water/body weight", sep = "|"))
+          }
         }
       }
 
       if (!is.null(self$Formulation)) {
-        allParamPaths <- c(allParamPaths, self$Formulation$getAllPropertyPaths(protocolName = self$Name))
+        allParamPaths <- c(allParamPaths, self$Formulation$getAllPropertyPaths(protocolPrefix = path))
       }
-      return(unique(unname(allParamPaths)))
+      return(purrr::map_chr(allParamPaths, ~ glue::glue(.x, protocolName = self$Name, formulationName = self$Formulation$Name)))
     },
     #' @description
     #' Convert to snapshot
@@ -620,7 +634,8 @@ AdvancedProtocol <- R6::R6Class(
         cli::cli_abort(messages$readOnly("Schemas"))
       }
     },
-    #' @field Path Prefix path for the administration
+    #' @field Path Prefix path for the administration to create default path, otherwise for custom
+    #' pkmls path should be provided for each schema item protocol
     Path = function(value) {
       if (missing(value)) {
         private$.Path
@@ -658,9 +673,6 @@ AdvancedProtocol <- R6::R6Class(
     initialize = function(name = "Protocol", path = NULL) {
       private$.UUID <- uuid::UUIDgenerate()
       self$Name <- name
-      if (is.null(path)) {
-        path <- "Events|{protocolName}"
-      }
       self$Path = path
     },
     #' @description
@@ -731,8 +743,14 @@ AdvancedProtocol <- R6::R6Class(
     },
     #' @description
     #' Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
+    #' @param path Prefix path for the administration.
     #' @return A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
-    extractProtocol = function() {
+    extractProtocol = function(path = self$Path) {
+      if (is.null(path)) {
+        path <- "Events|{protocolName}"
+      }
+      mainPath <- path
+
       # for advanced protocol
       wantedAdmin <- vector(mode = "list", length = length(self$Schemas))
 
@@ -758,7 +776,9 @@ AdvancedProtocol <- R6::R6Class(
             parameters = wantedAdminProt$parameters,
             formulationType = wantedAdminProt$formulationType,
             formulationName = wantedAdminProt$formulationName,
-            formulation = wantedAdminProt$formulation
+            formulation = wantedAdminProt$formulation,
+            allowedPath = wantedAdminProt$allowedPath,
+            path = wantedAdminProt$path
           )
         }
         wantedAdmin[[schemaIdx]] <- dplyr::bind_rows(wantedAdmin[[schemaIdx]])
@@ -775,6 +795,31 @@ AdvancedProtocol <- R6::R6Class(
           )
         )
 
+      # order wanted admin to set application number by default
+      wantedAdmin <- wantedAdmin %>% arrange(time)
+
+      # loop across admin to set admin number in time order if allowed path were not set
+      if (all(is.null(unlist(wantedAdmin$allowedPath)))) {
+        for (i in seq_len(nrow(wantedAdmin))) {
+          form <- wantedAdmin[i,]$formulationName
+          mainPath <- paste0(path,  paste0("|", na.omit(form), recycle0 = T))
+
+          wantedAdmin$path[[i]] <- paste(mainPath, paste0("Application_", i), sep = "|")
+        }
+      } else {
+        if (any(is.null(unlist(wantedAdmin$allowedPath)))) {
+          cli::cli_abort("Check your protocol, either all allowed path should be set or none.")
+        }
+
+        wantedAdmin <- wantedAdmin %>% group_by(allowedPath)
+
+        if (any(wantedAdmin %>% summarize(N = n() > length(unique(unlist(allowedPath)))) %>% pull(N))) {
+          cli::cli_warn("For multiple admin path, should list all available paths for this type of administrations.")
+        }
+
+        wantedAdmin <- wantedAdmin %>% mutate(path = unlist(allowedPath)[row_number()])
+      }
+
       return(wantedAdmin)
     },
     #' @description
@@ -783,47 +828,37 @@ AdvancedProtocol <- R6::R6Class(
     #' @return A character vector with all parameter paths.
     getAllParameterPaths = function(path = self$Path) {
       allParamPaths <- c()
-      protocolName <- self$Name
-      path <- glue::glue(path)
+
+      if (is.null(path)) {
+        path <- "Events|{protocolName}"
+      }
 
       wantedAdmin <- self$extractProtocol()
 
-      # loop across formulationName
-      for (form in unique(wantedAdmin$formulationName)) {
-        if (is.na(form)) {
-          adminSubset <- wantedAdmin[is.na(wantedAdmin$formulationName), ]
-        } else {
-          adminSubset <- wantedAdmin[sapply(wantedAdmin$formulationName == form, isTRUE), ]
+      # loop across admin to set admin number in time order if allowed path were not set
+      for (i in seq_len(nrow(wantedAdmin))) {
+        if (ospsuite::getDimensionForUnit(wantedAdmin$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$Mass) {
+          doseParamName <- "Dose"
+        } else if (ospsuite::getDimensionForUnit(wantedAdmin$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body weight`) {
+          doseParamName <- "DosePerBodyWeight"
+        } else if (ospsuite::getDimensionForUnit(wantedAdmin$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body surface area`) {
+          doseParamName <- "DosePerBodySurfaceArea"
         }
 
-        # sort admin subset by time
-        adminSubset <- adminSubset[order(adminSubset$time), ]
-        for (i in 1:nrow(adminSubset)) {
-          mainPath <- paste(path, paste0(na.omit(form)), sep = "|")
-
-          if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$Mass) {
-            doseParamName <- "Dose"
-          } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body weight`) {
-            doseParamName <- "DosePerBodyWeight"
-          } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body surface area`) {
-            doseParamName <- "DosePerBodySurfaceArea"
-          }
-
-          allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", doseParamName, sep = "|"))
-          allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Start time", sep = "|"))
-          if (!is.null(adminSubset$parameters[[i]]$InfusionTime)) {
-            allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Infusion time", sep = "|"))
-          }
-          if (!is.null(adminSubset$parameters[[i]]$WaterVolPerBW)) {
-            allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Volume of water/body weight", sep = "|"))
-          }
+        allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", doseParamName, sep = "|"))
+        allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", "Start time", sep = "|"))
+        if (!is.null(wantedAdmin$parameters[[i]]$InfusionTime)) {
+          allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", "Infusion time", sep = "|"))
+        }
+        if (!is.null(wantedAdmin$parameters[[i]]$WaterVolPerBW)) {
+          allParamPaths <- c(allParamPaths, paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", "Volume of water/body weight", sep = "|"))
         }
       }
       # add formulations parameters
       if (!is.null(self$Formulations)) {
-        allParamPaths <- c(allParamPaths, unlist(sapply(self$Formulations, \(y){y$getAllPropertyPaths(protocolName = path)})))
+        allParamPaths <- c(allParamPaths, unlist(sapply(self$Formulations, \(y){y$getAllPropertyPaths(protocolPrefix = path)})))
       }
-      return(unique(unname(allParamPaths)))
+      return(purrr::map_chr(allParamPaths, ~ glue::glue(.x, protocolName = self$Name)))
     },
     #' @description
     #' Convert to snapshot

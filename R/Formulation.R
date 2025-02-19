@@ -72,16 +72,16 @@ Formulation <- R6::R6Class(
     #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
-    #' @param path Corresponding path in the simulation pkml of the property to add. Default to `{protocolName}|{formulationName}|parName`
-    addParameter = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
+    #' @param pathPrefix Corresponding path in the simulation pkml of the property to add. Default to `{protocolPrefix}|{formulationName}`
+    addParameter = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, pathPrefix = NULL) {
       if (name %in% names(private$.Parameters)) {
         stop("Property '", name, "' already exists.")
       }
-      path <- ifelse(!is.null(path), path, paste0("{protocolName}|{formulationName}|", parName))
+      pathPrefix <- ifelse(!is.null(pathPrefix), pathPrefix, paste0("{protocolPrefix}|{formulationName}"))
       private$.Parameters[[name]] <- Property$new(
         name = name,
         parName = parName,
-        path = path,
+        path = paste(pathPrefix, parName, sep = "|"),
         dimension = dimension,
         value = value,
         unit = unit,
@@ -91,11 +91,11 @@ Formulation <- R6::R6Class(
     },
     #' @description
     #' Get the paths of all parameters defined for the formulation, using protocolName and formulationName
-    #' @param protocolName Name of the protocol in the simulation
+    #' @param protocolPrefix Name of the protocol in the simulation
     #' @param formulationName Name of the formulation in the simulation
     #' @return A character vector with the paths of all parameters
-    getAllPropertyPaths = function(protocolName = NULL, formulationName = self$Name) {
-      if (is.null(protocolName) || is.null(formulationName)) {
+    getAllPropertyPaths = function(protocolPrefix = NULL, formulationName = self$Name) {
+      if (is.null(protocolPrefix) || is.null(formulationName)) {
         purrr::list_c(
           purrr::map(self$Parameters, \(x) {
             x$path
@@ -183,6 +183,7 @@ createDissolvedFormulation <- function(
 #' @param lagTimeUnit Time unit for lagTime (default min)
 #' @param shape dissolution shape parameter (default 0.92)
 #' @param suspension Boolean, whether to use as suspension (default True)
+#' @param path prefix of formulation path in the sim. NULL will defaults to `{protocolPrefix}|{formulationName}`
 #' @return A new `Formulation` object.
 #' @export
 createWeibullFormulation <- function(
@@ -190,7 +191,8 @@ createWeibullFormulation <- function(
     dissolutionTime50 = 240, dissolutionTime50Unit = "min",
     lagTime = 0, lagTimeUnit = "min",
     shape = 0.92,
-    suspension = TRUE) {
+    suspension = TRUE,
+    path = NULL) {
   formulation <- Formulation$new(
     name = name,
     type = "Weibull"
@@ -200,26 +202,30 @@ createWeibullFormulation <- function(
     parName = "Dissolution time (50% dissolved)",
     dimension = "Time",
     value = dissolutionTime50,
-    unit = dissolutionTime50Unit
+    unit = dissolutionTime50Unit,
+    pathPrefix = path
   )
   formulation$addParameter(
     name = "Lag time",
     parName = "Lag time",
     dimension = "Time",
     value = lagTime,
-    unit = lagTimeUnit
+    unit = lagTimeUnit,
+    pathPrefix = path
   )
   formulation$addParameter(
     name = "Dissolution shape",
     parName = "Dissolution shape",
     dimension = "Dimensionless",
-    value = shape
+    value = shape,
+    pathPrefix = path
   )
   formulation$addParameter(
     name = "Use as suspension",
     parName = "Use as suspension",
     dimension = "Dimensionless",
-    value = as.numeric(suspension)
+    value = as.numeric(suspension),
+    pathPrefix = path
   )
 
   return(formulation)
@@ -234,13 +240,15 @@ createWeibullFormulation <- function(
 #' @param lagTime lag time before dissolution starts (default 0)
 #' @param lagTimeUnit Time unit for lagTime (default min)
 #' @param suspension Boolean, whether to use as suspension (default True)
+#' @param path prefix of formulation path in the sim. NULL will defaults to `{protocolPrefix}|{formulationName}`
 #' @return A new `Formulation` object.
 #' @export
 createLint80Formulation <- function(
     name = "Lint80",
     dissolutionTime80 = 240, dissolutionTime80Unit = "min",
     lagTime = 0, lagTimeUnit = "min",
-    suspension = TRUE) {
+    suspension = TRUE,
+    path = NULL) {
   formulation <- Formulation$new(
     name = name,
     type = "Lint80"
@@ -250,20 +258,23 @@ createLint80Formulation <- function(
     parName = "Dissolution time (80% dissolved)",
     dimension = "Time",
     value = dissolutionTime80,
-    unit = dissolutionTime80Unit
+    unit = dissolutionTime80Unit,
+    pathPrefix = path
   )
   formulation$addParameter(
     name = "Lag time",
     parName = "Lag time",
     dimension = "Time",
     value = lagTime,
-    unit = lagTimeUnit
+    unit = lagTimeUnit,
+    pathPrefix = path
   )
   formulation$addParameter(
     name = "Use as suspension",
     parName = "Use as suspension",
     dimension = "Dimensionless",
-    value = as.numeric(suspension)
+    value = as.numeric(suspension),
+    pathPrefix = path
   )
 
   return(formulation)
@@ -284,6 +295,7 @@ createLint80Formulation <- function(
 #' @param radiusMin Mininum particle radius, for polydispersed only (default 1)
 #' @param radiusMax Maximum particle radius, for polydispersed only (default 19)
 #' @param nBins Number of bins for polydisperse only (default 3)
+#' @param path prefix of formulation path in the sim. NULL will defaults to `{protocolPrefix}|{formulationName}`
 #' @return A new `Formulation` object.
 #' @export
 createParticleDissolutionFormulation <- function(
@@ -291,7 +303,8 @@ createParticleDissolutionFormulation <- function(
     thickness = 30, thicknessUnit = "µm",
     distributionType = "Monodisperse", distribution = "Normal",
     radius = 10, radiusUnit = "µm", radiusSD = 3, radiusCV = 1.5, radiusMin = 1, radiusMax = 19,
-    nBins = 3) {
+    nBins = 3,
+    path = NULL) {
   formulation <- Formulation$new(
     name = name,
     type = "Particle"
@@ -301,14 +314,16 @@ createParticleDissolutionFormulation <- function(
     parName = "Thickness (unstirred water layer)",
     dimension = "Length",
     value = thickness,
-    unit = thicknessUnit
+    unit = thicknessUnit,
+    pathPrefix = path
   )
   formulation$addParameter(
     name = "Type of particle size distribution",
     parName = "Type of particle size distribution",
     dimension = "Dimensionless",
     value = distributionType,
-    enum = ParticleSizeDistributionType
+    enum = ParticleSizeDistributionType,
+    pathPrefix = path
   )
   # for monodisperse
   if (distributionType == "Monodisperse") {
@@ -317,7 +332,8 @@ createParticleDissolutionFormulation <- function(
       parName = "Particle radius (mean)",
       dimension = "Length",
       value = radius,
-      unit = radiusUnit
+      unit = radiusUnit,
+      pathPrefix = path
     )
   } else { # polydisperse
     formulation$addParameter(
@@ -325,7 +341,8 @@ createParticleDissolutionFormulation <- function(
       parName = "Particle size distribution",
       dimension = "Dimensionless",
       value = distribution,
-      enum = ParticleSizeDistribution
+      enum = ParticleSizeDistribution,
+      pathPrefix = path
     )
     if (distribution == "Normal") {
       formulation$addParameter(
@@ -333,14 +350,16 @@ createParticleDissolutionFormulation <- function(
         parName = "Particle radius (mean)",
         dimension = "Length",
         value = radius,
-        unit = radiusUnit
+        unit = radiusUnit,
+        pathPrefix = path
       )
       formulation$addParameter(
         name = "Particle radius (SD)",
         parName = "Particle radius (SD)",
         dimension = "Length",
         value = radiusSD,
-        unit = radiusUnit
+        unit = radiusUnit,
+        pathPrefix = path
       )
     } else {
       formulation$addParameter(
@@ -348,13 +367,15 @@ createParticleDissolutionFormulation <- function(
         parName = "Particle radius (geomean)",
         dimension = "Length",
         value = radius,
-        unit = radiusUnit
+        unit = radiusUnit,
+        pathPrefix = path
       )
       formulation$addParameter(
         name = "Coefficient of variation",
         parName = "Coefficient of variation",
         dimension = "Dimensionless",
-        value = radiusCV
+        value = radiusCV,
+        pathPrefix = path
       )
     }
     formulation$addParameter(
@@ -362,20 +383,23 @@ createParticleDissolutionFormulation <- function(
       parName = "Particle radius (min)",
       dimension = "Length",
       value = radiusMin,
-      unit = radiusUnit
+      unit = radiusUnit,
+      pathPrefix = path
     )
     formulation$addParameter(
       name = "Particle radius (max)",
       parName = "Particle radius (max)",
       dimension = "Length",
       value = radiusMax,
-      unit = radiusUnit
+      unit = radiusUnit,
+      pathPrefix = path
     )
     formulation$addParameter(
       name = "Number of bins",
       parName = "Number of bins",
       dimension = "Dimensionless",
-      value = nBins
+      value = nBins,
+      pathPrefix = path
     )
   }
 
@@ -388,11 +412,13 @@ createParticleDissolutionFormulation <- function(
 #' @param name Name of the formulation to create
 #' @param endTime Time of administration end (default 60)
 #' @param endTimeUnit Unit for time of administration end (default min)
+#' @param path prefix of formulation path in the sim. NULL will defaults to `{protocolPrefix}|{formulationName}`
 #' @return A new `Formulation` object.
 #' @export
 createZeroOrderFormulation <- function(
     name = "ZeroOrder",
-    endTime = 60, endTimeUnit = "min") {
+    endTime = 60, endTimeUnit = "min",
+    path = NULL) {
   formulation <- Formulation$new(
     name = name,
     type = "ZeroOrder"
@@ -402,7 +428,8 @@ createZeroOrderFormulation <- function(
     parName = "End time",
     dimension = "Time",
     value = endTime,
-    unit = endTimeUnit
+    unit = endTimeUnit,
+    pathPrefix = path
   )
   return(formulation)
 }
@@ -413,21 +440,24 @@ createZeroOrderFormulation <- function(
 #' @param name Name of the formulation to create
 #' @param tHalf Half-life of the drug release process (default 0.01)
 #' @param tHalfUnit Unit of half-life of the drug release process (default min)
+#' @param path prefix of formulation path in the sim. NULL will defaults to `{protocolPrefix}|{formulationName}`
 #' @return A new `Formulation` object.
 #' @export
 createFirstOrderFormulation <- function(
     name = "FirstOrder",
-    tHalf = 0.01, tHalfUnit = "min") {
+    tHalf = 0.01, tHalfUnit = "min",
+    path = NULL) {
   formulation <- Formulation$new(
     name = name,
-    type = "FirstOrder"
+    type = "FirstOrder",
   )
   formulation$addParameter(
     name = "t1/2",
     parName = "t1/2",
     dimension = "Time",
     value = tHalf,
-    unit = tHalfUnit
+    unit = tHalfUnit,
+    pathPrefix = path
   )
   return(formulation)
 }
