@@ -73,76 +73,6 @@ Study <- R6::R6Class(
         paths <- intersect(paths, availablePaths)
       }
       return(paths)
-    #     compIdx <- seq_along(self$Compounds)[1]
-    #
-    #     wantedAdmin <- self$Compounds[[compIdx]]$Protocol$extractProtocol()
-    #     availableAdmins <- private$.simulation$allApplicationsFor(self$Compounds[[compIdx]]$Name)
-    #
-    #     availableAdmins <- tibble(
-    #       prefix = purrr::list_c(purrr::map(availableAdmins, ~ .x$startTime$parentContainer$path)),
-    #       container = purrr::map(availableAdmins, ~ .x$startTime$parentContainer)
-    #     )
-    #
-    #     availableAdmins <- availableAdmins %>% mutate(parameters = list(gsub(paste0(container[[1]]$path,"|"), "", ospsuite::getAllParameterPathsIn(container[[1]]), fixed = TRUE)))
-    #     availableAdmins <- availableAdmins %>% mutate(
-    #       type = if ("Infusion time" %in% parameters) {
-    #         "IV Infusion"
-    #       } else if ("Volume of water/body weight" %in% parameters) {
-    #         "Oral"
-    #       } else if () {
-    #
-    #       } else {
-    #         "IV Bolus"
-    #       }
-    #     )
-    #     # from available admin infer type, form, of admin to map to wantedAdmin
-    #     simParam <-
-    #
-    #
-    #     allParamPaths <- c()
-    #     protocolName <- self$Name
-    #     path <- glue::glue(path)
-    #
-    #     wantedAdmin <- self$extractProtocol()
-    #
-    #     # loop across formulationName
-    #     for (form in unique(wantedAdmin$formulationName)) {
-    #       if (is.na(form)) {
-    #         adminSubset <- wantedAdmin[is.na(wantedAdmin$formulationName), ]
-    #       } else {
-    #         adminSubset <- wantedAdmin[sapply(wantedAdmin$formulationName == form, isTRUE), ]
-    #       }
-    #
-    #       # sort admin subset by time
-    #       adminSubset <- adminSubset[order(adminSubset$time), ]
-    #       for (i in 1:nrow(adminSubset)) {
-    #         mainPath <- paste(path, paste0(na.omit(form)), sep = "|")
-    #
-    #         if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$Mass) {
-    #           doseParamName <- "Dose"
-    #         } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body weight`) {
-    #           doseParamName <- "DosePerBodyWeight"
-    #         } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body surface area`) {
-    #           doseParamName <- "DosePerBodySurfaceArea"
-    #         }
-    #
-    #         allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", doseParamName, sep = "|"))
-    #         allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Start time", sep = "|"))
-    #         if (!is.null(adminSubset$parameters[[i]]$InfusionTime)) {
-    #           allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Infusion time", sep = "|"))
-    #         }
-    #         if (!is.null(adminSubset$parameters[[i]]$WaterVolPerBW)) {
-    #           allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Volume of water/body weight", sep = "|"))
-    #         }
-    #       }
-    #     }
-    #     # add formulations parameters
-    #     if (!is.null(self$Formulations)) {
-    #       allParamPaths <- c(allParamPaths, unlist(sapply(self$Formulations, \(y){y$getAllPropertyPaths(protocolName = path)})))
-    #     }
-    #     return(unique(unname(allParamPaths)))
-    #   },
-
     },
 
     #' @description
@@ -198,13 +128,16 @@ Study <- R6::R6Class(
               ),
               list(
                 Name = "Resolution",
-                Value = resolution,
-                # resolution = scenarioConfiguration$simulationTime[[i]][3] / toBaseUnit(
-                #   quantityOrDimension = ospDimensions$Time,
-                #   values = 1,
-                #   unit = scenarioConfiguration$simulationTimeUnit
-                # )
-                Unit = paste0("pts/", timeUnit)
+                Value = if (paste0("pts/", timeUnit) %in% ospsuite::getUnitsForDimension("Resolution")) {
+                  resolution
+                } else {
+                  resolution / ospsuite::toUnit("Time", values = 1, sourceUnit = timeUnit, targetUnit = "min")
+                },
+                Unit = if (paste0("pts/", timeUnit) %in% ospsuite::getUnitsForDimension("Resolution")) {
+                  paste0("pts/", timeUnit)
+                } else {
+                  paste0("pts/min")
+                }
               )
             )
           )
@@ -235,7 +168,13 @@ Study <- R6::R6Class(
             ExpressionProfiles = list()
           )
         ),
-        "Compounds" = purrr::map(self$Compounds, \(x) {x$toSnapshot()}),
+        "Compounds" = purrr::map(self$Compounds, \(x) {
+          compSnap <- x$toSnapshot()
+          for (procIdx in seq_along(compSnap$Processes) > 0) {
+            compSnap$Processes[[procIdx]]$Species <- ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
+          }
+          return(compSnap)
+        }),
         "Formulations" = purrr::list_c(purrr::map(self$Compounds, \(x) {purrr::map(x$Protocol$Formulations, \(y) {y$toSnapshot()})})),
         "Protocols" = purrr::map(self$Compounds, \(x) {x$Protocol$toSnapshot()}),
         "Simulations" = list(
@@ -248,21 +187,32 @@ Study <- R6::R6Class(
             Compounds = purrr::map(
               self$Compounds,
               \(x) {
-                list(
-                  Name = x$Name,
-                  CalculationMethods = list(
-                    paste0("Cellular partition coefficient method - ", x$PartitionCoefficientMethod),
-                    paste0("Cellular permeability - ", x$CellularPermeabilityMethod)
-                  ),
-                  Processes = list(),
-                  Protocol = list(
-                    Name = x$Protocol$Name,
-                    Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationsKey, \(y, z) {
+                purrr::compact(
+                  list(
+                    Name = x$Name,
+                    CalculationMethods = list(
+                      paste0("Cellular partition coefficient method - ", x$PartitionCoefficientMethod),
+                      paste0("Cellular permeability - ", x$CellularPermeabilityMethod)
+                    ),
+                    Processes = unname(
+                      purrr::imap(x$.__enclos_env__$private$.allProcessProperties, \(y,i) {
+                        list(
+                          Name = paste(ProcessPrefixes[i], i, sep = "-"),
+                          SystemicProcessType = ProcessTypes[[i]]
+                        )
+                      })
+                    ),
+                    Protocol = purrr::compact(
                       list(
-                        Name = y$Name,
-                        Key = z
+                        Name = x$Protocol$Name,
+                        Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationsKey, \(y, z) {
+                          list(
+                            Name = y$Name,
+                            Key = z
+                          )
+                        })
                       )
-                    })
+                    )
                   )
                 )
               }

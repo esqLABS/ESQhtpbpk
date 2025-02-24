@@ -15,8 +15,11 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     "Compounds" =  list(),
     "PC" = list(),
     "CP" =  list(),
-    "FormulationsProtocols" = list() #,
-    # "Processes" = list()
+    "FormulationsProtocols" = list(),
+    "HepaticProcesses" = list(),
+    "RenalProcesses" = list(),
+    "GFRProcesses" = list(),
+    "BiliaryProcesses" = list()
   )
 
   for (study in studyList) {
@@ -40,24 +43,63 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
               dplyr::group_by(type, formulationType) %>% dplyr::arrange(desc(nAdmins), .by_group = TRUE) %>%
               dplyr::mutate(formulationKeySim = ifelse(is.na(formulationKey), NA, paste(type, na.omit(formulationType), dplyr::row_number())))
           })
-        ) # ,
-        # "Processes" = list()
+        ),
+        "HepaticProcesses" = list(
+          purrr::map(study$Compounds, \(x) {
+            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (is.null(procName) || ProcessTypes[procName] != "Hepatic") {
+              NULL
+            } else {
+              procName
+            }
+          })
+        ),
+        "RenalProcesses" = list(
+          purrr::map(study$Compounds, \(x) {
+            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (is.null(procName) || ProcessTypes[procName] != "Renal") {
+              NULL
+            } else {
+              procName
+            }
+          })
+        ),
+        "GFRProcesses" = list(
+          purrr::map(study$Compounds, \(x) {
+            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (is.null(procName) || ProcessTypes[procName] != "GFR") {
+              NULL
+            } else {
+              procName
+            }
+          })
+        ),
+        "BiliaryProcesses" = list(
+          purrr::map(study$Compounds, \(x) {
+            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (is.null(procName) || ProcessTypes[procName] != "Biliary") {
+              NULL
+            } else {
+              procName
+            }
+          })
+        )
       )
     )
   }
 
   # for (study in studyList) {
-  genericStudyStructure <- studyStructureSummary %>% dplyr::select(-StudyID, -FormulationsProtocols, -CompoundsID) %>% unique()
+  genericStudyStructure <- studyStructureSummary %>% dplyr::select(-StudyID, -FormulationsProtocols, -CompoundsID, -GFRProcesses, -BiliaryProcesses) %>% unique()
 
   # get generic model based on structure
   genericStudyStructure <- genericStudyStructure %>% dplyr::mutate(GenericModel = paste0("Model", dplyr::row_number()))
 
   # add generic model to each study structure summary
-  studyStructureSummary <- dplyr::left_join(studyStructureSummary, genericStudyStructure, by = c("Individuals","Compounds", "PC", "CP"))
+  studyStructureSummary <- dplyr::left_join(studyStructureSummary, genericStudyStructure, by = c("Individuals","Compounds", "PC", "CP", "HepaticProcesses", "RenalProcesses"))
 
   for (model in genericStudyStructure$GenericModel) {
     studySubset <- studyStructureSummary %>% dplyr::filter(GenericModel == model)
-    studySubset <- studySubset %>% dplyr::select(-GenericModel, -StudyID, -Individuals, -PC, -CP)
+    studySubset <- studySubset %>% dplyr::select(-GenericModel, -StudyID, -Individuals, -PC, -CP, -HepaticProcesses, -RenalProcesses)
     studySubset <- studySubset %>% tidyr::unnest(cols = everything())
 
     # summarise protocol x formulation needed for each compound accross studies using the same generic model
@@ -66,10 +108,11 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         dplyr::bind_rows(FormulationsProtocols) %>%
           dplyr::group_by(type, formulationType, formulationKeySim) %>%
           dplyr::summarise(nAdmins = max(nAdmins))
-        )
+        ),
+        GFRProcesses  = unique(GFRProcesses),
+        BiliaryProcesses = unique(BiliaryProcesses)
       )
     # summarise processes needed for each compound accross studies using the same generic model
-
     compounds <- lapply(studySubset$Compounds, \(x) {
       comp <- Compound$new(ID = x, name = x)
 
@@ -78,8 +121,50 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       comp$PartitionCoefficientMethod <- unlist(genericStudyStructure %>% dplyr::filter(GenericModel == model) %>% dplyr::pull(PC))[[compIdx]]
       # add CP
       comp$CellularPermeabilityMethod <- unlist(genericStudyStructure %>% dplyr::filter(GenericModel == model) %>% dplyr::pull(CP))[[compIdx]]
-      # add process
-
+      # add hepatic process
+      hepProc <- unlist(genericStudyStructure %>% dplyr::filter(GenericModel == model) %>% dplyr::pull(HepaticProcesses), recursive = FALSE)[[compIdx]]
+      if (length(hepProc) > 0) {
+        comp$addProcessProperty(
+          processType = hepProc,
+          propertyName = MainProcessProperty[[hepProc]]$Name,
+          parName = MainProcessProperty[[hepProc]]$Name,
+          dimension = MainProcessProperty[[hepProc]]$dimension,
+          value = MainProcessProperty[[hepProc]]$value, unit = NULL, enum = NULL, check = NULL,  path = NULL
+        )
+      }
+      # add renal process
+      renProc <- unlist(genericStudyStructure %>% dplyr::filter(GenericModel == model) %>% dplyr::pull(RenalProcesses), recursive = FALSE)[[compIdx]]
+      if (length(renProc) > 0) {
+        comp$addProcessProperty(
+          processType = renProc,
+          propertyName = MainProcessProperty[[renProc]]$Name,
+          parName = MainProcessProperty[[renProc]]$Name,
+          dimension = MainProcessProperty[[renProc]]$dimension,
+          value = MainProcessProperty[[renProc]]$value, unit = NULL, enum = NULL, check = NULL,  path = NULL
+        )
+      }
+      # add gfr process
+      gfrProc <- unlist(studySubset %>% dplyr::filter(Compounds == x) %>% dplyr::pull(GFRProcesses))
+      if (length(gfrProc) > 0) {
+        comp$addProcessProperty(
+          processType = gfrProc,
+          propertyName = MainProcessProperty[[gfrProc]]$Name,
+          parName = MainProcessProperty[[gfrProc]]$Name,
+          dimension = MainProcessProperty[[gfrProc]]$dimension,
+          value =  MainProcessProperty[[gfrProc]]$value, unit = NULL, enum = NULL, check = NULL,  path = NULL
+        )
+      }
+      # add biliary process
+      bilProc <- unlist(studySubset %>% dplyr::filter(Compounds == x) %>% dplyr::pull(BiliaryProcesses))
+      if (!is.null(bilProc)) {
+        comp$addProcessProperty(
+          processType = bilProc,
+          propertyName = MainProcessProperty[[bilProc]]$Name,
+          parName = MainProcessProperty[[bilProc]]$Name,
+          dimension = MainProcessProperty[[bilProc]]$dimension,
+          value = MainProcessProperty[[bilProc]]$value, unit = NULL, enum = NULL, check = NULL,  path = NULL
+        )
+      }
       # add protocol
       prot <- AdvancedProtocol$new(name = paste(x, "Protocol"))
 
