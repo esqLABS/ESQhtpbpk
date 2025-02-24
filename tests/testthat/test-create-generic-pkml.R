@@ -3,6 +3,12 @@ test_that("Create generic PKMLS from study list", {
     ### Study 1
     # Compound 1 with IV Bolus
     comp1 <- Compound$new(ID = 1, name = "Alpha")
+    comp1$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 10, unit = "ml/min/kg"
+    )
 
     prot1 <- SimpleProtocol$new(
       route = "IV Bolus",
@@ -58,7 +64,28 @@ test_that("Create generic PKMLS from study list", {
     ### Study 4 same as study 1 but in Human
     study4 <- Study$new(ID = "Study4", compounds = list(comp1), individual = "Human")
 
-    studyList <- list(study1, study2, study3, study4)
+    ### Study 5 same as study 3 but with compound1 with different process
+    comp1$removeProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Plasma clearance"
+    )
+    comp1$addProcessProperty(
+      processType = "Liver Mic T1/2",
+      propertyName = "Thalf",
+      parName = "t1/2 (microsomal assay)",
+      dimension = "Time", value = 10, unit = "min"
+    )
+    comp1$addProcessProperty(
+      processType = "Liver Mic T1/2",
+      propertyName = "Conc Incubation",
+      parName = "Amount protein/incubation",
+      dimension = "Concentration (mass)", value = 11, unit = "mg/ml"
+    )
+
+    study5 <- Study$new(ID = "Study5", compounds = list(comp1, comp2), individual = "Rat")
+
+
+    studyList <- list(study1, study2, study3, study4, study5)
 
     rtemp <- tempdir(check = T)
     temp_dir <- tempfile(tmpdir = rtemp)
