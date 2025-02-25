@@ -5,6 +5,7 @@
 #' @param outputFolder Folder were to write the generic pkmls
 #' @param overwrite If TRUE, overwrite existing files
 #' @return The update studyList with model to use, and adjusted paths.
+#' @importFrom dplyr %>%
 #' @export
 createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   genericStudies <- list()
@@ -173,7 +174,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       for (i in 1:nrow(admins)) {
         prot$addSchema(schemaName = paste("Schema", i), startTime = i, numberOfRepetitions = admins$nAdmins[i], timeBetweenRepetitions = 0, timeUnit = "h")
 
-        sp <- SimpleProtocol$new(name = "SimpleProtocol", dosingInterval = "Single", route = admins$type[i])
+        sp <- SimpleProtocol$new(name = "SimpleProtocol", dosingInterval = "Single", route = admins$type[i], waterVolPerBW = 0)
 
         if (!is.na(admins$formulationType[i])) {
           fun <- get(paste0("create", admins$formulationType[i], "Formulation"))
@@ -198,12 +199,19 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     # load generic simulation once and add reference to user study
     sim <- ospsuite::loadSimulation(file.path(outputFolder, paste0(genStudy$ID, ".pkml")))
 
+    # update simulation administration start time all to 0 (was set differently for easier mapping of admin path) and resave
+    ospsuite::setParameterValues(
+      parameters = ospsuite::getAllParametersMatching("Events|**|Start time", sim),
+      values = 0
+    )
+    ospsuite::saveSimulation(sim, file.path(outputFolder, paste0(genStudy$ID, ".pkml")))
+
     # add Model path to each study from studyList
     studyIDs <- studyStructureSummary %>% dplyr::filter(GenericModel == genStudy$ID) %>% dplyr::pull(StudyID)
 
     for (idx in which(sapply(studyList, \(x) {x$ID}) %in% studyIDs)) {
       studyList[[idx]]$setGenericModel(file.path(outputFolder, paste0(genStudy$ID, ".pkml")))
-      studyList[[idx]]$setSimulation(sim)
+      # studyList[[idx]]$setSimulation(sim)
     }
   }
 
@@ -267,5 +275,5 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     }
   }
 
-  return(studyList)
+  return(invisible(studyList))
 }
