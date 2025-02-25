@@ -24,7 +24,7 @@
   # check that value is in range otherwise return error message
   if (rangeUnit != unit) {
     lower <- ospsuite::toUnit(values = lower, sourceUnit = rangeUnit, targetUnit = unit, quantityOrDimension = dimension)
-    upper <- ospsuite::toUnit(values = lower, sourceUnit = rangeUnit, targetUnit = unit, quantityOrDimension = dimension)
+    upper <- ospsuite::toUnit(values = upper, sourceUnit = rangeUnit, targetUnit = unit, quantityOrDimension = dimension)
   }
   valid <- (value >= lower && value <= upper)
   if (!valid) {
