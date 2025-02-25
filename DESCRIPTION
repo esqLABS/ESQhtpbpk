@@ -27,7 +27,8 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    uuid
+    uuid,
+    vdiffr
 Suggests: 
     testthat (>= 3.0.0),
     devtools
