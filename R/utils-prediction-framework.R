@@ -22,37 +22,55 @@ runPredictions <- function(
     saveSimulation = FALSE,
     plotFigures = FALSE,
     numberOfCores = ospsuite::getOSPSuiteSetting("numberOfCores"),
-    queueSize = 1000, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+    queueSize = 1000, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma*(Peripheral Venous Blood)"),
     simulationResolution = c(0, 10*24*60, 1/3)) {
   # Make the output folder unique using the current date and time
-  simResultsFolder <- file.path(outputFolder, format(Sys.time(), "%Y-%m-%d_%H-%M-%S"), "SimulationResults")
+  outputFolder <- file.path(outputFolder, format(Sys.time(), "%Y-%m-%d_%H-%M-%S"))
+  simResultsFolder <- file.path(outputFolder, "SimulationResults")
+
+  results <- list()
 
   # Load all simulation once and associate with the study
   pkmlsList <- sapply(studies, \(x) {x$.__enclos_env__$private$.genericModel})
   if (any(sapply(pkmlsList, is.null))) {
     cli::cli_inform("Generic Model not set for some studies. Generic pkml will be automatically created for those studies.")
-    createGenericPKMLs(studies[which(sapply(studies, \(x) {is.null(x$.__enclos_env__$private$.genericModel)}))], file.path(outputFolder, format(Sys.time(), "%Y-%m-%d_%H-%M-%S"), "GenericModels"), overwrite = FALSE)
+    createGenericPKMLs(studies[which(sapply(studies, \(x) {is.null(x$.__enclos_env__$private$.genericModel)}))], file.path(outputFolder, "GenericModels"), overwrite = FALSE)
   }
   pkmlsList <- sapply(studies, \(x) {x$.__enclos_env__$private$.genericModel})
 
   for (pkml in unique(pkmlsList)) {
     sim <- ospsuite::loadSimulation(pkml)
-    ospsuite::setOutputs(simulation = sim, quantitiesOrPaths = outputSelections)
-    ospsuite::setOutputInterval(simulation = sim, startTime = simulationResolution[1], resolution = simulationResolution[3], endTime = simulationResolution[2])
-
     idx <- which(pkmlsList == pkml)
 
-    for (i in idx) {
-      studies[[i]]$setSimulation(sim)
+    outputSelectionsNew <- sapply(ospsuite::getAllQuantitiesMatching(paths = outputSelections, sim), \(x) {x$path})
+    if (length(outputSelectionsNew) > 0) {
+      ospsuite::setOutputs(simulation = sim, quantitiesOrPaths = outputSelectionsNew)
+      ospsuite::setOutputInterval(simulation = sim, startTime = simulationResolution[1], resolution = simulationResolution[3], endTime = simulationResolution[2])
+
+      for (i in idx) {
+        studies[[i]]$setSimulation(sim)
+      }
+    } else {
+      cli::cli_warn("None of the selected outputs were found in the the simulation.")
+      cli::cli_text("Skipping pkml file {.var {pkml}}.")
+      for (i in idx) {
+        studies[[i]] <- NULL
+      }
     }
+  }
+
+  # remove studies with unset simulation (for example due to output selection not found)
+  studies <- purrr::compact(studies)
+  if (length(studies) == 0) {
+    cli::cli_abort("No studies to simulate.")
   }
 
   # check that all defined paths are included in the used simulation
   toSkip <- c()
   for (studyIdx in seq_along(studies)) {
-    paths <- tryCatch(studies[[studyIdx]]$getAllParameterPaths(), error = function(e) {NULL})
+    paths <- tryCatch(studies[[studyIdx]]$getAllParameterPaths(), warning = function(w) {return(NULL)})
     if (is.null(paths)) {
-      cli::cli_warn("Study {var {studies[[studyIdx]]$ID}} is not configured correctly. Some paths could not be found in the associated study. Skipping the study.")
+      cli::cli_warn("Study {.var {studies[[studyIdx]]$ID}} is not configured correctly. Some paths could not be found in the associated study. Skipping the study.")
       toSkip <- c(toSkip, studyIdx)
     }
   }
@@ -62,6 +80,7 @@ runPredictions <- function(
     studies <- purrr::compact(studies)
   }
 
+  cli::cli_text("Initialising simulation batches.")
   simulations <- unique(sapply(studies, \(x) {x$.__enclos_env__$private$.simulation}))
   # Create a simulation batch for each generic model
   simulationsBatches <- lapply(
@@ -88,7 +107,7 @@ runPredictions <- function(
       return(batch)
     }
   )
-  names(simulationsBatches) <- sapply(simulations, \(x) {x$name})
+  names(simulationsBatches) <- sapply(simulations, \(x) {x$sourceFile})
 
   # Each combination of a scenario and simulated study gets an ID
   resultsIdsMap <- data.frame(
@@ -98,11 +117,20 @@ runPredictions <- function(
 
   # To avoid running out of memory, a threshold for the maximal queued jobs is set.
   queuedRuns <- 0
+  remainingStudies <- length(studies)
+  cli::cli_text("Queueing studies.")
+  cli::cli_progress_bar(
+    total = min(remainingStudies, queueSize),
+    format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
+  )
   # Add runs to SimulationBatch for every study
   for (study in studies) {
 
+    cli::cli_progress_update()
+
     # Get the simulation batch for the current generic model
-    simulationBatch <- simulationsBatches[[study$.__enclos_env__$private$.simulation$name]]
+    simulationBatch <- simulationsBatches[[study$.__enclos_env__$private$.simulation$sourceFile]]
+
     parameterStartValues <- .getParameterStartValues(
       parametersPaths = simulationBatch$getVariableParameters(),
       study = study,
@@ -117,6 +145,9 @@ runPredictions <- function(
       simulationName = study$ID
     )
 
+    # reset updated parameters (where set just to get formula values if any)
+    lapply(ospsuite::getAllQuantitiesMatching(simulationBatch$getVariableParameters(), simulationBatch$simulation), \(x) {x$reset()})
+
     resultsIdsMap <- rbind(
         resultsIdsMap,
         data.frame(
@@ -129,12 +160,23 @@ runPredictions <- function(
     # If the number of queued runs has exceeds the specified core limit,
     # simulate and process
     if (queuedRuns >= queueSize) {
-      .processBatchRun(simulationsBatches = simulationsBatches, resultsIdsMap = resultsIdsMap, studies =  studies, outputFolder = simResultsFolder, saveResults = saveResults, plotFigures = plotFigures, numberOfCores = numberOfCores)
+      results <- c(results, .processBatchRun(simulationsBatches = simulationsBatches, resultsIdsMap = resultsIdsMap, studies =  studies, outputFolder = simResultsFolder, saveResults = saveResults, plotFigures = plotFigures, numberOfCores = numberOfCores))
+      remainingStudies <- remainingStudies - queuedRuns
+
       queuedRuns <- 0
+      cli::cli_text("Queueing studies.")
+      cli::cli_progress_bar(
+        total = min(remainingStudies, queueSize),
+        format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
+      )
     }
   }
+
   # Simulate and process the remaining runs that are left because queuedRuns != numberOfCores
-  .processBatchRun(simulationsBatches = simulationsBatches, resultsIdsMap = resultsIdsMap, studies =  studies, outputFolder = simResultsFolder, saveResults = saveResults, plotFigures = plotFigures, numberOfCores = numberOfCores)
+  if (queuedRuns > 0) {
+    results <- c(results, .processBatchRun(simulationsBatches = simulationsBatches, resultsIdsMap = resultsIdsMap, studies =  studies, outputFolder = simResultsFolder, saveResults = saveResults, plotFigures = plotFigures, numberOfCores = numberOfCores))
+  }
+  return(results)
 }
 
 .updateValueFromProperty <- function(property, parameterStartValues, ...) {
@@ -254,6 +296,7 @@ runPredictions <- function(
   # Get values from the simulation object
   defaultVal <- ospsuite::getQuantityValuesByPath(names(parameterStartValues), simulation)
   names(defaultVal) <- names(parameterStartValues)
+
   return(defaultVal)
 }
 
@@ -309,6 +352,8 @@ runPredictions <- function(
 }
 
 .processBatchRun <- function(simulationsBatches, resultsIdsMap, studies, outputFolder, plotFigures, numberOfCores, saveResults = TRUE) {
+  cli::cli_text("Running queued jobs.")
+  cli::cli_text("Started at {Sys.time()}")
   # run all simulations batches
   simulationBatchResults <- ospsuite::runSimulationBatches(simulationsBatches, simulationRunOptions = ospsuite::SimulationRunOptions$new(numberOfCores = numberOfCores))
 
@@ -318,10 +363,11 @@ runPredictions <- function(
 
   if (saveResults) {
     .saveResults(
-      simulationResults = simulationBatchResults,
+      simulationResults = simulationResults,
       outputFolder = outputFolder
     )
   }
+  cli::cli_text("Done {Sys.time()}")
 
   return(simulationResults)
 }

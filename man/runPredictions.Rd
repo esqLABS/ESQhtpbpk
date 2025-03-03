@@ -13,7 +13,7 @@ runPredictions(
   numberOfCores = ospsuite::getOSPSuiteSetting("numberOfCores"),
   queueSize = 1000,
   outputSelections =
-    c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+    c("Organism|PeripheralVenousBlood|**|Plasma*(Peripheral Venous Blood)"),
   simulationResolution = c(0, 10 * 24 * 60, 1/3)
 )
 }

@@ -67,7 +67,7 @@ Study <- R6::R6Class(
         availablePaths <- ospsuite::getAllParameterPathsIn(private$.simulation)
 
         if (!all(paths %in% availablePaths)) {
-          cli::cli_warn("Some paths were not found in the simulation. Please check.")
+          cli::cli_warn("Paths {.vars {paths[!paths %in% availablePaths]}} were not found in the simulation. Please check.")
         }
 
         paths <- intersect(paths, availablePaths)

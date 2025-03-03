@@ -23,10 +23,16 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     "BiliaryProcesses" = list()
   )
 
+  cli::cli_text("Creating study structures.")
+  cli::cli_progress_bar(
+    total = length(studyList),
+    format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
+  )
   for (study in studyList) {
     if (!("Study" %in% class(study))) {
       cli::cli_abort("All elements of studyList must be of `Study` class.")
     }
+    cli::cli_progress_update()
     studyStructureSummary <- rbind(
       studyStructureSummary,
       tibble::tibble(
@@ -47,47 +53,49 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         ),
         "HepaticProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "Hepatic") {
-              NULL
+            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (!is.null(procNames)) {
+              procNames[ProcessTypes[procNames] == "Hepatic"]
             } else {
-              procName
+              NULL
             }
           })
         ),
         "RenalProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "Renal") {
-              NULL
+            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (!is.null(procNames)) {
+              procNames[ProcessTypes[procNames] == "Renal"]
             } else {
-              procName
+              NULL
             }
           })
         ),
         "GFRProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "GFR") {
-              NULL
+            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (!is.null(procNames)) {
+              procNames[ProcessTypes[procNames] == "GFR"]
             } else {
-              procName
+              NULL
             }
           })
         ),
         "BiliaryProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "Biliary") {
-              NULL
+            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            if (!is.null(procNames)) {
+              procNames[ProcessTypes[procNames] == "Biliary"]
             } else {
-              procName
+              NULL
             }
           })
         )
       )
     )
   }
+
+  cli::cli_text("Creating generic models.")
 
   # for (study in studyList) {
   genericStudyStructure <- studyStructureSummary %>% dplyr::select(-StudyID, -FormulationsProtocols, -CompoundsID, -GFRProcesses, -BiliaryProcesses) %>% unique()
@@ -157,7 +165,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       }
       # add biliary process
       bilProc <- unlist(studySubset %>% dplyr::filter(Compounds == x) %>% dplyr::pull(BiliaryProcesses))
-      if (!is.null(bilProc)) {
+      if (length(bilProc) > 0) {
         comp$addProcessProperty(
           processType = bilProc,
           propertyName = MainProcessProperty[[bilProc]]$Name,
@@ -215,8 +223,14 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     }
   }
 
+  cli::cli_text("Updating studies.")
+  cli::cli_progress_bar(
+    total = length(studyList),
+    format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
+  )
   for (idx in seq_along(studyList)) {
     study <- studyList[[idx]]
+    cli::cli_progress_update()
     genericModel <- studyStructureSummary %>% dplyr::filter(StudyID == study$ID) %>% dplyr::pull(GenericModel)
     genStudy <- genericStudies[[which(purrr::map(genericStudies,  \(x) x$ID) == genericModel)]]
 
@@ -263,13 +277,13 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         for (scIdx in seq_along(compound$Protocol$Schemas)) {
           for (sciIdx in seq_along(compound$Protocol$Schemas[[scIdx]]$SchemaItems)) {
             studyProt <- compound$Protocol$Schemas[[scIdx]]$SchemaItems[[sciIdx]]
-            allowedPath <- unlist(genericProtocol %>% dplyr::filter(type == studyProt$Route, identical(formulationName, ifelse(is.null(studyProt$Formulation), NA, studyProt$Formulation$Name))) %>% dplyr::pull(path))
+            allowedPath <- unlist(genericProtocol %>% dplyr::filter(type == studyProt$Route, identical(formulationName, ifelse(is.null(studyProt$Formulation), as.character(NA), studyProt$Formulation$Name))) %>% dplyr::pull(path))
             studyProt$Path <- allowedPath
           }
         }
       } else if ("SimpleProtocol" %in% class(compound$Protocol)) {
         studyProt <- compound$Protocol
-        allowedPath <- unlist(genericProtocol %>% dplyr::filter(type == studyProt$Route, identical(formulationName, ifelse(is.null(studyProt$Formulation), NA, studyProt$Formulation$Name))) %>% dplyr::pull(path))
+        allowedPath <- unlist(genericProtocol %>% dplyr::filter(type == studyProt$Route, identical(formulationName, ifelse(is.null(studyProt$Formulation), as.character(NA), studyProt$Formulation$Name))) %>% dplyr::pull(path))
         studyProt$Path <- allowedPath
       }
     }

@@ -183,7 +183,14 @@ Compound <- R6::R6Class(
       }
 
       if (is.null(path)) {
-        path <- paste0("{compoundName}-", paste(ProcessPrefixes[processType], processType, sep = "-"), "|", parName)
+        if (processType == "GFR") {
+          path <- paste0(
+            "Neighborhoods|Kidney_pls_Kidney_ur|{compoundName}|",
+             paste(ProcessPrefixes[processType], processType, "{compoundName}", sep = "-"),
+            "|", parName)
+        } else {
+          path <- paste0("{compoundName}-", paste(ProcessPrefixes[processType], processType, sep = "-"), "|", parName)
+        }
       }
       private$.allProcessProperties[[processType]][[propertyName]] <- Property$new(
         name = propertyName,
@@ -353,9 +360,11 @@ Compound <- R6::R6Class(
         compoundName <- self$Name
       }
       res <- as.vector(sapply(private$.allProperties, \(x) {glue::glue(x$path)}))
-      res <- c(res, as.character(sapply(private$.allProcessProperties, \(x) {
+      res <- c(res, unname(unlist(sapply(
+        private$.allProcessProperties, \(x) {
         sapply(x, \(y) {glue::glue(y$path)})
-      })))
+      }))))
+
 
       if ( any(c("SimpleProtocol", "AdvancedProtocol") %in% class(self$Protocol))) {
         res <- c(res, self$Protocol$getAllParameterPaths())
