@@ -1,9 +1,9 @@
-#' @title CompoundProperty
+#' @title Property
 #' @docType class
-#' @description  Property of a compound
+#' @description  Property of a compound, of a formulation
 #' @format NULL
-CompoundProperty <- R6::R6Class(
-  "CompoundProperty",
+Property <- R6::R6Class(
+  "Property",
   cloneable = FALSE,
   inherit = ospsuite.utils::Printable,
   active = list(
@@ -95,7 +95,7 @@ CompoundProperty <- R6::R6Class(
     #' (if not given, the unit is assumed to be the same as the unit of the property).
 
     #' valid).
-    #' @return A new `CompoundProperty` object.
+    #' @return A new `Property` object.
     initialize = function(name, path, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, min = NULL, max = NULL, rangeUnit = NULL) {
       private$.name <- name
       private$.path <- path
@@ -139,6 +139,26 @@ CompoundProperty <- R6::R6Class(
         values = self$value,
         unit = self$unit
       ))
+    },
+    #' @description
+    #' Convert to snapshot
+    toSnapshot = function() {
+      snap <- list(
+        Name = self$name,
+        Parameters = list(
+          list(
+            Name = self$name,
+            Value = self$value,
+            Unit = self$unit
+          )
+        )
+      )
+      # if no unit remove unit (dimensionless value)
+      if (snap$Parameters[[1]]$Unit == "") {
+        snap$Parameters[[1]] <- purrr::discard_at(snap$Parameters[[1]], "Unit")
+      }
+
+      return(snap)
     },
 
     #' @description

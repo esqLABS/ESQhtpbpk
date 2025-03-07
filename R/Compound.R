@@ -91,7 +91,7 @@ Compound <- R6::R6Class(
       if (name %in% names(private$.allProperties)) {
         stop("Property '", name, "' already exists.")
       }
-      private$.allProperties[[name]] <- CompoundProperty$new(name, path, dimension, value, unit, enum, check)
+      private$.allProperties[[name]] <- Property$new(name, path, dimension, value, unit, enum, check)
       private$.allPropertyPaths <- c(private$.allParameterPaths, path)
     },
 
@@ -132,7 +132,7 @@ Compound <- R6::R6Class(
       generic_compound <- jsonlite::fromJSON(json, simplifyVector = T, simplifyDataFrame = FALSE)
 
       properties <- lapply(generic_compound$CompoundProperties, \(x) {
-        CompoundProperty$new(
+        Property$new(
           name = x$name,
           path = x$path,
           dimension = x$dimension,
