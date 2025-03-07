@@ -172,6 +172,7 @@ saveRDS(Studies, file = file.path("TB2", "Studies.rds"), compress = TRUE)
     xlsFilePath = filePath, importerConfigurationOrPath = importerConfiguration,
     importAllSheets = TRUE
   )
+  # dataSets[[1]]$name <- studyID
   return(dataSets)
 }
 
@@ -183,6 +184,8 @@ importerConfiguration$timeUnit <- "TimeUnit"
 importerConfiguration$isMeasurementUnitFromColumn <- TRUE
 importerConfiguration$measurementUnit <- "MeasurementUnit"
 importerConfiguration$errorColumn <- NULL
+importerConfiguration$addGroupingColumn("StudyID")
+importerConfiguration$namingPattern <- "{StudyID}"
 
 # reload previous results
 outputFolder <- "TB2"
@@ -239,3 +242,143 @@ for (i in seq_along(TBStudies$StudyID)) {
   # }
 }
 dev.off()
+
+# calculate metrics
+.calculateMetrics <- function(results, dataSets, outputPath, methodName) {
+  # Create a DataCombined holding simulation results and median (imputed) observed
+  # data for residuals calculation
+  dataCombined <- ospsuite::DataCombined$new()
+  dataCombined$addDataSets(dataSets, group = methodName)
+  dataCombined$addSimulationResults(results, quantitiesOrPaths = outputPath, groups = methodName)
+  # Add observed data
+  # dataCombined <- ospsuite::convertUnits(dataCombined)
+
+
+  # Calculate lin and log residuals
+  residualsLogDf <- ospsuite::calculateResiduals(
+    dataCombined = dataCombined,
+    xUnit = ospsuite::ospUnits$Time$min,
+    yUnit = ospsuite::ospUnits$`Concentration [molar]`$`µmol/l`,
+    scaling = "log"
+  )
+
+  residualsLinDf <- ospsuite::calculateResiduals(
+    dataCombined = dataCombined,
+    xUnit = ospsuite::ospUnits$Time$min,
+    yUnit = ospsuite::ospUnits$`Concentration [molar]`$`µmol/l`,
+    scaling = "lin"
+  )
+
+  cMaxObs <- max(residualsLinDf$yValuesObserved)
+  cMaxSim <- max(ospsuite::getOutputValues(simulationResults = results,
+                                           quantitiesOrPaths = outputPath,
+                                           addMetaData = FALSE)$data[[outputPath]])
+
+  cMaxSim_obsTime <- max(residualsLinDf$yValuesSimulated)
+
+  # Get first observed/simulated values (C_first)
+  obsFirstTime <- residualsLogDf$xValues[[1]]
+  obsFirstConc <- residualsLogDf$yValuesObserved[[1]]
+  simFirstConc <- residualsLogDf$yValuesSimulated[[1]]
+  # Get last obsreved/simulated values (C_last)
+  obsLastTime <- residualsLogDf$xValues[[length(residualsLogDf$xValues)]]
+  obsLastConc <- residualsLogDf$yValuesObserved[[length(residualsLogDf$xValues)]]
+  simLastConc <- residualsLogDf$yValuesSimulated[[length(residualsLogDf$xValues)]]
+
+  # Calculate AUC_tLast)
+  obsAUC <- pracma::trapz(residualsLogDf$xValues, residualsLogDf$yValuesObserved)
+  simAUC <- pracma::trapz(residualsLogDf$xValues, residualsLogDf$yValuesSimulated)
+
+  # Calculate fold point wise difference
+  folds <- ospsuite.utils::foldSafe(pmax(residualsLogDf$yValuesObserved, residualsLogDf$yValuesSimulated), pmin(residualsLogDf$yValuesObserved, residualsLogDf$yValuesSimulated))
+
+  output <- data.frame(
+    obsFirstTime = obsFirstTime,
+    obsFirstConc = obsFirstConc,
+    simFirstConc = simFirstConc,
+    obsLastTime = obsLastTime,
+    obsLastConc = obsLastConc,
+    simLastConc = simLastConc,
+    foldC_first = simFirstConc / obsFirstConc,
+    foldC_last = simLastConc / obsLastConc,
+    obsCmax = cMaxObs,
+    simCmax = cMaxSim,
+    simCmax_obsTime = cMaxSim_obsTime,
+    cMaxFold = cMaxSim / cMaxObs,
+    cMaxFold_obsTime = cMaxSim_obsTime / cMaxObs,
+    residualsLog = paste(residualsLogDf$residualValues, collapse = ";"),
+    residualsLogMean = mean(residualsLogDf$residualValues),
+    residualsLogMedian = median(residualsLogDf$residualValues),
+    residualsLin = paste(residualsLinDf$residualValues, collapse = ";"),
+    gmfe = exp(mean(abs(residualsLogDf$residualValues))),
+    rmse = sqrt(mean(residualsLinDf$residualValues^2)),
+    rMedianSE = sqrt(median(residualsLogDf$residualValues^2)),
+    folds = paste(folds, collapse = ";"),
+    foldMean = mean(folds),
+    foldMedian = median(folds),
+    shareFold1_5 = sum(folds < 1.5) / length(folds) * 100,
+    shareFold2 = sum(folds < 2) / length(folds) * 100,
+    shareFold3 = sum(folds < 3) / length(folds) * 100,
+    shareFold5 = sum(folds < 5) / length(folds) * 100,
+    shareFold10 = sum(folds < 10) / length(folds) * 100,
+    observedAUC = obsAUC,
+    simulatedAUC = simAUC,
+    AUCfold = simAUC / obsAUC
+  )
+  return(list(metrics = output, dataCombined = dataCombined))
+}
+
+metric_results <- c()
+for (i in seq_along(TBStudies$StudyID)) {
+  studyID <- TBStudies$StudyID[i]
+  print(studyID)
+  obsData <- .loadData(inVivoData = TBDatasets, studyId = studyID, importerConfiguration = importerConfiguration)
+  MW <- TBCompounds$`MW (g/mol)`[TBCompounds$Compound == TBStudies$Compound[TBStudies$StudyID == studyID]]
+  obsData[[1]]$molWeight <- MW
+
+  groupMethod <- apply(expand.grid(c("PK-Sim", "RR", "PT", "Schmitt", "Berezhkovskiy"), c("PK-Sim", "Schmitt")), 1, paste, collapse = "_")
+  studyIds <- apply(expand.grid(studyID , groupMethod), 1, paste, collapse = "_")
+  # print(studyIds)
+  for (j in seq_along(studyIds)) {
+    studyRes <- studyIds[j]
+    if (!is.null(results2[[studyRes]])) {
+      # modif MW for conversion if needed
+      ospsuite::setParameterValuesByPath(parameterPaths = "Compound1|Molecular weight", values = MW, units = "g/mol", simulation = results2[[studyRes]]$simulation)
+      dc <- ospsuite::DataCombined$new()
+      dc$addDataSets(obsData, groups = groupMethod[j] )
+      dc$addSimulationResults(results2[[studyRes]], groups = groupMethod[j])
+      metres <- .calculateMetrics(results = results2[[studyRes]], dataSets = obsData, outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", methodName = groupMethod[j])
+      metres$metrics$studyID <- studyID
+      metres$metrics$method <- groupMethod[j]
+
+      metric_results <- rbind(metric_results, metres$metrics)
+
+    }
+  }
+
+  # dat <- ospsuite::convertUnits(dc)
+  # .calculateMetrics(results = results2[[1]], dataSets = obsData, outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", methodName = groupMethod[1])
+  #
+}
+
+View(metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(mean))
+View(metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(median))
+View(metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 0.5) %>% select(-studyID) %>% group_by(method) %>% summarize(shareAUC2fold = sum(AUC2fold) / n() * 100))
+View(metric_results %>% mutate(Cmax2fold = cMaxFold <= 2 & cMaxFold >= 0.5) %>% group_by(method) %>% summarize(shareCmax2fold = sum(Cmax2fold) / n() * 100))
+
+View(metric_results %>% mutate(AUC4fold = AUCfold <= 4 & AUCfold >= 1/4) %>% select(-studyID) %>% group_by(method) %>% summarize(shareAUC4fold = sum(AUC4fold) / n() * 100))
+View(metric_results %>% mutate(Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4)  %>% select(-studyID) %>% group_by(method) %>% summarize(shareCmax4fold = sum(Cmax4fold) / n() * 100))
+
+
+write.csv(metric_results, file = "TB2/metrics.csv", row.names = FALSE)
+
+
+tmp <- metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 0.5) %>% group_by(Compound, method) %>% summarize(shareAUC2fold = sum(AUC2fold) / n() * 100)
+tmp <- tmp %>% group_by(method) %>% summarize(shareAUC2fold = mean(shareAUC2fold))
+tmp
+
+ggplot(metric_results) + geom_boxplot(aes(y=log2(cMaxFold), x= method)) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1)
+ggplot(metric_results) + geom_boxplot(aes(y=log2(AUCfold), x= method)) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1)
+ggplot(metric_results) + geom_point(aes(y=log2(AUCfold), x= log2(cMaxFold), color= method)) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1) + geom_vline(xintercept = -1) + geom_vline(xintercept = +1)
+
+ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y=log2(AUCfold), x= log2(cMaxFold), color= method), alpha=0.5) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1) + geom_vline(xintercept = -1) + geom_vline(xintercept = +1)
