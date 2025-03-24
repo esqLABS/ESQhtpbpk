@@ -13,7 +13,9 @@ Study <- R6::R6Class(
       if (missing(value)) {
         private$.compounds
       } else {
-        lapply(value, \(x) {ospsuite.utils::validateIsOfType(x, "Compound", nullAllowed = TRUE)})
+        lapply(value, \(x) {
+          ospsuite.utils::validateIsOfType(x, "Compound", nullAllowed = TRUE)
+        })
         private$.compounds <- purrr::map(value, \(x) x$clone(deep = TRUE))
       }
     },
@@ -25,10 +27,16 @@ Study <- R6::R6Class(
         if (!is.character(value)) {
           cli::cli_abort(messages$notValid("Individual"))
         }
-        # if no generic model given assume it will be automatically generated, then individual need to be default individuals
+        # if no generic model given assume it will be automatically generated, then individual need
+        # to be default individuals
         if (is.null(private$.genericModel)) {
           if (!value %in% c(ospsuite::HumanPopulation, ospsuite::Species)) {
-            cli::cli_abort(messages$valueEnumError("Individual", value, allowed = c(ospsuite::Species, ospsuite::HumanPopulation)))
+            msg <- messages$valueEnumError(
+              name = "Individual",
+              value = value,
+              allowed = c(ospsuite::Species, ospsuite::HumanPopulation)
+            )
+            cli::cli_abort("{msg}")
           }
         }
         private$.individual <- value
@@ -98,7 +106,7 @@ Study <- R6::R6Class(
     #' @param endTime end time of the interval in time units
     #' @param resolution resolution of the interval in pts/time units
     #' @param timeUnit time unit of the interval
-    addOutputInterval  = function(startTime, endTime, timeUnit, resolution) {
+    addOutputInterval = function(startTime, endTime, timeUnit, resolution) {
       ospsuite.utils::validateIsNumeric(c(startTime, endTime, resolution))
       ospsuite::validateUnit(unit = timeUnit, dimension = "Time")
 
@@ -132,7 +140,7 @@ Study <- R6::R6Class(
     toSnapshot = function() {
       data <- list(
         "Version" = 80,
-        "Individuals" =  list(
+        "Individuals" = list(
           list(
             Name = self$Individual,
             OriginData = purrr::compact(
@@ -148,9 +156,19 @@ Study <- R6::R6Class(
             ExpressionProfiles = list()
           )
         ),
-        "Compounds" = purrr::map(self$Compounds, \(x) {x$toSnapshot()}),
-        "Formulations" = purrr::list_c(purrr::map(self$Compounds, \(x) {purrr::map(x$Protocol$Formulations, \(y) {y$toSnapshot()})})),
-        "Protocols" = purrr::map(self$Compounds, \(x) {x$Protocol$toSnapshot()}),
+        "Compounds" = purrr::map(self$Compounds, \(x) {
+          x$toSnapshot()
+        }),
+        "Formulations" = purrr::list_c(
+          purrr::map(self$Compounds, \(x) {
+            purrr::map(x$Protocol$Formulations, \(y) {
+              y$toSnapshot()
+            })
+          })
+        ),
+        "Protocols" = purrr::map(self$Compounds, \(x) {
+          x$Protocol$toSnapshot()
+        }),
         "Simulations" = list(
           list(
             Name = self$ID,
@@ -186,7 +204,8 @@ Study <- R6::R6Class(
       )
       # update Fu species
       for (compIndex in seq_along(data$Compounds)) {
-        data$Compounds[[compIndex]]$FractionUnbound[[1]]$Species <- ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
+        data$Compounds[[compIndex]]$FractionUnbound[[1]]$Species <-
+          ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
       }
       return(data)
     },
@@ -198,7 +217,8 @@ Study <- R6::R6Class(
     },
     #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)
-    #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.
+    #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic
+    #' model should be automatically generated.
     setGenericModel = function(modelPath) {
       # ensure it exist and is a pkml file
       if (!is.null(modelPath)) {
@@ -218,13 +238,13 @@ Study <- R6::R6Class(
       if (!is.null(self$Compounds)) {
         cli::cli_par()
         cli::cli_text("Compounds: ")
-        purrr::map(self$Compounds,
+        purrr::map(
+          self$Compounds,
           \(x) {
             cli::cli_li(paste0(x$Name, " with protocol ", x$Protocol$Name))
             ul1 <- cli::cli_ul()
             x$print()
           }
-
         )
       }
       invisible(self)

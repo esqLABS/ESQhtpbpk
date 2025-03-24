@@ -28,7 +28,13 @@ suppressWarnings({
   po$setFormulation(tablet)
 
   prot2 <- AdvancedProtocol$new(name = "Protocol 2")
-  prot2$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+  prot2$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 12
+  )
   prot2$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
 
   comp2$setProtocol(prot2)
@@ -56,16 +62,18 @@ test_that("getAllParameterPaths method works", {
 })
 
 test_that("toSnapshot method works and can be run", {
-  temp_dir <- tempfile()
-  dir.create(temp_dir)
-  temp_file <- tempfile(fileext = ".json", tmpdir = temp_dir)
+  tempDir <- tempfile()
+  dir.create(tempDir)
+  tempFile <- tempfile(fileext = ".json", tmpdir = tempDir)
 
   study <- Study$new(ID = "Study1", compounds = list(comp1, comp2), individual = "Rat")
-  expect_no_message(study$exportSnapshot(temp_file))
+  expect_no_message(study$exportSnapshot(tempFile))
 
-  expect_no_error(ospsuite::runSimulationsFromSnapshot(temp_file, exportPKML = TRUE, exportCSV = FALSE, output = temp_dir))
-  expect_true(file.exists(gsub("\\.json$", "-Study1.pkml", temp_file)))
-  expect_no_error(study$setGenericModel(modelPath = gsub("\\.json$", "-Study1.pkml", temp_file)))
+  expect_no_error(
+    ospsuite::runSimulationsFromSnapshot(tempFile, exportPKML = TRUE, exportCSV = FALSE, output = tempDir)
+  )
+  expect_true(file.exists(gsub("\\.json$", "-Study1.pkml", tempFile)))
+  expect_no_error(study$setGenericModel(modelPath = gsub("\\.json$", "-Study1.pkml", tempFile)))
 })
 
 test_that("setOutputInterval method works and can be run", {

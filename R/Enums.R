@@ -44,7 +44,7 @@ FormulationType <- ospsuite.utils::enum(
 )
 
 #' @keywords internal
-ParticleSizeDistributionType = ospsuite.utils::enum(
+ParticleSizeDistributionType <- ospsuite.utils::enum(
   c(
     "Monodisperse" = 0,
     "Polydisperse" = 1
@@ -52,7 +52,7 @@ ParticleSizeDistributionType = ospsuite.utils::enum(
 )
 
 #' @keywords internal
-ParticleSizeDistribution = ospsuite.utils::enum(
+ParticleSizeDistribution <- ospsuite.utils::enum(
   c(
     "Normal" = 0,
     "LogNormal" = 1

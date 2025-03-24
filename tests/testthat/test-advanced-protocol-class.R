@@ -28,23 +28,47 @@ test_that("addSchema works", {
   prot <- AdvancedProtocol$new()
 
   expect_no_message(
-    prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+    prot$addSchema(
+      schemaName = "Schema 1",
+      timeUnit = "h",
+      timeBetweenRepetitions = 2,
+      numberOfRepetitions = 5,
+      startTime = 12
+    )
   )
 })
 
 test_that("addSchema with existing schema name does not work.", {
   prot <- AdvancedProtocol$new()
-  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+  prot$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 12
+  )
 
   expect_error(
-    prot$addSchema(schemaName = "Schema 1", timeUnit = "min", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12),
+    prot$addSchema(
+      schemaName = "Schema 1",
+      timeUnit = "min",
+      timeBetweenRepetitions = 2,
+      numberOfRepetitions = 5,
+      startTime = 12
+    ),
     "Schema `Schema 1` already exists."
   )
 })
 
 test_that("addProtocolToSchema works.", {
   prot <- AdvancedProtocol$new()
-  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+  prot$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 12
+  )
 
   iv <- SimpleProtocol$new(dose = 10)
 
@@ -55,9 +79,17 @@ test_that("addProtocolToSchema works.", {
 
 test_that("addProtocolToSchema only works with Single dose.", {
   prot <- AdvancedProtocol$new()
-  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+  prot$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 1
+  )
 
-  suppressWarnings({iv <- SimpleProtocol$new(dose = 10, dosingInterval = "24")})
+  suppressWarnings({
+    iv <- SimpleProtocol$new(dose = 10, dosingInterval = "24")
+  })
 
   expect_error(
     prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv),
@@ -67,9 +99,17 @@ test_that("addProtocolToSchema only works with Single dose.", {
 
 test_that("addProtocolToSchema with wrong schemaName does not work", {
   prot <- AdvancedProtocol$new()
-  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+  prot$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 12
+  )
 
-  suppressWarnings({iv <- SimpleProtocol$new(dose = 10)})
+  suppressWarnings({
+    iv <- SimpleProtocol$new(dose = 10)
+  })
 
   expect_error(
     prot$addProtocolToSchema(schemaName = "Schema 2", protocol = iv),
@@ -79,11 +119,27 @@ test_that("addProtocolToSchema with wrong schemaName does not work", {
 
 test_that("extractProtocol works", {
   prot <- AdvancedProtocol$new()
-  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
-  prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 2, startTime = 0)
+  prot$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 12
+  )
+  prot$addSchema(
+    schemaName = "Schema 2",
+    timeUnit = "h",
+    timeBetweenRepetitions = 12,
+    numberOfRepetitions = 2,
+    startTime = 0
+  )
 
-  suppressWarnings({iv <- SimpleProtocol$new(dose = 10)})
-  suppressWarnings({po <- SimpleProtocol$new(dose = 5, route = "Oral")})
+  suppressWarnings({
+    iv <- SimpleProtocol$new(dose = 10)
+  })
+  suppressWarnings({
+    po <- SimpleProtocol$new(dose = 5, route = "Oral")
+  })
 
   prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv)
   prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po)
@@ -99,15 +155,33 @@ test_that("extractProtocol works", {
 
 test_that("getAllParameterPaths works", {
   prot <- AdvancedProtocol$new()
-  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
-  prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 2, startTime = 0)
+  prot$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 12
+  )
+  prot$addSchema(
+    schemaName = "Schema 2",
+    timeUnit = "h",
+    timeBetweenRepetitions = 12,
+    numberOfRepetitions = 2,
+    startTime = 0
+  )
 
-  suppressWarnings({iv <- SimpleProtocol$new(route = "IV Infusion", dose = 10, doseUnit = "mg")})
-  suppressWarnings({iv_area <- SimpleProtocol$new(dose = 1, doseUnit = "mg/m²")})
-  suppressWarnings({po <- SimpleProtocol$new(dose = 5, doseUnit = "mg/kg", route = "Oral")})
+  suppressWarnings({
+    iv <- SimpleProtocol$new(route = "IV Infusion", dose = 10, doseUnit = "mg")
+  })
+  suppressWarnings({
+    ivArea <- SimpleProtocol$new(dose = 1, doseUnit = "mg/m²")
+  })
+  suppressWarnings({
+    po <- SimpleProtocol$new(dose = 5, doseUnit = "mg/kg", route = "Oral")
+  })
 
   prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv)
-  prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv_area)
+  prot$addProtocolToSchema(schemaName = "Schema 1", protocol = ivArea)
   prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po)
 
   expect_snapshot(
@@ -117,8 +191,20 @@ test_that("getAllParameterPaths works", {
 
 test_that("Adding a different formulation with the same name doesn't work", {
   prot <- AdvancedProtocol$new()
-  prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
-  prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 2, startTime = 0)
+  prot$addSchema(
+    schemaName = "Schema 1",
+    timeUnit = "h",
+    timeBetweenRepetitions = 2,
+    numberOfRepetitions = 5,
+    startTime = 12
+  )
+  prot$addSchema(
+    schemaName = "Schema 2",
+    timeUnit = "h",
+    timeBetweenRepetitions = 12,
+    numberOfRepetitions = 2,
+    startTime = 0
+  )
 
   suppressWarnings({
     po <- SimpleProtocol$new(dose = 5, doseUnit = "mg/kg", route = "Oral")
@@ -140,11 +226,27 @@ test_that("Adding a different formulation with the same name doesn't work", {
 
 # create complicated protocol to test print, extractProtocol and toSnapshot methods
 prot <- AdvancedProtocol$new()
-prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
-prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 2, startTime = 0)
+prot$addSchema(
+  schemaName = "Schema 1",
+  timeUnit = "h",
+  timeBetweenRepetitions = 2,
+  numberOfRepetitions = 5,
+  startTime = 12
+)
+prot$addSchema(
+  schemaName = "Schema 2",
+  timeUnit = "h",
+  timeBetweenRepetitions = 12,
+  numberOfRepetitions = 2,
+  startTime = 0
+)
 
-suppressWarnings({iv <- SimpleProtocol$new(route = "IV Infusion", dose = 10, doseUnit = "mg")})
-suppressWarnings({iv_area <- SimpleProtocol$new(dose = 1, doseUnit = "mg/m²")})
+suppressWarnings({
+  iv <- SimpleProtocol$new(route = "IV Infusion", dose = 10, doseUnit = "mg")
+})
+suppressWarnings({
+  ivArea <- SimpleProtocol$new(dose = 1, doseUnit = "mg/m²")
+})
 suppressWarnings({
   po <- SimpleProtocol$new(dose = 5, doseUnit = "mg/kg", route = "Oral")
   formulation <- createWeibullFormulation(name = "Weibull1", lagTime = 60)
@@ -157,7 +259,7 @@ suppressWarnings({
 })
 
 prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv)
-prot$addProtocolToSchema(schemaName = "Schema 1", protocol = iv_area)
+prot$addProtocolToSchema(schemaName = "Schema 1", protocol = ivArea)
 prot$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
 prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2)
 
@@ -178,4 +280,3 @@ test_that("toSnapshot method works", {
     prot$toSnapshot()
   )
 })
-
