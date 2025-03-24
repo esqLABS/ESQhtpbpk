@@ -15,9 +15,15 @@ Description of an advanced administration protocol
 \describe{
 \item{\code{UUID}}{Unique identifier (read-only)}
 
+\item{\code{Name}}{Protocol name}
+
 \item{\code{Schemas}}{List of schemas for the advanced protocol}
 
 \item{\code{Path}}{Prefix path for the administration}
+
+\item{\code{Formulations}}{Formulations used with protocol}
+
+\item{\code{FormulationsKey}}{Formulations Key used with protocol}
 }
 \if{html}{\out{</div>}}
 }
@@ -29,7 +35,9 @@ Description of an advanced administration protocol
 \item \href{#method-AdvancedProtocol-addProtocolToSchema}{\code{AdvancedProtocol$addProtocolToSchema()}}
 \item \href{#method-AdvancedProtocol-extractProtocol}{\code{AdvancedProtocol$extractProtocol()}}
 \item \href{#method-AdvancedProtocol-getAllParameterPaths}{\code{AdvancedProtocol$getAllParameterPaths()}}
+\item \href{#method-AdvancedProtocol-toSnapshot}{\code{AdvancedProtocol$toSnapshot()}}
 \item \href{#method-AdvancedProtocol-print}{\code{AdvancedProtocol$print()}}
+\item \href{#method-AdvancedProtocol-clone}{\code{AdvancedProtocol$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -38,12 +46,14 @@ Description of an advanced administration protocol
 \subsection{Method \code{new()}}{
 Initialize a new instance of the class
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$new(path = "Events|AdvancedProtocol")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$new(name = "Protocol", path = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{name}}{Name of the protocol}
+
 \item{\code{path}}{Prefix for the path of administration in the simulations}
 }
 \if{html}{\out{</div>}}
@@ -112,13 +122,15 @@ The updated \code{AdvancedProtocol} object.
 \if{html}{\out{<a id="method-AdvancedProtocol-extractProtocol"></a>}}
 \if{latex}{\out{\hypertarget{method-AdvancedProtocol-extractProtocol}{}}}
 \subsection{Method \code{extractProtocol()}}{
-Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
+Extract all single administration to be applied by a protocol. For easier mapping to path in
+the simulation pkml.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$extractProtocol()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
+A tibble with the type of administration, time of administration, parameters of the
+administration and the formulation name.
 }
 }
 \if{html}{\out{<hr>}}
@@ -142,6 +154,16 @@ A character vector with all parameter paths.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AdvancedProtocol-toSnapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-AdvancedProtocol-toSnapshot}{}}}
+\subsection{Method \code{toSnapshot()}}{
+Convert to snapshot
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$toSnapshot()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-AdvancedProtocol-print"></a>}}
 \if{latex}{\out{\hypertarget{method-AdvancedProtocol-print}{}}}
 \subsection{Method \code{print()}}{
@@ -150,5 +172,22 @@ Print the object to the console
 \if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$print()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AdvancedProtocol-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-AdvancedProtocol-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
 }
 }

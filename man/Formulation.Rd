@@ -29,6 +29,7 @@ Description of a formulation
 \item \href{#method-Formulation-getAllPropertyPaths}{\code{Formulation$getAllPropertyPaths()}}
 \item \href{#method-Formulation-toSnapshot}{\code{Formulation$toSnapshot()}}
 \item \href{#method-Formulation-print}{\code{Formulation$print()}}
+\item \href{#method-Formulation-clone}{\code{Formulation$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -61,6 +62,7 @@ Add a new property/parameter for the formulation
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Formulation$addParameter(
   name,
+  parName,
   dimension,
   value = 0,
   unit = NULL,
@@ -75,17 +77,21 @@ Add a new property/parameter for the formulation
 \describe{
 \item{\code{name}}{Name of the property to add.}
 
+\item{\code{parName}}{Corresponding parameter name of the property to add in the simulation}
+
 \item{\code{dimension}}{Dimension of the property to add.}
 
 \item{\code{value}}{Value for the property.}
 
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
 \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
 
-\item{\code{path}}{Corresponding path in the simulation pkml of the property to add.}
+\item{\code{path}}{Corresponding path in the simulation pkml of the property to add.
+Default to \code{{protocolName}|{formulationName}|parName}}
 }
 \if{html}{\out{</div>}}
 }
@@ -96,7 +102,10 @@ Add a new property/parameter for the formulation
 \subsection{Method \code{getAllPropertyPaths()}}{
 Get the paths of all parameters defined for the formulation, using protocolName and formulationName
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$getAllPropertyPaths(protocolName = NULL, formulationName = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Formulation$getAllPropertyPaths(
+  protocolName = NULL,
+  formulationName = self$Name
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -138,6 +147,23 @@ Print the object to the console
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Rest arguments.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Formulation-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Formulation-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Formulation$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
 }
 \if{html}{\out{</div>}}
 }

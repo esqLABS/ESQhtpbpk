@@ -39,9 +39,13 @@ Description of an administration protocol
 
 \item{\code{WaterVolPerBWUnit}}{Unit or water volume per body weight}
 
+\item{\code{Path}}{Prefix path for the administration}
+
+\item{\code{Name}}{Protocol name for the administration}
+
 \item{\code{Formulation}}{Formulation to use with protocol}
 
-\item{\code{Path}}{Prefix path for the administration}
+\item{\code{FormulationKey}}{FormulationKey mapping of the protocol}
 }
 \if{html}{\out{</div>}}
 }
@@ -49,9 +53,12 @@ Description of an administration protocol
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-SimpleProtocol-new}{\code{SimpleProtocol$new()}}
+\item \href{#method-SimpleProtocol-setFormulation}{\code{SimpleProtocol$setFormulation()}}
 \item \href{#method-SimpleProtocol-extractProtocol}{\code{SimpleProtocol$extractProtocol()}}
 \item \href{#method-SimpleProtocol-getAllParameterPaths}{\code{SimpleProtocol$getAllParameterPaths()}}
+\item \href{#method-SimpleProtocol-toSnapshot}{\code{SimpleProtocol$toSnapshot()}}
 \item \href{#method-SimpleProtocol-print}{\code{SimpleProtocol$print()}}
+\item \href{#method-SimpleProtocol-clone}{\code{SimpleProtocol$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -61,7 +68,8 @@ Description of an administration protocol
 Initialize a new instance of the class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$new(
-  path = "Events|AdvancedProtocol",
+  name = "Protocol",
+  path = NULL,
   route = "IV Bolus",
   dosingInterval = "Single",
   dose = 0,
@@ -80,7 +88,9 @@ Initialize a new instance of the class
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{path}}{Prefix for the path of administration in the simulations}
+\item{\code{name}}{Protocol name for the path of administration in the simulations}
+
+\item{\code{path}}{Prefix for the path of administration in the simulations. (Defaults to Events|{protocolName})}
 
 \item{\code{route}}{Route of administration}
 
@@ -113,6 +123,26 @@ A new \code{SimpleProtocol} object.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-SimpleProtocol-setFormulation"></a>}}
+\if{latex}{\out{\hypertarget{method-SimpleProtocol-setFormulation}{}}}
+\subsection{Method \code{setFormulation()}}{
+Add a formulation to oral or user defined protocol
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$setFormulation(formulation)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{formulation}}{Formulation to add to the protocol}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The updated \code{SimpleProtocol} object.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-extractProtocol"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-extractProtocol}{}}}
 \subsection{Method \code{extractProtocol()}}{
@@ -122,7 +152,8 @@ Extract all single administration to be applied by a protocol. For easier mappin
 }
 
 \subsection{Returns}{
-A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
+A tibble with the type of administration, time of administration, parameters of the administration
+and the formulation name.
 }
 }
 \if{html}{\out{<hr>}}
@@ -146,6 +177,16 @@ A character vector with all parameter paths.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-SimpleProtocol-toSnapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-SimpleProtocol-toSnapshot}{}}}
+\subsection{Method \code{toSnapshot()}}{
+Convert to snapshot
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$toSnapshot()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-print"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-print}{}}}
 \subsection{Method \code{print()}}{
@@ -154,5 +195,22 @@ Print the object to the console
 \if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$print()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-SimpleProtocol-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-SimpleProtocol-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
 }
 }

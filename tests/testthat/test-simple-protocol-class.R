@@ -85,7 +85,10 @@ test_that("Creating protocol with wrong dose interval does not work.", {
       startTime = 60,
       startTimeUnit = "min"
     ),
-    "Value 'daily' is not allowed for 'dosing interval'. Dosing interval must be one and of `Single`, `24`, `12-12`, `8-8-8`, `6-6-6-6`, and `6-6-12`.",
+    paste(
+      "Value 'daily' is not allowed for 'dosing interval'. Dosing interval must be one and of",
+      "`Single`, `24`, `12-12`, `8-8-8`, `6-6-6-6`, and `6-6-12`."
+    ),
     fixed = TRUE
   )
 })
@@ -320,8 +323,8 @@ test_that("getAllParameterPaths works.", {
       dose = 1,
       doseUnit = "mg/m²",
       startTime = 60,
-      startTimeUnit = "min",
-   )
+      startTimeUnit = "min"
+    )
   })
   expect_snapshot(prot$getAllParameterPaths())
 
@@ -338,6 +341,26 @@ test_that("getAllParameterPaths works.", {
     )
   })
   expect_snapshot(prot$getAllParameterPaths())
+})
+
+test_that("setFormulation method works.", {
+  suppressWarnings({
+    prot <- SimpleProtocol$new(
+      route = "Oral",
+      dosingInterval = "24",
+      dose = 1,
+      doseUnit = "mg/kg",
+      startTime = 60,
+      startTimeUnit = "min",
+      endTime = 48,
+      endTimeUnit = "h"
+    )
+  })
+
+  formulation <- createWeibullFormulation(name = "Weibull")
+
+  expect_no_message(prot$setFormulation(formulation))
+  expect_snapshot(prot)
 })
 
 test_that("Print method works.", {
@@ -364,5 +387,24 @@ test_that("Print method works.", {
       startTime = 60,
       startTimeUnit = "min"
     )
+  )
+})
+
+test_that("toSnapshot method works.", {
+  prot <- SimpleProtocol$new(
+    route = "IV Infusion",
+    dosingInterval = "24",
+    dose = 1,
+    doseUnit = "mg",
+    startTime = 60,
+    startTimeUnit = "min",
+    endTime = 48,
+    endTimeUnit = "h",
+    infusionTime = 10,
+    infusionTimeUnit = "min"
+  )
+
+  expect_snapshot(
+    prot$toSnapshot()
   )
 })

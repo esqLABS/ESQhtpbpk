@@ -3,6 +3,7 @@
 export(AdvancedProtocol)
 export(Compound)
 export(SimpleProtocol)
+export(Study)
 export(createDissolvedFormulation)
 export(createFirstOrderFormulation)
 export(createLint80Formulation)

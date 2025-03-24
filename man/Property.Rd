@@ -21,6 +21,8 @@ Property of a compound, of a formulation
 
 \item{\code{unit}}{Unit of the property}
 
+\item{\code{parName}}{Parameter name of the property in the simulation pkmls}
+
 \item{\code{path}}{Path of the property in the simulation pkmls}
 
 \item{\code{enum}}{Enums to convert from user friendly value to PK-Sim allowed value}
@@ -37,6 +39,7 @@ and must return an error if value is not valid}
 \item \href{#method-Property-toBaseUnit}{\code{Property$toBaseUnit()}}
 \item \href{#method-Property-toSnapshot}{\code{Property$toSnapshot()}}
 \item \href{#method-Property-print}{\code{Property$print()}}
+\item \href{#method-Property-clone}{\code{Property$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -47,7 +50,7 @@ Initialize a new instance of the class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Property$new(
   name,
-  path,
+  parName,
   dimension,
   value = 0,
   unit = NULL,
@@ -55,7 +58,8 @@ Initialize a new instance of the class.
   check = NULL,
   min = NULL,
   max = NULL,
-  rangeUnit = NULL
+  rangeUnit = NULL,
+  path = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -64,7 +68,7 @@ Initialize a new instance of the class.
 \describe{
 \item{\code{name}}{Name of the property.}
 
-\item{\code{path}}{Path of the property in the simulation pkmls.}
+\item{\code{parName}}{Parameter name of the property in the simulation pkmls.}
 
 \item{\code{dimension}}{Dimension of the property.}
 
@@ -81,7 +85,9 @@ and must return an error if the value is not valid}
 
 \item{\code{max}}{(Optional) Max value allowed to check validity of given value}
 
-\item{\code{rangeUnit}}{(Optional) Unit in which the min/max range is given
+\item{\code{rangeUnit}}{(Optional) Unit in which the min/max range is given}
+
+\item{\code{path}}{path of the property in the simulation pkmls. Default to \code{CompoundName|parName}
 (if not given, the unit is assumed to be the same as the unit of the property).
 valid).}
 }
@@ -117,13 +123,30 @@ Convert to snapshot
 \subsection{Method \code{print()}}{
 Print the object to the console
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Property$print(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Property$print(compoundName = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Rest arguments.}
+\item{\code{compoundName}}{compoundName in the simulation to replace placeholder in the path}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Property-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Property-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Property$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
 }
 \if{html}{\out{</div>}}
 }

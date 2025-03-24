@@ -2,27 +2,39 @@ test_that("Property creation works", {
   expect_no_error({
     Property$new(
       name = "Solubility",
-      path = "Compound|Solubility at reference pH",
+      parName = "Solubility at reference pH",
       dimension = "Concentration (mass)",
       unit = "mg/l",
       value = 100,
-      check = function(value, unit) {if (value < 0) {stop("Solubility must be > 0")}}
+      check = function(value, unit) {
+        if (value < 0) {
+          stop("Solubility must be > 0")
+        }
+      }
     )
   })
 })
 
 prop <- Property$new(
   name = "Solubility",
-  path = "Compound|Solubility at reference pH",
+  parName = "Solubility at reference pH",
   dimension = "Concentration (mass)",
   unit = "mg/l",
   value = 100,
-  check = function(value, unit) {if (value < 0) {stop("Solubility must be > 0")}}
+  check = function(value, unit) {
+    if (value < 0) {
+      stop("Solubility must be > 0")
+    }
+  }
 )
 
 test_that("Property `print` method works", {
   expect_snapshot({
     prop$print()
+  })
+
+  expect_snapshot({
+    prop$print(compoundName = "Compound")
   })
 })
 

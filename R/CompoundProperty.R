@@ -4,15 +4,13 @@
 #' @format NULL
 Property <- R6::R6Class(
   "Property",
-  cloneable = FALSE,
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field name Name of the property
     name = function(value) {
       if (missing(value)) {
         return(private$.name)
       } else {
-        stop(messages$readOnly("name"))
+        cli::cli_abort(messages$readOnly("name"))
       }
     },
 
@@ -21,7 +19,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.dimension)
       } else {
-        stop(messages$readOnly("dimension"))
+        cli::cli_abort(messages$readOnly("dimension"))
       }
     },
     #' @field value Value of the property.
@@ -31,7 +29,8 @@ Property <- R6::R6Class(
       } else {
         if (!is.null(private$.enum)) {
           if (!(value %in% names(private$.enum))) {
-            stop(messages$valueEnumError(private$.name, value, allowed = names(private$.enum)))
+            msg <- messages$valueEnumError(private$.name, value, allowed = names(private$.enum))
+            cli::cli_abort("{msg}")
           }
           private$.value <- private$.enum[value]
         } else if (!is.null(private$.check)) {
@@ -51,12 +50,20 @@ Property <- R6::R6Class(
         private$.unit <- value
       }
     },
+    #' @field parName Parameter name of the property in the simulation pkmls
+    parName = function(value) {
+      if (missing(value)) {
+        return(private$.parName)
+      } else {
+        cli::cli_abort(messages$readOnly("parName"))
+      }
+    },
     #' @field path Path of the property in the simulation pkmls
     path = function(value) {
       if (missing(value)) {
         return(private$.path)
       } else {
-        stop(messages$readOnly("path"))
+        cli::cli_abort(messages$readOnly("path"))
       }
     },
     #' @field enum Enums to convert from user friendly value to PK-Sim allowed value
@@ -64,7 +71,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.enum)
       } else {
-        stop(messages$readOnly("enum"))
+        cli::cli_abort(messages$readOnly("enum"))
       }
     },
     #' @field check Function to check validity of given value, must take value and unit as arguments
@@ -73,16 +80,15 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.check)
       } else {
-        stop(messages$readOnly("check"))
+        cli::cli_abort(messages$readOnly("check"))
       }
     }
   ),
-
   public = list(
     #' @description
     #' Initialize a new instance of the class.
     #' @param name Name of the property.
-    #' @param path Path of the property in the simulation pkmls.
+    #' @param parName Parameter name of the property in the simulation pkmls.
     #' @param dimension Dimension of the property.
     #' @param value Value of the property
     #' @param unit Unit of the property.
@@ -92,12 +98,27 @@ Property <- R6::R6Class(
     #' @param min (Optional) Min value allowed to check validity of given value
     #' @param max (Optional) Max value allowed to check validity of given value
     #' @param rangeUnit (Optional) Unit in which the min/max range is given
+    #' @param path path of the property in the simulation pkmls. Default to `CompoundName|parName`
     #' (if not given, the unit is assumed to be the same as the unit of the property).
 
     #' valid).
     #' @return A new `Property` object.
-    initialize = function(name, path, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, min = NULL, max = NULL, rangeUnit = NULL) {
+    initialize = function(name,
+                          parName,
+                          dimension,
+                          value = 0,
+                          unit = NULL,
+                          enum = NULL,
+                          check = NULL,
+                          min = NULL,
+                          max = NULL,
+                          rangeUnit = NULL,
+                          path = NULL) {
       private$.name <- name
+      private$.parName <- parName
+      if (is.null(path)) {
+        path <- paste0("{compoundName}|", parName)
+      }
       private$.path <- path
 
       # check validity of dimension
@@ -112,7 +133,7 @@ Property <- R6::R6Class(
 
       # check validity of enum
       if (!is.null(enum) && (!is.list(enum) || is.null(names(enum)))) {
-        stop(messages$notValid("enum"))
+        cli::cli_abort(messages$notValid("enum"))
       }
       private$.enum <- enum
 
@@ -123,7 +144,7 @@ Property <- R6::R6Class(
         }
       }
       if (!is.null(check) && !is.function(check)) {
-        stop(messages$notValid("check"))
+        cli::cli_abort(messages$notValid("check"))
       }
       private$.check <- check
 
@@ -144,18 +165,13 @@ Property <- R6::R6Class(
     #' Convert to snapshot
     toSnapshot = function() {
       snap <- list(
-        Name = self$name,
-        Parameters = list(
-          list(
-            Name = self$name,
-            Value = self$value,
-            Unit = self$unit
-          )
-        )
+        Name = self$parName,
+        Value = self$value,
+        Unit = self$unit
       )
-      # if no unit remove unit (dimensionless value)
-      if (snap$Parameters[[1]]$Unit == "") {
-        snap$Parameters[[1]] <- purrr::discard_at(snap$Parameters[[1]], "Unit")
+
+      if (snap$Unit == "") {
+        snap <- purrr::discard_at(snap, "Unit")
       }
 
       return(snap)
@@ -163,16 +179,35 @@ Property <- R6::R6Class(
 
     #' @description
     #' Print the object to the console
-    #' @param ... Rest arguments.
-    print = function(...) {
-      private$printClass()
-      private$printLine("Name", self$name)
-      private$printLine("Path", self$path)
-      if (is.list(private$.enum) && !is.null(names(private$.enum))) {
-        private$printLine("Value", names(self$value))
+    #' @param compoundName compoundName in the simulation to replace placeholder in the path
+    print = function(compoundName = NULL) {
+      ospsuite.utils::ospPrintClass(self)
+      ospsuite.utils::ospPrintItems(
+        list(
+          "Property Name" = self$name,
+          "Parameter name" = self$parName
+        )
+      )
+      if (!is.null(compoundName)) {
+        ospsuite.utils::ospPrintItems(
+          list("Path" = glue::glue(self$path))
+        )
       } else {
-        private$printLine("Value", self$value)
-        private$printLine("Unit", self$unit)
+        ospsuite.utils::ospPrintItems(
+          list("Path" = self$path)
+        )
+      }
+      if (is.list(private$.enum) && !is.null(names(private$.enum))) {
+        ospsuite.utils::ospPrintItems(
+          list("Value" = names(self$value))
+        )
+      } else {
+        ospsuite.utils::ospPrintItems(
+          list(
+            "Value" = self$value,
+            "Unit" = self$unit
+          )
+        )
       }
 
       invisible(self)
@@ -180,6 +215,7 @@ Property <- R6::R6Class(
   ),
   private = list(
     .name = NULL,
+    .parName = NULL,
     .path = NULL,
     .dimension = NULL,
     .unit = NULL,

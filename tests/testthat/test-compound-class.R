@@ -14,7 +14,8 @@ test_that("`addProperty` method works", {
   expect_no_error(
     myCompound$addProperty(
       name = "Total Hepatic Clearance half life",
-      path = "Compound-Total Hepatic Clearance-In vitro microsomes Rat|t1/2 (microsomal assay)",
+      parName = "t1/2 (microsomal assay)",
+      path = "{compoundName}-Total Hepatic Clearance-In vitro microsomes Rat|t1/2 (microsomal assay)",
       dimension = "Inversed time", value = 0.1, unit = "1/min"
     )
   )
@@ -25,7 +26,7 @@ test_that("`addProperty` method throws an error when adding a new property with 
   expect_error(
     myCompound$addProperty(
       name = "Lipophilicity",
-      path = "Compound|Lipo",
+      parName = "Lipo",
       dimension = "Log Units", value = 0.1
     )
   )

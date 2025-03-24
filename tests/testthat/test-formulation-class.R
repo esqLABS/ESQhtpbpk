@@ -103,6 +103,7 @@ test_that("Export to snapshot works", {
 
 test_that("getAllPropertyPaths method works", {
   formulation <- createWeibullFormulation(name = "OralWeibull")
+
   expect_snapshot(
     formulation$getAllPropertyPaths()
   )
