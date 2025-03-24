@@ -35,7 +35,7 @@
       SimpleProtocol$new(route = "IV Bolus", infusionTime = 10)
     Condition
       Warning:
-      Removing `InfusionTime` or `InfusionTimeUnit` from protocol as they are only used for `IV Infusion` route.
+      Removing `InfusionTime` and `InfusionTimeUnit` from protocol as they are only used for `IV Infusion` route.
     Message
         * Route: Intravenous bolus
         * Dose: 0 mg/kg
@@ -78,7 +78,7 @@
       SimpleProtocol$new(route = "IV Bolus", waterVolPerBW = 5)
     Condition
       Warning:
-      Removing `WaterVolPerBW` or `WaterVolPerBWUnit` from protocol as they are only used for `Oral` route.
+      Removing `WaterVolPerBW` and `WaterVolPerBWUnit` from protocol as they are only used for `Oral` route.
     Message
         * Route: Intravenous bolus
         * Dose: 0 mg/kg
