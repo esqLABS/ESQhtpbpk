@@ -152,7 +152,8 @@ Extract all single administration to be applied by a protocol. For easier mappin
 }
 
 \subsection{Returns}{
-A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
+A tibble with the type of administration, time of administration, parameters of the administration
+and the formulation name.
 }
 }
 \if{html}{\out{<hr>}}

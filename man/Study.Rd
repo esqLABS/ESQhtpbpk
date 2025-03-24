@@ -197,7 +197,8 @@ Set generic model to use if pre-generated (for example from MoBi with PD)
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.}
+\item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic
+model should be automatically generated.}
 }
 \if{html}{\out{</div>}}
 }

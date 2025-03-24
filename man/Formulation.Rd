@@ -83,13 +83,15 @@ Add a new property/parameter for the formulation
 
 \item{\code{value}}{Value for the property.}
 
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
 \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
 
-\item{\code{path}}{Corresponding path in the simulation pkml of the property to add. Default to \code{{protocolName}|{formulationName}|parName}}
+\item{\code{path}}{Corresponding path in the simulation pkml of the property to add.
+Default to \code{{protocolName}|{formulationName}|parName}}
 }
 \if{html}{\out{</div>}}
 }

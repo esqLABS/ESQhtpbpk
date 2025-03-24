@@ -122,13 +122,15 @@ The updated \code{AdvancedProtocol} object.
 \if{html}{\out{<a id="method-AdvancedProtocol-extractProtocol"></a>}}
 \if{latex}{\out{\hypertarget{method-AdvancedProtocol-extractProtocol}{}}}
 \subsection{Method \code{extractProtocol()}}{
-Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
+Extract all single administration to be applied by a protocol. For easier mapping to path in
+the simulation pkml.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$extractProtocol()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
+A tibble with the type of administration, time of administration, parameters of the
+administration and the formulation name.
 }
 }
 \if{html}{\out{<hr>}}
