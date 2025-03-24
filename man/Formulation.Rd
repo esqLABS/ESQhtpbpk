@@ -7,9 +7,6 @@
 \description{
 Description of a formulation
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{Formulation}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -83,13 +80,15 @@ Add a new property/parameter for the formulation
 
 \item{\code{value}}{Value for the property.}
 
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
 \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
 
-\item{\code{pathPrefix}}{Corresponding path in the simulation pkml of the property to add. Default to \code{{protocolPrefix}|{formulationName}}}
+\item{\code{pathPrefix}}{Corresponding path in the simulation pkml of the property to add.
+Default to \code{{protocolPrefix}|{formulationName}}}
 }
 \if{html}{\out{</div>}}
 }

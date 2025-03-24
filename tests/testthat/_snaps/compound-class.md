@@ -81,22 +81,22 @@
 
     Code
       myCompound$getProperty("Plasma protein binding partner")
-    Output
-      Property: 
-         Property Name: Plasma protein binding partner 
-         Parameter name: Plasma protein binding partner 
-         Path: {compoundName}|Plasma protein binding partner 
-         Value: Albumin 
+    Message
+      <Property>
+      * Property Name: Plasma protein binding partner
+      * Parameter name: Plasma protein binding partner
+      * Path: {compoundName}|Plasma protein binding partner
+      * Value: Albumin
 
 # `setProperty` works
 
     Code
       myCompound$getProperty("Lipophilicity")
-    Output
-      Property: 
-         Property Name: Lipophilicity 
-         Parameter name: Lipophilicity 
-         Path: {compoundName}|Lipophilicity 
-         Value: 0.5 
-         Unit: Log Units 
+    Message
+      <Property>
+      * Property Name: Lipophilicity
+      * Parameter name: Lipophilicity
+      * Path: {compoundName}|Lipophilicity
+      * Value: 0.5
+      * Unit: Log Units
 

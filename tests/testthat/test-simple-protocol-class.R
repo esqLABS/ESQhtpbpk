@@ -85,7 +85,10 @@ test_that("Creating protocol with wrong dose interval does not work.", {
       startTime = 60,
       startTimeUnit = "min"
     ),
-    "Value 'daily' is not allowed for 'dosing interval'. Dosing interval must be one and of `Single`, `24`, `12-12`, `8-8-8`, `6-6-6-6`, and `6-6-12`.",
+    paste(
+      "Value 'daily' is not allowed for 'dosing interval'. Dosing interval must be one and of",
+      "`Single`, `24`, `12-12`, `8-8-8`, `6-6-6-6`, and `6-6-12`."
+    ),
     fixed = TRUE
   )
 })
@@ -320,8 +323,8 @@ test_that("getAllParameterPaths works.", {
       dose = 1,
       doseUnit = "mg/m²",
       startTime = 60,
-      startTimeUnit = "min",
-   )
+      startTimeUnit = "min"
+    )
   })
   expect_snapshot(prot$getAllParameterPaths())
 
@@ -405,4 +408,3 @@ test_that("toSnapshot method works.", {
     prot$toSnapshot()
   )
 })
-

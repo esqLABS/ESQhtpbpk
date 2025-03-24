@@ -1,7 +1,5 @@
 <!-- badges: start -->
-[![](https://img.shields.io/github/actions/workflow/status/esqlabs/ESQhtpbpk/main-workflow.yaml?branch=main&label=Build
-)](https://github.com/esqlabs/ESQhtpbpk/actions/workflows/main-workflow.yaml)
-[![Codecov test coverage](https://codecov.io/gh/esqlabs/ESQhtpbpk/branch/main/graph/badge.svg)](https://app.codecov.io/gh/esqlabs/ESQhtpbpk?branch=main)
+[![Main-Workflow](https://github.com/esqLABS/ESQhtpbpk/actions/workflows/main-workflow.yaml/badge.svg)](https://github.com/esqLABS/ESQhtpbpk/actions/workflows/main-workflow.yaml)
 <!-- badges: end -->
 
 # ESQhtpbpk

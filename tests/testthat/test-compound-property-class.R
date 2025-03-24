@@ -6,7 +6,11 @@ test_that("Property creation works", {
       dimension = "Concentration (mass)",
       unit = "mg/l",
       value = 100,
-      check = function(value, unit) {if (value < 0) {stop("Solubility must be > 0")}}
+      check = function(value, unit) {
+        if (value < 0) {
+          stop("Solubility must be > 0")
+        }
+      }
     )
   })
 })
@@ -17,7 +21,11 @@ prop <- Property$new(
   dimension = "Concentration (mass)",
   unit = "mg/l",
   value = 100,
-  check = function(value, unit) {if (value < 0) {stop("Solubility must be > 0")}}
+  check = function(value, unit) {
+    if (value < 0) {
+      stop("Solubility must be > 0")
+    }
+  }
 )
 
 test_that("Property `print` method works", {

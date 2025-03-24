@@ -5,7 +5,6 @@
 #' @export
 Compound <- R6::R6Class(
   "Compound",
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field PartitionCoefficientMethod Method used to calculate the partition coefficient
     PartitionCoefficientMethod = function(value) {
@@ -13,7 +12,8 @@ Compound <- R6::R6Class(
         private$.pc
       } else {
         if (!is.character(value) || !(value %in% names(PCMethods))) {
-          cli::cli_abort(messages$valueEnumError("PartitionCoefficientMethod", value, allowed = names(PCMethods)))
+          msg <- messages$valueEnumError("PartitionCoefficientMethod", value, allowed = names(PCMethods))
+          cli::cli_abort("{msg}")
         }
         private$.pc <- PCMethods[[value]]
       }
@@ -24,7 +24,8 @@ Compound <- R6::R6Class(
         private$.cp
       } else {
         if (!is.character(value) || !(value %in% names(CPMethods))) {
-          cli::cli_abort(messages$valueEnumError("CellularPermeabilityMethod", value, allowed = names(CPMethods)))
+          msg <- messages$valueEnumError("CellularPermeabilityMethod", value, allowed = names(CPMethods))
+          cli::cli_abort("{msg}")
         }
         private$.cp <- CPMethods[[value]]
       }
@@ -60,9 +61,9 @@ Compound <- R6::R6Class(
 
       # replace with given ${name}$ in template by given name
       template <- readr::read_file(system.file("extdata", "generic_compound_template.json", package = "ESQhtpbpk"))
-      filled_template <- glue::glue(template, .open = "${", .close = "}$")
+      filledTemplate <- glue::glue(template, .open = "${", .close = "}$")
 
-      private$.allProperties <- private$.initializePropertiesFromJSON(filled_template)
+      private$.allProperties <- private$.initializePropertiesFromJSON(filledTemplate)
       names(private$.allProperties) <- sapply(private$.allProperties, \(x) x$name)
       private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {x$path})
     },
@@ -74,7 +75,7 @@ Compound <- R6::R6Class(
     #' @return The corresponding property object.
     getProperty = function(name) {
       if (!name %in% names(private$.allProperties)) {
-        stop("Property '", name, "' not found.")
+        cli::cli_abort(messages$notFound(name = "Property", value = name))
       } else {
         return(private$.allProperties[[name]]$print(compoundName = self$name))
       }
@@ -88,13 +89,13 @@ Compound <- R6::R6Class(
     #' @param unit New unit to use for the property, if not given the unit is assumed to be the same as previously.
     setPropertyValue = function(name, value, unit = NULL) {
       if (!name %in% names(private$.allProperties)) {
-        stop("Property '", name, "' not found.")
+        cli::cli_abort(messages$notFound(name = "Property", value = name))
       } else {
         prop <- private$.allProperties[[name]]
 
         # check validity of unit with regards to dimension
         if (!is.null(unit) && !(unit %in% ospsuite::getUnitsForDimension(prop$dimension))) {
-          stop("Unit '", unit, "' not valid for dimension '", prop$dimension, "'.")
+          cli::cli_abort("Unit '", unit, "' not valid for dimension '", prop$dimension, "'.")
         }
 
         # if unit is not given assume it is unchanged
@@ -119,14 +120,15 @@ Compound <- R6::R6Class(
     #' @param parName Corresponding parameter name in the simulation pkml of the property to add.
     #' @param dimension Dimension of the property to add.
     #' @param value Value for the property.
-    #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
+    #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the
+    #' baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
     #' @param path Corresponding full path of the parameter in the simulation pkml of the property to add
     #' (default to NULL to create it automatically based on parName).
     addProperty = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
       if (name %in% names(private$.allProperties)) {
-        stop("Property '", name, "' already exists.")
+        cli::cli_abort(messages$alreadyExists(name = "Property", value = name))
       }
 
       private$.allProperties[[name]] <- Property$new(
@@ -167,13 +169,16 @@ Compound <- R6::R6Class(
     removeProperty = function(name) {
       private$.allProperties[[name]] <- NULL
       compoundName <- self$name
-      private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {glue::glue(x$path)})
+      private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {
+        glue::glue(x$path)
+      })
     },
 
     # Set the administration protocol of a compound
     #' @description
     #' Set the administration protocol to be used for a compound
-    #' @param protocol administration protocol to use for the compound. Must be an object of class `SimpleProtocol` or `AdvancedProtocol`.
+    #' @param protocol administration protocol to use for the compound. Must be an object of
+    #' class `SimpleProtocol` or `AdvancedProtocol`.
     setProtocol = function(protocol) {
       self$Protocol <- protocol
       invisible(self)
@@ -186,32 +191,60 @@ Compound <- R6::R6Class(
         Name = self$Name,
         IsSmallMolecule = as.logical(private$.allProperties[["Is small molecule"]]$value),
         PlasmaProteinBindingPartner = names(private$.allProperties[["Plasma protein binding partner"]]$value),
-        Lipophilicity = list(list(Name = "Lipophilicity", Parameters = list(private$.allProperties[["Lipophilicity"]]$toSnapshot()))),
-        FractionUnbound = list(list(Name = "FractionUnbound", Parameters = list(private$.allProperties[["Fraction unbound"]]$toSnapshot()))),
-        Solubility = list(list(Name = "Solubility", Parameters = list(private$.allProperties[["Solubility"]]$toSnapshot()))),
+        Lipophilicity = list(
+          list(
+            Name = "Lipophilicity",
+            Parameters = list(private$.allProperties[["Lipophilicity"]]$toSnapshot())
+          )
+        ),
+        FractionUnbound = list(
+          list(
+            Name = "FractionUnbound",
+            Parameters = list(private$.allProperties[["Fraction unbound"]]$toSnapshot())
+          )
+        ),
+        Solubility = list(
+          list(
+            Name = "Solubility",
+            Parameters = list(private$.allProperties[["Solubility"]]$toSnapshot())
+          )
+        ),
         PkaTypes = purrr::compact(
           list(
             switch(
               names(private$.allProperties[["Compound type 0"]]$value),
               "Neutral" = NULL,
-              list(Type = names(private$.allProperties[["Compound type 0"]]$value), Pka = private$.allProperties[["pKa value 0"]]$value)
+              list(
+                Type = names(private$.allProperties[["Compound type 0"]]$value),
+                Pka = private$.allProperties[["pKa value 0"]]$value
+              )
             ),
             switch(
               names(private$.allProperties[["Compound type 1"]]$value),
               "Neutral" = NULL,
-              list(Type = names(private$.allProperties[["Compound type 1"]]$value), Pka = private$.allProperties[["pKa value 1"]]$value)
+              list(
+                Type = names(private$.allProperties[["Compound type 1"]]$value),
+                Pka = private$.allProperties[["pKa value 1"]]$value
+              )
             ),
             switch(
               names(private$.allProperties[["Compound type 2"]]$value),
               "Neutral" = NULL,
-              list(Type = names(private$.allProperties[["Compound type 2"]]$value), Pka = private$.allProperties[["pKa value 2"]]$value)
+              list(
+                Type = names(private$.allProperties[["Compound type 2"]]$value),
+                Pka = private$.allProperties[["pKa value 2"]]$value
+              )
             )
           )
         ),
         Parameters = unname(
           purrr::compact(
             purrr::map(private$.allProperties, \(x) {
-              if (!x$name %in% c("Is small molecule", "Plasma protein binding partner", "Lipophilicity", "Solubility", paste("Compound type", 0:2), paste("pKa value", 0:2))) {
+              if (!x$name %in% c("Is small molecule",
+                                 "Plasma protein binding partner",
+                                 "Lipophilicity", "Solubility",
+                                 paste("Compound type", 0:2),
+                                 paste("pKa value", 0:2))) {
                 x$toSnapshot()
               }
             })
@@ -237,7 +270,9 @@ Compound <- R6::R6Class(
       if (is.null(compoundName)) {
         compoundName <- self$Name
       }
-      res <- sapply(private$.allProperties, \(x) {glue::glue(x$path)})
+      res <- sapply(private$.allProperties, \(x) {
+        glue::glue(x$path)
+      })
 
       if (!is.null(self$Protocol)) {
         res <- c(res, self$Protocol$getAllParameterPaths())
@@ -258,8 +293,8 @@ Compound <- R6::R6Class(
           cli::cli_li(paste0(prop$name, ": ", prop$value, " ", prop$unit))
         }
       }
-      cli::cli_li(paste0("Partition Coefficient Method: ",  self$PartitionCoefficientMethod))
-      cli::cli_li(paste0("Cellular Permeability Method: ",  self$CellularPermeabilityMethod))
+      cli::cli_li(paste0("Partition Coefficient Method: ", self$PartitionCoefficientMethod))
+      cli::cli_li(paste0("Cellular Permeability Method: ", self$CellularPermeabilityMethod))
       cli::cli_end(ul)
       if (length(private$.protocol) != 0) {
         cli::cli_li(paste0("Protocol Properties: "))
@@ -278,9 +313,9 @@ Compound <- R6::R6Class(
     .pc = NULL,
     .cp = NULL,
     .initializePropertiesFromJSON = function(json) {
-      generic_compound <- jsonlite::fromJSON(json, simplifyVector = T, simplifyDataFrame = FALSE)
+      genericCompound <- jsonlite::fromJSON(json, simplifyVector = TRUE, simplifyDataFrame = FALSE)
 
-      properties <- lapply(generic_compound$CompoundProperties, \(x) {
+      properties <- lapply(genericCompound$CompoundProperties, \(x) {
         Property$new(
           name = x$name,
           parName = x$parName,
@@ -300,6 +335,8 @@ Compound <- R6::R6Class(
       })
       return(properties)
     },
-    deep_clone = function(...) {.myDeepClone(...)}
+    deep_clone = function(...) {
+      .myDeepClone(...)
+    }
   )
 )

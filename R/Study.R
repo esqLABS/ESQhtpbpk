@@ -6,14 +6,15 @@
 Study <- R6::R6Class(
   "Study",
   cloneable = FALSE,
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field Compounds List of administered compounds (with administration protocol), object of class `Compound`
     Compounds = function(value) {
       if (missing(value)) {
         private$.compounds
       } else {
-        lapply(value, \(x) {ospsuite.utils::validateIsOfType(x, "Compound", nullAllowed = TRUE)})
+        lapply(value, \(x) {
+          ospsuite.utils::validateIsOfType(x, "Compound", nullAllowed = TRUE)
+        })
         private$.compounds <- purrr::map(value, \(x) x$clone(deep = TRUE))
       }
     },
@@ -28,7 +29,12 @@ Study <- R6::R6Class(
         # if no generic model given assume it will be automatically generated, then individual need to be default individuals
         if (is.null(private$.genericModel)) {
           if (!value %in% c(ospsuite::HumanPopulation, ospsuite::Species)) {
-            cli::cli_abort(messages$valueEnumError("Individual", value, allowed = c(ospsuite::Species, ospsuite::HumanPopulation)))
+            msg <- messages$valueEnumError(
+              name = "Individual",
+              value = value,
+              allowed = c(ospsuite::Species, ospsuite::HumanPopulation)
+            )
+            cli::cli_abort("{msg}")
           }
         }
         private$.individual <- value
@@ -73,82 +79,17 @@ Study <- R6::R6Class(
         paths <- intersect(paths, availablePaths)
       }
       return(paths)
-    #     compIdx <- seq_along(self$Compounds)[1]
-    #
-    #     wantedAdmin <- self$Compounds[[compIdx]]$Protocol$extractProtocol()
-    #     availableAdmins <- private$.simulation$allApplicationsFor(self$Compounds[[compIdx]]$Name)
-    #
-    #     availableAdmins <- tibble(
-    #       prefix = purrr::list_c(purrr::map(availableAdmins, ~ .x$startTime$parentContainer$path)),
-    #       container = purrr::map(availableAdmins, ~ .x$startTime$parentContainer)
-    #     )
-    #
-    #     availableAdmins <- availableAdmins %>% mutate(parameters = list(gsub(paste0(container[[1]]$path,"|"), "", ospsuite::getAllParameterPathsIn(container[[1]]), fixed = TRUE)))
-    #     availableAdmins <- availableAdmins %>% mutate(
-    #       type = if ("Infusion time" %in% parameters) {
-    #         "IV Infusion"
-    #       } else if ("Volume of water/body weight" %in% parameters) {
-    #         "Oral"
-    #       } else if () {
-    #
-    #       } else {
-    #         "IV Bolus"
-    #       }
-    #     )
-    #     # from available admin infer type, form, of admin to map to wantedAdmin
-    #     simParam <-
-    #
-    #
-    #     allParamPaths <- c()
-    #     protocolName <- self$Name
-    #     path <- glue::glue(path)
-    #
-    #     wantedAdmin <- self$extractProtocol()
-    #
-    #     # loop across formulationName
-    #     for (form in unique(wantedAdmin$formulationName)) {
-    #       if (is.na(form)) {
-    #         adminSubset <- wantedAdmin[is.na(wantedAdmin$formulationName), ]
-    #       } else {
-    #         adminSubset <- wantedAdmin[sapply(wantedAdmin$formulationName == form, isTRUE), ]
-    #       }
-    #
-    #       # sort admin subset by time
-    #       adminSubset <- adminSubset[order(adminSubset$time), ]
-    #       for (i in 1:nrow(adminSubset)) {
-    #         mainPath <- paste(path, paste0(na.omit(form)), sep = "|")
-    #
-    #         if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$Mass) {
-    #           doseParamName <- "Dose"
-    #         } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body weight`) {
-    #           doseParamName <- "DosePerBodyWeight"
-    #         } else if (ospsuite::getDimensionForUnit(adminSubset$parameters[[i]]$DoseUnit) == ospsuite::ospDimensions$`Dose per body surface area`) {
-    #           doseParamName <- "DosePerBodySurfaceArea"
-    #         }
-    #
-    #         allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", doseParamName, sep = "|"))
-    #         allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Start time", sep = "|"))
-    #         if (!is.null(adminSubset$parameters[[i]]$InfusionTime)) {
-    #           allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Infusion time", sep = "|"))
-    #         }
-    #         if (!is.null(adminSubset$parameters[[i]]$WaterVolPerBW)) {
-    #           allParamPaths <- c(allParamPaths, paste(mainPath, paste0("Application_", i), "ProtocolSchemaItem", "Volume of water/body weight", sep = "|"))
-    #         }
-    #       }
-    #     }
-    #     # add formulations parameters
-    #     if (!is.null(self$Formulations)) {
-    #       allParamPaths <- c(allParamPaths, unlist(sapply(self$Formulations, \(y){y$getAllPropertyPaths(protocolName = path)})))
-    #     }
-    #     return(unique(unname(allParamPaths)))
-    #   },
-
     },
 
     #' @description
     #' Add DataSet objects to the study
     #' @param dataSets a DataSet object
     addDataSets = function(dataSets) {
+      # if only single dataset given wrap in list
+      if (!("list" %in% class(dataSets))) {
+        dataSets <- list(dataSets)
+      }
+
       ospsuite.utils::validateIsOfType(dataSets, "DataSet", nullAllowed = FALSE)
       for (dataSet in dataSets) {
         private$.observedData[[dataSet$name]] <- dataSet
@@ -177,7 +118,7 @@ Study <- R6::R6Class(
     #' @param endTime end time of the interval in time units
     #' @param resolution resolution of the interval in pts/time units
     #' @param timeUnit time unit of the interval
-    addOutputInterval  = function(startTime, endTime, timeUnit, resolution) {
+    addOutputInterval = function(startTime, endTime, timeUnit, resolution) {
       ospsuite.utils::validateIsNumeric(c(startTime, endTime, resolution))
       ospsuite::validateUnit(unit = timeUnit, dimension = "Time")
 
@@ -199,11 +140,6 @@ Study <- R6::R6Class(
               list(
                 Name = "Resolution",
                 Value = resolution,
-                # resolution = scenarioConfiguration$simulationTime[[i]][3] / toBaseUnit(
-                #   quantityOrDimension = ospDimensions$Time,
-                #   values = 1,
-                #   unit = scenarioConfiguration$simulationTimeUnit
-                # )
                 Unit = paste0("pts/", timeUnit)
               )
             )
@@ -216,7 +152,7 @@ Study <- R6::R6Class(
     toSnapshot = function() {
       data <- list(
         "Version" = 80,
-        "Individuals" =  list(
+        "Individuals" = list(
           list(
             Name = self$Individual,
             OriginData = purrr::compact(
@@ -235,9 +171,21 @@ Study <- R6::R6Class(
             ExpressionProfiles = list()
           )
         ),
-        "Compounds" = purrr::map(self$Compounds, \(x) {x$toSnapshot()}),
-        "Formulations" = purrr::list_c(purrr::map(self$Compounds, \(x) {purrr::map(x$Protocol$Formulations, \(y) {y$toSnapshot()})})),
-        "Protocols" = purrr::map(self$Compounds, \(x) {x$Protocol$toSnapshot()}),
+        "Compounds" = purrr::map(self$Compounds, \(x) {
+          x$toSnapshot()
+        }),
+        "Formulations" = purrr::list_c(
+          purrr::map(self$Compounds, \(x) {
+            purrr::map(x$Protocol$Formulations, \(y) {
+              y$toSnapshot()
+            })
+          })
+        ),
+        "Protocols" = purrr::map(
+          self$Compounds, \(x) {
+            x$Protocol$toSnapshot()
+          }
+        ),
         "Simulations" = list(
           list(
             Name = self$ID,
@@ -273,7 +221,8 @@ Study <- R6::R6Class(
       )
       # update Fu species
       for (compIndex in seq_along(data$Compounds)) {
-        data$Compounds[[compIndex]]$FractionUnbound[[1]]$Species <- ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
+        data$Compounds[[compIndex]]$FractionUnbound[[1]]$Species <-
+          ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
       }
       return(data)
     },
@@ -308,7 +257,8 @@ Study <- R6::R6Class(
     },
     #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)
-    #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.
+    #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic
+    #' model should be automatically generated.
     setGenericModel = function(modelPath) {
       # ensure it exist and is a pkml file
       if (!is.null(modelPath)) {
@@ -319,7 +269,7 @@ Study <- R6::R6Class(
       private$.genericModel <- modelPath
     },
     #' @description
-    #' Set generic model to use if pre-generated (for example from MoBi with PD)
+    #' Set simulation model to use if pre-generated (for example from MoBi with PD)
     #' @param simulation simulation loaded from pkml (to check )
     setSimulation = function(simulation) {
       ospsuite.utils::validateIsOfType(simulation, "Simulation")
@@ -329,13 +279,14 @@ Study <- R6::R6Class(
     #' Print the object to the console
     #' @param ... Rest arguments.
     print = function(...) {
-      private$printClass()
+      ospsuite.utils::ospPrintClass(self)
       cli::cli_text("ID: ", self$ID)
       cli::cli_text("Individual: ", self$Individual)
       if (!is.null(self$Compounds)) {
         cli::cli_par()
         cli::cli_text("Compounds: ")
-        purrr::map(self$Compounds,
+        purrr::map(
+          self$Compounds,
           \(x) {
             cli::cli_li(paste0(x$Name, " with protocol ", x$Protocol$Name))
             ul1 <- cli::cli_ul()
