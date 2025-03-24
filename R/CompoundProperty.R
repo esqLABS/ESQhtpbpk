@@ -11,7 +11,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.name)
       } else {
-        stop(messages$readOnly("name"))
+        cli::cli_abort(messages$readOnly("name"))
       }
     },
 
@@ -20,7 +20,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.dimension)
       } else {
-        stop(messages$readOnly("dimension"))
+        cli::cli_abort(messages$readOnly("dimension"))
       }
     },
     #' @field value Value of the property.
@@ -30,7 +30,7 @@ Property <- R6::R6Class(
       } else {
         if (!is.null(private$.enum)) {
           if (!(value %in% names(private$.enum))) {
-            stop(messages$valueEnumError(private$.name, value, allowed = names(private$.enum)))
+            cli::cli_abort(messages$valueEnumError(private$.name, value, allowed = names(private$.enum)))
           }
           private$.value <- private$.enum[value]
         } else if (!is.null(private$.check)) {
@@ -55,7 +55,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.parName)
       } else {
-        stop(messages$readOnly("parName"))
+        cli::cli_abort(messages$readOnly("parName"))
       }
     },
     #' @field path Path of the property in the simulation pkmls
@@ -63,7 +63,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.path)
       } else {
-        stop(messages$readOnly("path"))
+        cli::cli_abort(messages$readOnly("path"))
       }
     },
     #' @field enum Enums to convert from user friendly value to PK-Sim allowed value
@@ -71,7 +71,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.enum)
       } else {
-        stop(messages$readOnly("enum"))
+        cli::cli_abort(messages$readOnly("enum"))
       }
     },
     #' @field check Function to check validity of given value, must take value and unit as arguments
@@ -80,7 +80,7 @@ Property <- R6::R6Class(
       if (missing(value)) {
         return(private$.check)
       } else {
-        stop(messages$readOnly("check"))
+        cli::cli_abort(messages$readOnly("check"))
       }
     }
   ),
@@ -124,7 +124,7 @@ Property <- R6::R6Class(
 
       # check validity of enum
       if (!is.null(enum) && (!is.list(enum) || is.null(names(enum)))) {
-        stop(messages$notValid("enum"))
+        cli::cli_abort(messages$notValid("enum"))
       }
       private$.enum <- enum
 
@@ -135,7 +135,7 @@ Property <- R6::R6Class(
         }
       }
       if (!is.null(check) && !is.function(check)) {
-        stop(messages$notValid("check"))
+        cli::cli_abort(messages$notValid("check"))
       }
       private$.check <- check
 

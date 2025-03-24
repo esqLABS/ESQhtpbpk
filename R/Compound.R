@@ -74,7 +74,7 @@ Compound <- R6::R6Class(
     #' @return The corresponding property object.
     getProperty = function(name) {
       if (!name %in% names(private$.allProperties)) {
-        stop("Property '", name, "' not found.")
+        cli::cli_abort(messages$notFound(name = "Property", value = name))
       } else {
         return(private$.allProperties[[name]]$print(compoundName = self$name))
       }
@@ -88,13 +88,13 @@ Compound <- R6::R6Class(
     #' @param unit New unit to use for the property, if not given the unit is assumed to be the same as previously.
     setPropertyValue = function(name, value, unit = NULL) {
       if (!name %in% names(private$.allProperties)) {
-        stop("Property '", name, "' not found.")
+        cli::cli_abort(messages$notFound(name = "Property", value = name))
       } else {
         prop <- private$.allProperties[[name]]
 
         # check validity of unit with regards to dimension
         if (!is.null(unit) && !(unit %in% ospsuite::getUnitsForDimension(prop$dimension))) {
-          stop("Unit '", unit, "' not valid for dimension '", prop$dimension, "'.")
+          cli::cli_abort("Unit '", unit, "' not valid for dimension '", prop$dimension, "'.")
         }
 
         # if unit is not given assume it is unchanged
@@ -126,7 +126,7 @@ Compound <- R6::R6Class(
     #' (default to NULL to create it automatically based on parName).
     addProperty = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
       if (name %in% names(private$.allProperties)) {
-        stop("Property '", name, "' already exists.")
+        cli::cli_abort(messages$alreadyExists(name = "Property", value = name))
       }
 
       private$.allProperties[[name]] <- Property$new(

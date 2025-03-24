@@ -75,7 +75,7 @@ Formulation <- R6::R6Class(
     #' @param path Corresponding path in the simulation pkml of the property to add. Default to `{protocolName}|{formulationName}|parName`
     addParameter = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
       if (name %in% names(private$.Parameters)) {
-        stop("Property '", name, "' already exists.")
+        cli::cli_abort(messages$alreadyExist("Property", name))
       }
       path <- ifelse(!is.null(path), path, paste0("{protocolName}|{formulationName}|", parName))
       private$.Parameters[[name]] <- Property$new(

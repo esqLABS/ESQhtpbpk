@@ -22,8 +22,17 @@ messages$readOnly = function(name) {
   paste0("'", name, "' is read-only.")
 }
 
-# Not valid err
+# Not valid error message
 messages$notValid = function(name) {
   paste0("'", name, "' is not valid.")
 }
 
+# Not found error message
+messages$notFound = function(name, value) {
+  paste0(name, " '", value, "' not found.")
+}
+
+# Already exist error message
+messages$alreadyExist = function(name, value) {
+  paste0(name, " '", value, "' already exists.")
+}
