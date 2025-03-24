@@ -78,6 +78,11 @@ Study <- R6::R6Class(
     #' Add DataSet objects to the study
     #' @param dataSets a DataSet object
     addDataSets = function(dataSets) {
+      # if only single dataset given wrap in list
+      if (!("list" %in% class(dataSets))) {
+        dataSets <- list(dataSets)
+      }
+
       ospsuite.utils::validateIsOfType(dataSets, "DataSet", nullAllowed = FALSE)
       for (dataSet in dataSets) {
         private$.observedData[[dataSet$name]] <- dataSet

@@ -80,3 +80,12 @@ test_that("setOutputInterval method works and can be run", {
   study <- Study$new(ID = "Study1", compounds = list(comp1, comp2), individual = "Rat")
   expect_no_error(study$setOutputInterval(startTime = 0, endTime = 48, timeUnit = "h", resolution = 1))
 })
+
+test_that("addDataSets/getDataSet method works and can be run", {
+  study <- Study$new(ID = "Study1", compounds = list(comp1, comp2), individual = "Human")
+  file <- getTestDataFilePath("ObsDataAciclovir_1.pkml")
+  obsData <- ospsuite::loadDataSetFromPKML(filePath = file)
+
+  expect_no_error(study$addDataSets(dataSets = obsData))
+  expect_identical(study$getDataSets()[[obsData$name]], obsData)
+})
