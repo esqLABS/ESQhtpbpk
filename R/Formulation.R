@@ -4,7 +4,6 @@
 #' @format NULL
 Formulation <- R6::R6Class(
   "Formulation",
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field Type Type of Formulation
     Type = function(value) {
@@ -145,10 +144,12 @@ Formulation <- R6::R6Class(
 
       for (param in private$.Parameters) {
         if (is.list(param$enum) && !is.null(names(param$enum))) {
-          private$printLine(param$name, names(param$value))
+          lst <- list(names(param$value))
         } else {
-          private$printLine(param$name, paste(param$value, param$unit))
+          lst <- list(paste(param$value, param$unit))
         }
+        names(lst) <- param$name
+        ospsuite.utils::ospPrintItems(lst)
       }
       invisible(self)
     }

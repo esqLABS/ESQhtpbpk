@@ -5,7 +5,6 @@
 #' @export
 SimpleProtocol <- R6::R6Class(
   "SimpleProtocol",
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field UUID Unique identifier (read-only)
     UUID = function(value) {
@@ -633,7 +632,6 @@ SimpleProtocol <- R6::R6Class(
 #' @export
 AdvancedProtocol <- R6::R6Class(
   "AdvancedProtocol",
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field UUID Unique identifier (read-only)
     UUID = function(value) {

@@ -4,7 +4,6 @@
 #' @format NULL
 Property <- R6::R6Class(
   "Property",
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field name Name of the property
     name = function(value) {
@@ -182,19 +181,33 @@ Property <- R6::R6Class(
     #' Print the object to the console
     #' @param compoundName compoundName in the simulation to replace placeholder in the path
     print = function(compoundName = NULL) {
-      private$printClass()
-      private$printLine("Property Name", self$name)
-      private$printLine("Parameter name", self$parName)
+      ospsuite.utils::ospPrintClass(self)
+      ospsuite.utils::ospPrintItems(
+        list(
+          "Property Name" = self$name,
+          "Parameter name" = self$parName
+        )
+      )
       if (!is.null(compoundName)) {
-        private$printLine("Path", glue::glue(self$path))
+        ospsuite.utils::ospPrintItems(
+          list("Path" = glue::glue(self$path))
+        )
       } else {
-        private$printLine("Path", self$path)
+        ospsuite.utils::ospPrintItems(
+          list("Path" = self$path)
+        )
       }
       if (is.list(private$.enum) && !is.null(names(private$.enum))) {
-        private$printLine("Value", names(self$value))
+        ospsuite.utils::ospPrintItems(
+          list("Value" = names(self$value))
+        )
       } else {
-        private$printLine("Value", self$value)
-        private$printLine("Unit", self$unit)
+        ospsuite.utils::ospPrintItems(
+          list(
+            "Value" = self$value,
+            "Unit" = self$unit
+          )
+        )
       }
 
       invisible(self)

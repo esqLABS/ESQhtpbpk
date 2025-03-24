@@ -5,7 +5,6 @@
 #' @export
 Compound <- R6::R6Class(
   "Compound",
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field PartitionCoefficientMethod Method used to calculate the partition coefficient
     PartitionCoefficientMethod = function(value) {

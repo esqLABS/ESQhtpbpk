@@ -2,25 +2,25 @@
 
     Code
       prop$print()
-    Output
-      Property: 
-         Property Name: Solubility 
-         Parameter name: Solubility at reference pH 
-         Path: {compoundName}|Solubility at reference pH 
-         Value: 100 
-         Unit: mg/l 
+    Message
+      <Property>
+      * Property Name: Solubility
+      * Parameter name: Solubility at reference pH
+      * Path: {compoundName}|Solubility at reference pH
+      * Value: 100
+      * Unit: mg/l
 
 ---
 
     Code
       prop$print(compoundName = "Compound")
-    Output
-      Property: 
-         Property Name: Solubility 
-         Parameter name: Solubility at reference pH 
-         Path: Compound|Solubility at reference pH 
-         Value: 100 
-         Unit: mg/l 
+    Message
+      <Property>
+      * Property Name: Solubility
+      * Parameter name: Solubility at reference pH
+      * Path: Compound|Solubility at reference pH
+      * Value: 100
+      * Unit: mg/l
 
 # `toBaseUnit` method (transformation to base units) works
 

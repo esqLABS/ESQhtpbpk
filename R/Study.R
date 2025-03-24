@@ -6,7 +6,6 @@
 Study <- R6::R6Class(
   "Study",
   cloneable = FALSE,
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field Compounds List of administered compounds (with administration protocol), object of class `Compound`
     Compounds = function(value) {
@@ -237,7 +236,7 @@ Study <- R6::R6Class(
     #' Print the object to the console
     #' @param ... Rest arguments.
     print = function(...) {
-      private$printClass()
+      ospsuite.utils::ospPrintClass(self)
       cli::cli_text("ID: ", self$ID)
       cli::cli_text("Individual: ", self$Individual)
       if (!is.null(self$Compounds)) {
