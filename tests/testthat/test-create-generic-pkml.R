@@ -33,7 +33,13 @@ test_that("Create generic PKMLS from study list", {
     po$setFormulation(tablet)
 
     prot <- AdvancedProtocol$new(name = "Protocol 2")
-    prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+    prot$addSchema(
+      schemaName = "Schema 1",
+      timeUnit = "h",
+      timeBetweenRepetitions = 2,
+      numberOfRepetitions = 5,
+      startTime = 12
+    )
     prot$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
 
     comp2$setProtocol(prot)
@@ -50,7 +56,13 @@ test_that("Create generic PKMLS from study list", {
     tablet2 <- createWeibullFormulation(name = "TabletFasterRelease", dissolutionTime50 = 60)
     po2$setFormulation(tablet2)
 
-    prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 3, startTime = 0)
+    prot$addSchema(
+      schemaName = "Schema 2",
+      timeUnit = "h",
+      timeBetweenRepetitions = 12,
+      numberOfRepetitions = 3,
+      startTime = 0
+    )
     prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2)
 
     study3 <- Study$new(ID = "Study3", compounds = list(comp1, comp2), individual = "Rat")
@@ -60,13 +72,17 @@ test_that("Create generic PKMLS from study list", {
 
     studyList <- list(study1, study2, study3, study4)
 
-    rtemp <- tempdir(check = T)
-    temp_dir <- tempfile(tmpdir = rtemp)
+    rTemp <- tempdir(check = TRUE)
+    tempDir <- tempfile(tmpdir = rTemp)
   })
 
-  expect_no_error(suppressWarnings(createGenericPKMLs(studyList, outputFolder = temp_dir)))
+  expect_no_error(suppressWarnings(createGenericPKMLs(studyList, outputFolder = tempDir)))
 
-  expect_snapshot(list.files(temp_dir))
+  expect_snapshot(list.files(tempDir))
 
-  expect_snapshot(purrr::map(studyList, \(x) {x$getAllParameterPaths()}))
+  expect_snapshot(
+    purrr::map(studyList, \(x) {
+      x$getAllParameterPaths()
+    })
+  )
 })

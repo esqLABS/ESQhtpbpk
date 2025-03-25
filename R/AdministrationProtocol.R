@@ -416,8 +416,7 @@ SimpleProtocol <- R6::R6Class(
       )
 
       # calculate dosing times based on Dosing interval chosen
-      adminTimes <- switch(
-        self$DoseInterval,
+      adminTimes <- switch(self$DoseInterval,
         "Single" = startTime,
         "12-12" = seq(startTime, endTime, by = ospsuite::toBaseUnit("Time", 12, "h")),
         "8-8-8" = seq(startTime, endTime, by = ospsuite::toBaseUnit("Time", 8, "h")),
@@ -456,13 +455,22 @@ SimpleProtocol <- R6::R6Class(
       )
       wantedAdmin$path <- list(NULL)
 
+      # ensure some wanted admin exist
+      if (nrow(wantedAdmin) == 0) {
+        cli::cli_abort("No administration found to be required.")
+      }
+
       mainPath <- self$Path
       if (is.null(mainPath)) {
-        mainPath <- paste0('Events|{protocolName}|', paste0(self$Formulation$Name, "|", recycle0 = T), "Application_", 1:nrow(wantedAdmin))
+        mainPath <- paste0(
+          "Events|{protocolName}|",
+          paste0(self$Formulation$Name, "|", recycle0 = TRUE),
+          "Application_", seq_len(nrow(wantedAdmin))
+        )
       }
 
       if (nrow(wantedAdmin) > length(mainPath)) {
-        cli::cli_warn("For multiple admin path, should list all available paths for this type of administrations.")
+        cli::cli_warn("For multiple admin, `path` should list all available paths for this type of administrations.")
       }
 
       for (i in seq_len(min(nrow(wantedAdmin), length(mainPath)))) {
@@ -510,7 +518,11 @@ SimpleProtocol <- R6::R6Class(
       if (!is.null(self$Formulation)) {
         allParamPaths <- c(allParamPaths, self$Formulation$getAllPropertyPaths(protocolPrefix = path))
       }
-      return(purrr::map_chr(allParamPaths, ~ glue::glue(.x, protocolName = self$Name, formulationName = self$Formulation$Name)))
+      # glue before returning
+      allParamPaths <- purrr::map_chr(
+        allParamPaths, ~ glue::glue(.x, protocolName = self$Name, formulationName = self$Formulation$Name)
+      )
+      return(allParamPaths)
     },
     #' @description
     #' Convert to snapshot
@@ -891,8 +903,8 @@ AdvancedProtocol <- R6::R6Class(
       # loop across admin to set admin number in time order if allowed path were not set
       if (all(is.null(unlist(wantedAdmin$allowedPath)))) {
         for (i in seq_len(nrow(wantedAdmin))) {
-          form <- wantedAdmin[i,]$formulationName
-          mainPath <- paste0(path,  paste0("|", na.omit(form), recycle0 = T))
+          form <- wantedAdmin[i, ]$formulationName
+          mainPath <- paste0(path, paste0("|", na.omit(form), recycle0 = TRUE))
 
           wantedAdmin$path[[i]] <- paste(mainPath, paste0("Application_", i), sep = "|")
         }
@@ -903,7 +915,11 @@ AdvancedProtocol <- R6::R6Class(
 
         wantedAdmin <- wantedAdmin %>% dplyr::group_by(allowedPath)
 
-        if (any(wantedAdmin %>% dplyr::summarize(N = dplyr::n() > length(unique(unlist(allowedPath)))) %>% dplyr::pull(N))) {
+        tooManyAdminWanted <- wantedAdmin %>%
+          dplyr::summarize(N = dplyr::n() > length(unique(unlist(allowedPath)))) %>%
+          dplyr::pull(N)
+
+        if (any(tooManyAdminWanted)) {
           cli::cli_warn("For multiple admin path, should list all available paths for this type of administrations.")
         }
 

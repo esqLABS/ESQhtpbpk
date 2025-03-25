@@ -74,7 +74,14 @@ Formulation <- R6::R6Class(
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
     #' @param pathPrefix Corresponding path in the simulation pkml of the property to add.
     #' Default to `{protocolPrefix}|{formulationName}`
-    addParameter = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, pathPrefix = NULL) {
+    addParameter = function(name,
+                            parName,
+                            dimension,
+                            value = 0,
+                            unit = NULL,
+                            enum = NULL,
+                            check = NULL,
+                            pathPrefix = NULL) {
       if (name %in% names(private$.Parameters)) {
         cli::cli_abort(messages$alreadyExist("Property", name))
       }

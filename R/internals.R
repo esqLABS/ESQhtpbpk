@@ -76,22 +76,33 @@
 
 #' @keywords internal
 #' @noRd
-.myDeepClone = function(name, value) {
+.myDeepClone <- function(name, value) {
   # if some nested class are found do a deep clone
   r6obj <- "R6" %in% class(value)
 
   if (r6obj) {
     return(value$clone(deep = TRUE))
   } else {
-    r6obj <- unlist(lapply(unlist(value, recursive = T), \(x) {"R6" %in% class(x)}))
+    r6obj <- unlist(
+      lapply(
+        unlist(value, recursive = TRUE),
+        \(x) {
+          "R6" %in% class(x)
+        }
+      )
+    )
     if (any(r6obj)) {
-      res <- purrr::modify_tree(value, leaf = \(x) {
-        if ("R6" %in% class(x)) {
-          y <- x$clone(deep = TRUE)
-          return(y)
-        }else{
-          return(x)
-        }})
+      res <- purrr::modify_tree(
+        value,
+        leaf = \(x) {
+          if ("R6" %in% class(x)) {
+            y <- x$clone(deep = TRUE)
+            return(y)
+          } else {
+            return(x)
+          }
+        }
+      )
 
       return(res)
     } else {

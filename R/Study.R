@@ -26,7 +26,8 @@ Study <- R6::R6Class(
         if (!is.character(value)) {
           cli::cli_abort(messages$notValid("Individual"))
         }
-        # if no generic model given assume it will be automatically generated, then individual need to be default individuals
+        # if no generic model given assume it will be automatically generated, then individual
+        # need to be default individuals
         if (is.null(private$.genericModel)) {
           if (!value %in% c(ospsuite::HumanPopulation, ospsuite::Species)) {
             msg <- messages$valueEnumError(
@@ -237,23 +238,27 @@ Study <- R6::R6Class(
     #' @param file file path to save the pkml
     #' @param overwrite if TRUE, overwrite existing file
     exportPKML = function(file, overwrite = FALSE) {
-      temp_dir <- tempfile()
-      temp_file <- tempfile(tmpdir = temp_dir,  fileext = ".json")
-      if (!dir.exists(temp_dir)) {
-        dir.create(temp_dir)
+      tempDir <- tempfile()
+      tempFile <- tempfile(tmpdir = tempDir, fileext = ".json")
+      if (!dir.exists(tempDir)) {
+        dir.create(tempDir)
       }
 
-      self$exportSnapshot(temp_file)
+      self$exportSnapshot(tempFile)
 
-      ospsuite::runSimulationsFromSnapshot(temp_file, exportPKML = TRUE, exportCSV = FALSE, output = temp_dir)
+      ospsuite::runSimulationsFromSnapshot(tempFile, exportPKML = TRUE, exportCSV = FALSE, output = tempDir)
 
       if (!dir.exists(dirname(file))) {
         dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
       }
-      if (!file.exists(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml"))) {
+      if (!file.exists(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml"))) {
         cli::cli_abort("Something went wrong with the export of the pkml file.")
       }
-      fs::file_copy(path = fs::path(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")), new_path = file, overwrite = overwrite)
+      fs::file_copy(
+        path = fs::path(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")),
+        new_path = file,
+        overwrite = overwrite
+      )
     },
     #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)
@@ -292,7 +297,6 @@ Study <- R6::R6Class(
             ul1 <- cli::cli_ul()
             x$print()
           }
-
         )
       }
       invisible(self)
