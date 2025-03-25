@@ -1,7 +1,7 @@
 # Create generic PKMLS from study list
 
     Code
-      list.files(temp_dir)
+      list.files(tempDir)
     Output
       [1] "Model1.pkml" "Model2.pkml" "Model3.pkml"
 
