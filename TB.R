@@ -361,6 +361,8 @@ for (i in seq_along(TBStudies$StudyID)) {
   #
 }
 
+metric_results$Compound <- TBStudies$Compound[match(metric_results$studyID, TBStudies$StudyID)]
+
 View(metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(mean))
 View(metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(median))
 View(metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 0.5) %>% select(-studyID) %>% group_by(method) %>% summarize(shareAUC2fold = sum(AUC2fold) / n() * 100))
@@ -377,8 +379,12 @@ tmp <- metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 0.5) %>% g
 tmp <- tmp %>% group_by(method) %>% summarize(shareAUC2fold = mean(shareAUC2fold))
 tmp
 
-ggplot(metric_results) + geom_boxplot(aes(y=log2(cMaxFold), x= method)) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1)
-ggplot(metric_results) + geom_boxplot(aes(y=log2(AUCfold), x= method)) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1)
-ggplot(metric_results) + geom_point(aes(y=log2(AUCfold), x= log2(cMaxFold), color= method)) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1) + geom_vline(xintercept = -1) + geom_vline(xintercept = +1)
+ggplot(metric_results) + geom_boxplot(aes(y=cMaxFold, x= method)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 0.5, linetype = "dashed") + geom_hline(yintercept = 2, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggplot(metric_results) + geom_boxplot(aes(y=AUCfold, x= method)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 0.5, linetype = "dashed") + geom_hline(yintercept = 2, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggplot(metric_results) + geom_point(aes(y=AUCfold, x= cMaxFold, color= method)) + geom_hline(yintercept = 0.5) + geom_hline(yintercept = 2) + geom_vline(xintercept = 2) + geom_vline(xintercept = +1)
 
-ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y=log2(AUCfold), x= log2(cMaxFold), color= method), alpha=0.5) + geom_hline(yintercept = -1) + geom_hline(yintercept = +1) + geom_vline(xintercept = -1) + geom_vline(xintercept = +1)
+ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y=log2(AUCfold), x= log2(cMaxFold), color= method), alpha=0.5) + geom_hline(yintercept = -1, linetype = "dashed") + geom_hline(yintercept = +1, linetype = "dashed") + geom_vline(xintercept = -1, linetype = "dashed") + geom_vline(xintercept = +1, linetype = "dashed")
+
+ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y=AUCfold, x=cMaxFold, color= Compound), alpha=0.5) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + scale_x_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 0.5, linetype = "dashed") + geom_hline(yintercept = 2, linetype = "dashed") + geom_vline(xintercept = 0.5, linetype = "dashed") + geom_vline(xintercept = 2, linetype = "dashed") + theme_bw()
+ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_boxplot(aes(y=AUCfold, x= Compound)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 2, linetype = "dashed") + geom_hline(yintercept = 0.5, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_boxplot(aes(y=cMaxFold, x= Compound)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 2, linetype = "dashed") + geom_hline(yintercept = 0.5, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
