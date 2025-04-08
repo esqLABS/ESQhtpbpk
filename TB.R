@@ -375,8 +375,32 @@ View(metric_results %>% mutate(Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4)  %>%
 write.csv(metric_results, file = "TB2/metrics.csv", row.names = FALSE)
 
 
-tmp <- metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 0.5) %>% group_by(Compound, method) %>% summarize(shareAUC2fold = sum(AUC2fold) / n() * 100)
-tmp <- tmp %>% group_by(method) %>% summarize(shareAUC2fold = mean(shareAUC2fold))
+# get percents of studies within 2 and 5x
+metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 1/2,
+                          AUC5fold = AUCfold <= 5 & AUCfold >= 1/5,
+                          cMax2Fold = cMaxFold <= 2 & cMaxFold >= 1/2,
+                          cMax5Fold = cMaxFold <= 5 & cMaxFold >= 1/5) %>%
+  select(-studyID) %>%
+  group_by(method) %>%
+  summarize(shareAUC2fold = sum(AUC2fold) / n() * 100,
+            shareAUC5fold = sum(AUC5fold) / n() * 100,
+            shareCMax2fold = sum(cMax2Fold) / n() * 100,
+            shareCMax5fold = sum(cMax5Fold) / n() * 100)
+
+# get percents of compounds within 2 and 5x
+tmp <- metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 1/2,
+                                 AUC5fold = AUCfold <= 5 & AUCfold >= 1/5,
+                                 cMax2Fold = cMaxFold <= 2 & cMaxFold >= 1/2,
+                                 cMax5Fold = cMaxFold <= 5 & cMaxFold >= 1/5) %>%
+  group_by(Compound, method) %>%
+  summarize(shareAUC2fold = sum(AUC2fold) / n() * 100,
+            shareAUC5fold = sum(AUC5fold) / n() * 100,
+            shareCMax2fold = sum(cMax2Fold) / n() * 100,
+            shareCMax5fold = sum(cMax5Fold) / n() * 100)
+tmp <- tmp %>% group_by(method) %>% summarize(shareAUC2fold = mean(shareAUC2fold),
+                                              shareAUC5fold = mean(shareAUC5fold),
+                                              shareCMax2fold = mean(shareCMax2fold),
+                                              shareCMax5fold = mean(shareCMax5fold))
 tmp
 
 ggplot(metric_results) + geom_boxplot(aes(y=cMaxFold, x= method)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 0.5, linetype = "dashed") + geom_hline(yintercept = 2, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
