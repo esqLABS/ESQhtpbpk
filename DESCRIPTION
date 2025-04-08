@@ -28,8 +28,11 @@ Imports:
     uuid
 Suggests: 
     testthat (>= 3.0.0),
-    devtools
+    devtools,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
 Remotes: 
     ospsuite.utils=Open-Systems-Pharmacology/OSPSuite.RUtils,
     ospsuite=Open-Systems-Pharmacology/OSPSuite-R
+VignetteBuilder: knitr

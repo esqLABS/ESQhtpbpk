@@ -1,0 +1,425 @@
+---
+title: "HT-PBPK Prediction Pipeline"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{HT-PBPK Prediction Pipeline}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The high-throughput (HT) physiologically-based (PB) pharmacokinetics
+(PK) modeling framework is distributed as an R package that allow to predict 
+the pharmacokinetics of various molecules in the various species. It uses the capability 
+of OSP Suite PK-Sim 
+
+# Main Features
+
+- Allow to run efficiently and in parallel many compound prediction.
+- Can automatically create the various generic models required (limited to PK-Sim components).
+- Can be used with custom pkmls for added/needed specificities.
+
+# Current limitations (for the automatic generic models creation)
+
+The current implementation does not allows:
+- user defined administration route
+- solubility table
+- formulations with dissolution tables
+- custom individual (only default individuals are supported)
+- gene expression use or definition
+- transport or enzymatic processes
+- food administration or other events
+- multiple solubility values at different pH
+
+
+# Running the framework
+
+For the package need to be loaded:
+
+```{r setup}
+library(ESQhtpbpk)
+```
+
+## Creating Studies
+
+There is to main options to run the framework either by using the automatic generation of models 
+or by using custom pkmls.
+
+These two options will be described separately as their requirements are 
+slightly different.
+
+### Using the automatic generation of generic models
+
+The user will need to define studies/scenarios that need to be simulated. This studies will 
+recapitulate everything that is needed for the simulation, individual to be used, protocol 
+and formulation for each compound administration, compound properties.
+
+`Compounds` object and various functions have been implemented the ease the creation of all 
+required parts of a study for more details see `Implementation details` section. 
+
+The user can create its custom function to generate a list of all `Study` object to be simulated, 
+as this part is dependent on the data structure or database used.
+
+#### Example
+
+This example show how to create a single study. This mechanism could be wrapped into a function
+to create the list of studies to be simulation and use database as input for parameter value 
+assignment. 
+
+```{r example_study_creation, eval = TRUE} 
+# create compounds object
+comp <- Compound$new(ID = "Acetaminophen")
+
+## set various compound properties
+comp$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
+comp$setPropertyValue("Solubility", 4.15, unit = "mg/ml")
+comp$setPropertyValue("Lipophilicity", 0.91)
+comp$setPropertyValue("pKa value 0", 9.46)
+comp$setPropertyValue("Compound type 0", "Acidic")
+comp$setPropertyValue("Fraction unbound", 80, unit = "%")
+
+## add various processes to a compound by adding required process properties
+comp$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Plasma clearance",
+  parName = "Plasma clearance",
+  dimension = "Flow per weight",
+  value = 0.27, unit = "L/h/kg"
+)
+comp$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Lipophilicity",
+  parName = "Lipophilicity (experiment)",
+  dimension = "Log Units",
+  value = 0.91
+)
+comp$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Fraction unbound",
+  parName = "Fraction unbound (experiment)",
+  dimension = "Fraction",
+  value = 80,
+  unit = "%"
+)
+
+# choose CP/PC method to be used for compound
+comp$PartitionCoefficientMethod <- "PT"
+comp$CellularPermeabilityMethod <- "PK-Sim"
+
+## defined compound can be visualised if needed
+comp
+
+# define formulation needed in the protocol
+formulation <- createWeibullFormulation(
+  name = "Weibull",
+  lagTime = 30,
+  lagTimeUnit = "min",
+  dissolutionTime50 = 60,
+  dissolutionTime50Unit = "min"
+)
+
+# define protocol used in study and associate formulation used
+protocol <- SimpleProtocol$new(
+  route = "Oral",
+  dosingInterval = "24",
+  dose = 1,
+  doseUnit = "mg/kg",
+  startTime = 0,
+  startTimeUnit = "h",
+  endTime = 48,
+  endTimeUnit = "h"
+)        
+
+protocol$setFormulation(formulation = formulation)
+
+## defined protocol can be visualised if needed
+protocol
+
+# associate protocol to compound
+comp$setProtocol(protocol)
+
+# define study to be simulated
+study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(comp), individual = "Human")
+```
+
+### Using the predefined pkmls
+
+The user will need to define studies/scenarios that need to be simulated. This studies will 
+recapitulate everything that is needed to be changed for the simulation, protocol and formulation 
+need for each compound with corresponding path as defined in the simulation, compounds properties 
+with corresponding paths in the simulation and the pkml model to be used.
+
+The user can create its custom function to generate a list of all `Study` object to be simulated, 
+as this part is dependent on the data structure or database used.
+
+#### Example
+The creation of studies is similar but paths to the given pkmls need to be provided.
+```{r example_study_creation_pkml, eval = TRUE} 
+# create compounds object name must correspond to the compound name in the wanted pkml
+comp <- Compound$new(ID = "Acetaminophen", name = "MyCompoundNameInPKML")
+
+## set various compound properties
+comp$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
+comp$setPropertyValue("Solubility", 4.15, unit = "mg/ml")
+comp$setPropertyValue("Lipophilicity", 0.91)
+comp$setPropertyValue("pKa value 0", 9.46)
+comp$setPropertyValue("Compound type 0", "Acidic")
+comp$setPropertyValue("Fraction unbound", 80, unit = "%")
+
+## add various processes, for predefined pkml processes can just be added with addProperty instead 
+## of addProcessProperty by giving the correct path
+comp$addProperty(
+  name = "THC - Plasma clearance", 
+  path = "MyCompoundNameInPKML-Total Hepatic Clearance-Liver Plasma Clearance|Plasma clearance",
+  parName = "THC - Plasma clearance",
+  dimension = "Flow per weight",
+  value = 0.27,
+  unit = "L/h/kg"
+)
+comp$addProperty(
+  name = "THC - Lipo", 
+  path = "MyCompoundNameInPKML-Total Hepatic Clearance-Liver Plasma Clearance|Lipophilicity (experiment)",
+  parName = "THC - Lipo",
+  dimension = "Log Units",
+  value = 0.91
+)
+comp$addProperty(
+  name = "THC - Fu", 
+  path = "MyCompoundNameInPKML-Total Hepatic Clearance-Liver Plasma Clearance|Fraction unbound (experiment)",
+  parName = "THC - Fu",
+  dimension = "Fraction",
+  value = 80,
+  unit = "%"
+)
+
+## defined compound can be visualised if needed (PC/CP methods are set by default but not used in 
+## the case of a supplied pkml)
+comp
+
+# define formulation needed in the protocol with correct path from the pkml
+formulation <- createWeibullFormulation(
+  name = "Weibull",
+  lagTime = 30,
+  lagTimeUnit = "min",
+  dissolutionTime50 = 60,
+  dissolutionTime50Unit = "min",
+  path = "Events|MyAdminNameInPKML|MyFormNameInPKML",
+)
+
+# define protocol used in study with all usable admin path of the same type if multiple 
+# administrations are defined in the pkml (for example 10 oral administrations are allowed in the 
+# pkml, you can supplied all corresponding administration paths, only the needed ones will be used)
+protocol <- SimpleProtocol$new(
+  route = "Oral",
+  dosingInterval = "24",
+  dose = 1,
+  doseUnit = "mg/kg",
+  startTime = 0,
+  startTimeUnit = "h",
+  endTime = 48,
+  endTimeUnit = "h", 
+  path = paste0("Events|MyAdminNameInPKML|Application_", 1:10), 
+)        
+
+protocol$setFormulation(formulation = formulation)
+
+## defined protocol can be visualised if needed
+protocol
+
+# associate protocol to compound
+comp$setProtocol(protocol)
+
+# all supplied path to be replaced can be checked for consistency with the pkml
+comp$getAllPropertyPaths()
+```
+
+```{r example_study_creation_pkml2, eval = FALSE} 
+# define study to be simulated, when using a predefined pkml, the individual is not needed
+# as it will be the one defined in the pkml.
+study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(comp), 
+                   genericModel = "path/to/your/pkml/MyGenericPKML.pkml")
+```
+
+### Running the studies
+
+Once the user created the list of studies required, the user can run the simulation using the
+`runPredictions` function. This function will create the required models, associated them with 
+the corresponding studies and run the simulation. All simulation generic models will be saved 
+in the `outputFolder` within a time-stamped subfolder under GenericModels and all simulations 
+results can be saved under the same time-stamped subfolder under SimulationResults by setting 
+the `saveResults` parameter to `TRUE`. Additionally the user can save the pkmls for each study 
+with the `saveSimulation` parameter.  
+
+During this step the user should also defined the output paths to be simulated with the 
+`outputSelections` parameter, as well as the `simulationResolution` defined by 
+`c(start time (min), end time (min), resolution in pts/min)` to cover the longest 
+simulation needed with the wanted time resolution.
+
+Additionally the user can also defined the number of cores to be used for the simulations and 
+the number studies to be queued (which can be needed to reduce the memory usage). 
+
+#### Example
+
+```{r, eval = FALSE}
+myresult <- runPredictions(
+    studies = list(study), 
+    outputFolder = "HT-PBPK",
+    numberOfCores = 5,
+    outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
+    simulationResolution = c(0, 10 * 24 * 60, 1),
+    saveResults = TRUE,
+    saveSimulation = FALSE,
+    queueSize = 200
+  )
+```
+
+### Metrics - Not Implemented yet
+
+If observed datasets are available for a specific study, comparison metrics will be calculated 
+automatically by the runPrediction function and saved.
+
+# Implementation details
+
+## Generic PBPK model structure
+
+A generic PBPK model will be automatically created for each species, partition coefficient method (PC), 
+cellular permeability method (CP) as well as each required combination of processes for a certain number 
+of compounds used. For each generic model structure the required administrations from all studies 
+using this generic model will be checked and added.
+
+Note: CP calculation method "Charge dependent Schmitt normalized to
+PK-Sim" is not supported as it is not properly implemented in the
+current PK-Sim versions (11.3 and 12.0).
+
+## Compound
+
+The `Compound` class is used to create the compound object that will be used in the studies.
+Some compound properties are already predefined and can be directly used. 
+
+Pre-specified compound properties (with their default values) are:
+
+```{r, eval = TRUE}
+comp <- Compound$new(ID = "Acetaminophen")
+comp
+```
+### Compound Properties
+
+Additional compound properties can be added as needed with addProperty (with corresponding paths for 
+predefined pkmls). Existing ones can be easily changed with the setPropertyValue function.
+The property `name` is an alias to easily access a property in the compound object. The `parName` 
+needs to correspond to the parameter name as defined in the PK-Sim. 
+
+When adding property to compound and using a predefined pkml, user need to specify the 
+corresponding path in the pkml. 
+
+```{r, eval = TRUE}
+comp$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
+
+comp$addProperty(
+  name = "Pint", 
+  parName = "Intestinal permeability (transcellular)",
+  dimension = "Velocity",
+  value = 2e-5,
+  unit = "cm/min"
+)
+
+comp
+```
+### Compound Processes 
+
+When automatically creating the generic models, the user can add processes to the compound but must 
+use the addProcessProperty to do so and specifiy to which process type the parameter belongs to. 
+
+```{r, eval = TRUE}
+## add various processes to a compound by adding required process properties
+comp$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Plasma clearance",
+  parName = "Plasma clearance",
+  dimension = "Flow per weight",
+  value = 0.27, 
+  unit = "L/h/kg"
+)
+
+comp
+```
+
+## Formulations
+
+Formulation can be defined using the various helper functions:
+- `createDissolvedFormulation`
+- `createWeibullFormulation`  
+- `createLint80Formulation`
+- `createParticleDissolutionFormulation`
+- `createZeroOrderFormulation`
+- `createFirstOrderFormulation`
+
+```{r formulation, eval = TRUE}
+form_weib <- createWeibullFormulation(
+  name = "Weibull",
+  lagTime = 30,
+  lagTimeUnit = "min",
+  dissolutionTime50 = 60,
+  dissolutionTime50Unit = "min"
+)
+
+form_weib
+```
+
+## Administration protocols
+
+The `SimpleProtocol` class is used to create the simple administration protocol that will be used 
+in the studies. When a formulation is needed it can be associated with the protocol with setFormulation
+
+```{r, eval = TRUE}
+prot <- SimpleProtocol$new(
+  route = "Oral",
+  dosingInterval = "24",
+  dose = 1,
+  doseUnit = "mg/kg",
+  startTime = 0,
+  startTimeUnit = "h",
+  endTime = 48,
+  endTimeUnit = "h"
+)
+
+prot$setFormulation(formulation = form_weib)
+prot
+```
+
+Additionally advanced protocol can also be defined with the AdvancedProtocol class. To do so first 
+an advanced protocol needs to be defined with the `AdvancedProtocol$new` function. Then schemas for repetitions need 
+to be added with `addSchema` and single dose protocols can be added to the schema with 
+`addProtocolToSchema` and will follow the schema repetition strategy.
+
+```{r eval = TRUE}
+prot <- AdvancedProtocol$new()
+prot$addSchema(
+  schemaName = "Loading Dose", 
+  timeUnit = "h", 
+  timeBetweenRepetitions = 0, 
+  numberOfRepetitions = 1, 
+  startTime = 0
+)
+prot$addSchema(
+  schemaName = "Maintenance Dose", 
+  timeUnit = "h", 
+  timeBetweenRepetitions = 12, 
+  numberOfRepetitions = 5, 
+  startTime = 12
+)
+
+ivLoading <- SimpleProtocol$new(route = "IV Infusion", dose = 10, doseUnit = "mg")
+ivMaintenance <- SimpleProtocol$new(route = "IV Bolus", dose = 1, doseUnit = "mg")
+
+prot$addProtocolToSchema(schemaName = "Loading Dose", protocol = ivLoading)
+prot$addProtocolToSchema(schemaName = "Maintenance Dose", protocol = ivMaintenance)
+
+prot
+```
