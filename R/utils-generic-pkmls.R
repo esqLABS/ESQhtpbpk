@@ -189,8 +189,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 
       # update formulation name in the study based on the generic model
       compound$Protocol$Name <- paste(compound$Name, "Protocol")
-      if (!is.null(compound$Protocol$FormulationsKey)) {
-        for (formKey in compound$Protocol$FormulationsKey) {
+      if (!is.null(compound$Protocol$FormulationKey)) {
+        for (formKey in compound$Protocol$FormulationKey) {
           formKeySim <- unlist(
             studyStructureSummary %>%
               dplyr::filter(StudyID == study$ID) %>%
@@ -203,7 +203,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
           if ("AdvancedProtocol" %in% class(compound$Protocol)) {
             for (scIdx in seq_along(compound$Protocol$Schemas)) {
               for (sciIdx in seq_along(compound$Protocol$Schemas[[scIdx]]$SchemaItems)) {
-                if (compound$Protocol$Schemas[[scIdx]]$SchemaItems[[sciIdx]]$FormulationKey == formKey) {
+                if (isTRUE(compound$Protocol$Schemas[[scIdx]]$SchemaItems[[sciIdx]]$FormulationKey == formKey)) {
                   form <- compound$Protocol$Schemas[[scIdx]]$SchemaItems[[sciIdx]]$Formulation
                   form$Name <- formKeySim
                 }

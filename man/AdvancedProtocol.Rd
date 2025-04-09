@@ -21,7 +21,7 @@ pkmls path should be provided for each schema item protocol}
 
 \item{\code{Formulations}}{Formulations used with protocol}
 
-\item{\code{FormulationsKey}}{Formulations Key used with protocol}
+\item{\code{FormulationKey}}{Formulations Key used with protocol}
 }
 \if{html}{\out{</div>}}
 }

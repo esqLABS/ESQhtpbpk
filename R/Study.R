@@ -206,7 +206,7 @@ Study <- R6::R6Class(
                   Processes = list(),
                   Protocol = list(
                     Name = x$Protocol$Name,
-                    Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationsKey, \(y, z) {
+                    Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationKey, \(y, z) {
                       list(
                         Name = y$Name,
                         Key = z

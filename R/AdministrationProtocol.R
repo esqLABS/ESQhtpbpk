@@ -516,7 +516,7 @@ SimpleProtocol <- R6::R6Class(
       }
 
       if (!is.null(self$Formulation)) {
-        allParamPaths <- c(allParamPaths, self$Formulation$getAllPropertyPaths(protocolPrefix = path))
+        allParamPaths <- c(allParamPaths, self$Formulation$getAllPropertyPaths(protocolPrefix = "Events|{protocolName}"))
       }
       # glue before returning
       allParamPaths <- purrr::map_chr(
@@ -719,8 +719,8 @@ AdvancedProtocol <- R6::R6Class(
         cli::cli_abort(messages$readOnly("Formulations"))
       }
     },
-    #' @field FormulationsKey Formulations Key used with protocol
-    FormulationsKey = function(value) {
+    #' @field FormulationKey Formulations Key used with protocol
+    FormulationKey = function(value) {
       if (missing(value)) {
         unique(
           purrr::compact(
@@ -735,7 +735,7 @@ AdvancedProtocol <- R6::R6Class(
           )
         )
       } else {
-        cli::cli_abort(messages$readOnly("FormulationsKey"))
+        cli::cli_abort(messages$readOnly("FormulationKey"))
       }
     }
   ),
