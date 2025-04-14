@@ -536,7 +536,10 @@ SimpleProtocol <- R6::R6Class(
       }
 
       if (!is.null(self$Formulation)) {
-        allParamPaths <- c(allParamPaths, self$Formulation$getAllPropertyPaths(protocolPrefix = "Events|{protocolName}"))
+        allParamPaths <- c(
+          allParamPaths,
+          self$Formulation$getAllPropertyPaths(protocolPrefix = "Events|{protocolName}")
+        )
       }
       # glue before returning
       allParamPaths <- purrr::map_chr(

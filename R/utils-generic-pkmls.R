@@ -15,7 +15,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     },
     error = function(e) {
       cli::cli_inform(
-        c("x" = messages$stgWrong("the extraction of the study structure"),
+        c(
+          "x" = messages$stgWrong("the extraction of the study structure"),
           "Original error message:",
           "{e}"
         )
@@ -31,7 +32,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     },
     error = function(e) {
       cli::cli_inform(
-        c("x" = messages$stgWrong("the creation of the generic study structure"),
+        c(
+          "x" = messages$stgWrong("the creation of the generic study structure"),
           "Original error message:",
           "{e}"
         )
@@ -57,7 +59,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     },
     error = function(e) {
       cli::cli_inform(
-        c("x" = messages$stgWrong("the addition of required protocols/formulations for each generic structure"),
+        c(
+          "x" = messages$stgWrong("the addition of required protocols/formulations for each generic structure"),
           "Original error message:",
           "{e}"
         )
@@ -69,11 +72,18 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   # create pkml for each generic study and update the model path and simulation of corresponding user studies
   tryCatch(
     {
-      .setGenericModel(genericStudies, studyList, studyStructureSummary, outputFolder = outputFolder, overwrite = overwrite)
+      .setGenericModel(
+        genericStudies,
+        studyList,
+        studyStructureSummary,
+        outputFolder = outputFolder,
+        overwrite = overwrite
+      )
     },
     error = function(e) {
       cli::cli_inform(
-        c("x" = messages$stgWrong("the creation of the generic pkmls"),
+        c(
+          "x" = messages$stgWrong("the creation of the generic pkmls"),
           "Original error message:",
           "{e}"
         )
@@ -89,7 +99,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     },
     error = function(e) {
       cli::cli_inform(
-        c("x" = messages$stgWrong("renaming of compound/protocol/formulation to match the generic models"),
+        c(
+          "x" = messages$stgWrong("renaming of compound/protocol/formulation to match the generic models"),
           "Original error message:",
           "{e}"
         )
@@ -118,7 +129,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     "Compounds" = list(),
     "PC" = list(),
     "CP" = list(),
-    "FormulationsProtocols" = list() #,
+    "FormulationsProtocols" = list() # ,
     # "Processes" = list()
   )
 
@@ -171,7 +182,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' Summarise a list of study structures to a few generic study structures
 #' @param studyStructureSummary A study structure tibble, usually the result of .extractStudyStructure
 #' function
-#' @return A summary tibble of the generic study structure needed (PC/CP, Individual, Administration type, compounds numbers) .
+#' @return A summary tibble of the generic study structure needed
+#' (PC/CP, Individual, Administration type, compounds numbers) .
 #' @noRd
 .createGenericStudyStructure <- function(studyStructureSummary) {
   # for (study in studyList) {
@@ -324,7 +336,11 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' @return The updated studyList with names matching the generic models
 #' @noRd
 .remapStudyProtocols <- function(studyList, genericStudies, studyStructureSummary) {
-  cli::cli_progress_bar("Updating protocols and formulations to match generic models", total = length(studyList), clear = FALSE)
+  cli::cli_progress_bar(
+    "Updating protocols and formulations to match generic models",
+    total = length(studyList),
+    clear = FALSE
+  )
 
   for (idx in seq_along(studyList)) {
     cli::cli_progress_update()
@@ -405,7 +421,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 
 #' @title Extract allowed path corresponding to a wanted protocol based on the generic model used
 #' @description
-#' Extract allowed path corresponding to a wanted protocol based on the generic model used#' @param studyList list of Study objects to be updated
+#' Extract allowed path corresponding to a wanted protocol based on the generic model used
+#' @param studyList list of Study objects to be updated
 #' @param genericProtocol generic protocol for which to extract all allowed path
 #' @param studyProt the study protocol for which to extract the correct possible path
 #' @return A vector of the paths for a possible in the generic model for given study protocol
