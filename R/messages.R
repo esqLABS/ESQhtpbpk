@@ -41,3 +41,8 @@ messages$notFound <- function(name, value) {
 messages$alreadyExist <- function(name, value) {
   paste0(name, " '", value, "' already exists.")
 }
+
+# Something went wrong error message
+messages$stgWrong <- function(step) {
+  paste0("Something went wrong during", step, ".")
+}

@@ -9,10 +9,36 @@
 createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   options(cli.progress_show_after = 0)
   # extracting study structure for each study
-  studyStructureSummary <- .extractStudyStructure(studyList)
+  tryCatch(
+    {
+      studyStructureSummary <- .extractStudyStructure(studyList)
+    },
+    error = function(e) {
+      cli::cli_inform(
+        c("x" = messages$stgWrong("the extraction of the study structure"),
+          "Original error message:",
+          "{e}"
+        )
+      )
+      return(studyList)
+    }
+  )
 
   # extracting unique structures
-  genericStudyStructure <- .createGenericStudyStructure(studyStructureSummary)
+  tryCatch(
+    {
+      genericStudyStructure <- .createGenericStudyStructure(studyStructureSummary)
+    },
+    error = function(e) {
+      cli::cli_inform(
+        c("x" = messages$stgWrong("the creation of the generic study structure"),
+          "Original error message:",
+          "{e}"
+        )
+      )
+      return(studyList)
+    }
+  )
 
   # add generic model to each study structure summary
   studyStructureSummary <- dplyr::left_join(
@@ -22,16 +48,55 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   )
 
   ## adding required protocol/formulation for each generic structure
-  genericStudies <- .addReqProtocols(
-    genericStudyStructure,
-    studyStructureSummary
+  tryCatch(
+    {
+      genericStudies <- .addReqProtocols(
+        genericStudyStructure,
+        studyStructureSummary
+      )
+    },
+    error = function(e) {
+      cli::cli_inform(
+        c("x" = messages$stgWrong("the addition of required protocols/formulations for each generic structure"),
+          "Original error message:",
+          "{e}"
+        )
+      )
+      return(studyList)
+    }
   )
 
   # create pkml for each generic study and update the model path and simulation of corresponding user studies
-  .setGenericModel(genericStudies, studyList, studyStructureSummary, outputFolder = outputFolder, overwrite = overwrite)
+  tryCatch(
+    {
+      .setGenericModel(genericStudies, studyList, studyStructureSummary, outputFolder = outputFolder, overwrite = overwrite)
+    },
+    error = function(e) {
+      cli::cli_inform(
+        c("x" = messages$stgWrong("the creation of the generic pkmls"),
+          "Original error message:",
+          "{e}"
+        )
+      )
+      return(studyList)
+    }
+  )
 
   # adjust protocol names and formulation to match generic studies
-  studyList <- .remapStudyProtocols(studyList, genericStudies, studyStructureSummary)
+  tryCatch(
+    {
+      studyList <- .remapStudyProtocols(studyList, genericStudies, studyStructureSummary)
+    },
+    error = function(e) {
+      cli::cli_inform(
+        c("x" = messages$stgWrong("renaming of compound/protocol/formulation to match the generic models"),
+          "Original error message:",
+          "{e}"
+        )
+      )
+      return(studyList)
+    }
+  )
 
   return(studyList)
 }
