@@ -70,12 +70,20 @@ test_that("Create generic PKMLS from study list", {
     ### Study 4 same as study 1 but in Human
     study4 <- Study$new(ID = "Study4", compounds = list(comp1), individual = "Human")
 
-    studyList <- list(study1, study2, study3, study4)
+    # study 5 same as study 4 but use simple po
+    comp1$setProtocol(po2)
+    study5 <- Study$new(ID = "Study5", compounds = list(comp1), individual = "Human")
+
+    studyList <- list(study1, study2, study3, study4, study5)
 
     rTemp <- tempdir(check = TRUE)
     tempDir <- tempfile(tmpdir = rTemp)
   })
 
+  # expect error if not only Study Objects in studyList
+  expect_error(suppressWarnings(createGenericPKMLs(studyList = list(study1, "A"), outputFolder = tempDir)))
+
+  # expect no error if correctly set up
   expect_no_error(suppressWarnings(createGenericPKMLs(studyList, outputFolder = tempDir)))
 
   expect_snapshot(list.files(tempDir))
