@@ -86,8 +86,9 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.StartTime
       } else {
-        if (!is.null(value) && !is.numeric(value)) {
-          cli::cli_abort("Start time must be a numeric value.")
+        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
+        if (!isValid) {
+          cli::cli_abort(messages$valueMustBe("StartTime", "finite positive numeric"))
         } else {
           private$.StartTime <- value
         }
@@ -110,8 +111,9 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.EndTime
       } else {
-        if (!is.null(value) && !is.numeric(value)) {
-          cli::cli_abort("End time must be a numeric value.")
+        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
+        if (!isValid) {
+          cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
         } else {
           private$.EndTime <- value
         }
@@ -134,8 +136,9 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.InfusionTime
       } else {
-        if (!is.null(value) && !is.numeric(value)) {
-          cli::cli_abort("Infusion time must be a numeric value.")
+        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
+        if (!isValid) {
+          cli::cli_abort(messages$valueMustBe("InfusionTime", "finite positive numeric"))
         } else {
           private$.InfusionTime <- value
         }
@@ -158,8 +161,9 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.WaterVolumePerBW
       } else {
-        if (!is.null(value) && !is.numeric(value)) {
-          cli::cli_abort("Water volume per body weight must be a numeric value.")
+        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
+        if (!isValid) {
+          cli::cli_abort(messages$valueMustBe("WaterVolPerBW", "finite positive numeric"))
         } else {
           private$.WaterVolumePerBW <- value
         }
@@ -411,9 +415,24 @@ SimpleProtocol <- R6::R6Class(
 
       endTime <- ospsuite::toBaseUnit(
         quantityOrDimension = "Time",
-        values = ifelse(is.null(self$EndTime), Inf, self$EndTime),
+        values = self$EndTime,
         unit = self$EndTimeUnit
       )
+
+      # check if start time and end time are valid
+      isValid <- is.numeric(startTime) && is.finite(startTime) && startTime >= 0
+      if (!isValid) {
+        cli::cli_abort(messages$valueMustBe("StartTime", "finite positive numeric"))
+      }
+      if (self$DoseInterval == "Single") {
+        # for single dose set end time to infinity
+        endTime <- Inf
+      } else {
+        isValid <- is.numeric(endTime) && is.finite(endTime) && endTime >= 0
+        if (!isValid) {
+          cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
+        }
+      }
 
       # calculate dosing times based on Dosing interval chosen
       adminTimes <- switch(self$DoseInterval,
@@ -447,13 +466,14 @@ SimpleProtocol <- R6::R6Class(
         type = self$Route,
         time = adminTimes[adminTimes < endTime],
         parameters = list(self),
-        formulationType = ifelse(is.null(self$Formulation), NA, self$Formulation$Type),
-        formulationName = ifelse(is.null(self$Formulation), NA, self$Formulation$Name),
+        formulationType = self$Formulation$Type %||% NA,
+        formulationName = self$Formulation$Name %||% NA,
+        # Formulation need to be encapsulated in a list of length 1 as it is a R6 object
         formulation = ifelse(is.null(self$Formulation), NA, list(self$Formulation)),
-        formulationKey = ifelse(is.null(self$Formulation), NA, list(self$FormulationKey)),
-        allowedPath = list(self$Path)
+        formulationKey = self$FormulationKey %||% NA,
+        allowedPath = list(self$Path),
+        path = list(NULL)
       )
-      wantedAdmin$path <- list(NULL)
 
       # ensure some wanted admin exist
       if (nrow(wantedAdmin) == 0) {

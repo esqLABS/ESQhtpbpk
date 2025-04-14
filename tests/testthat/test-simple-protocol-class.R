@@ -189,7 +189,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       startTime = "a",
       startTimeUnit = "min"
     ),
-    "Start time must be a numeric value.",
+    "The value for 'StartTime' must be a finite positive numeric value.",
     fixed = TRUE
   )
 
@@ -204,7 +204,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       endTime = "48",
       endTimeUnit = "h"
     ),
-    "End time must be a numeric value.",
+    "The value for 'EndTime' must be a finite positive numeric value.",
     fixed = TRUE
   )
 
@@ -219,7 +219,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       infusionTime = "10",
       infusionTimeUnit = "min"
     ),
-    "Infusion time must be a numeric value.",
+    "The value for 'InfusionTime' must be a finite positive numeric value.",
     fixed = TRUE
   )
 
@@ -234,7 +234,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       waterVolPerBW = "10",
       waterVolPerBWUnit = "ml/kg"
     ),
-    "Water volume per body weight must be a numeric value.",
+    "The value for 'WaterVolPerBW' must be a finite positive numeric value.",
     fixed = TRUE
   )
 })
