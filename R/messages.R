@@ -44,5 +44,5 @@ messages$alreadyExist <- function(name, value) {
 
 # Something went wrong error message
 messages$stgWrong <- function(step) {
-  paste0("Something went wrong during", step, ".")
+  paste0("Something went wrong during ", step, ".")
 }
