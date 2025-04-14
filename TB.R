@@ -27,10 +27,10 @@ for (compoundIdx in seq_len(nrow(TBCompounds))) {
   comp$setPropertyValue("Solubility", 10^TBCompounds$`logS - ADMETLab (mol/l)`[compoundIdx] * TBCompounds$`MW (g/mol)`[compoundIdx], unit = "g/l")
   # comp$setPropertyValue("Lipophilicity", TBCompounds$`logP - ADMETLab (mol/l)`[compoundIdx])
   comp$setPropertyValue("Lipophilicity", TBCompounds$`logD - ADMETLab (mol/l)`[compoundIdx])
-  # comp$setPropertyValue("pKa value 0", TBCompounds$`pka_basic - ADMETLab`[compoundIdx])
-  # comp$setPropertyValue("Compound type 0", "Basic")
-  # comp$setPropertyValue("pKa value 1", TBCompounds$`pka_acidic - ADMETLab`[compoundIdx])
-  # comp$setPropertyValue("Compound type 1", "Acidic")
+  comp$setPropertyValue("pKa value 0", TBCompounds$`pka_basic - ADMETLab`[compoundIdx])
+  comp$setPropertyValue("Compound type 0", "Basic")
+  comp$setPropertyValue("pKa value 1", TBCompounds$`pka_acidic - ADMETLab`[compoundIdx])
+  comp$setPropertyValue("Compound type 1", "Acidic")
   comp$setPropertyValue("Fraction unbound", TBCompounds$`Fu - ADMETLab`[compoundIdx], unit = "%")
   comp$addProperty(
     name = "PInt",
@@ -148,7 +148,7 @@ results <- vector("list", length = 10)
 
 for (i in 1:10) {
   results[[i]] <- runPredictions(
-    Studies[seq(i, 1230, by = 10)], outputFolder = "TB2",
+    Studies[seq(i, 1230, by = 10)], outputFolder = "TB2_PkA",
     numberOfCores = 5,
     outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
     simulationResolution = c(0, max(TBStudies$`EndTime (days)`) * 24 * 60, 1),
@@ -188,7 +188,7 @@ importerConfiguration$addGroupingColumn("StudyID")
 importerConfiguration$namingPattern <- "{StudyID}"
 
 # reload previous results
-outputFolder <- "TB2"
+outputFolder <- "TB2_PkA"
 results <- vector("list", length = length(list.dirs(outputFolder, recursive = FALSE)))
 for (i in seq_along(results)) {
   dir <- list.dirs(outputFolder, recursive = FALSE)[i]
@@ -206,7 +206,7 @@ for (i in seq_along(results)) {
 
 results2 <- unlist(results, recursive = F)
 
-pdf("TB2/Plots.pdf", width = 6, height = 5)
+pdf("TB2_PkA/Plots.pdf", width = 6, height = 5)
 for (i in seq_along(TBStudies$StudyID)) {
   studyID <- TBStudies$StudyID[i]
   print(studyID)
@@ -372,7 +372,7 @@ View(metric_results %>% mutate(AUC4fold = AUCfold <= 4 & AUCfold >= 1/4) %>% sel
 View(metric_results %>% mutate(Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4)  %>% select(-studyID) %>% group_by(method) %>% summarize(shareCmax4fold = sum(Cmax4fold) / n() * 100))
 
 
-write.csv(metric_results, file = "TB2/metrics.csv", row.names = FALSE)
+write.csv(metric_results, file = "TB2_PkA/metrics.csv", row.names = FALSE)
 
 
 # get percents of studies within 2 and 5x
