@@ -86,7 +86,7 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.StartTime
       } else {
-        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
+        isValid <- is.numeric(value) && is.finite(value) && value >= 0
         if (!isValid) {
           cli::cli_abort(messages$valueMustBe("StartTime", "finite positive numeric"))
         } else {
@@ -420,18 +420,9 @@ SimpleProtocol <- R6::R6Class(
       )
 
       # check if start time and end time are valid
-      isValid <- is.numeric(startTime) && is.finite(startTime) && startTime >= 0
-      if (!isValid) {
-        cli::cli_abort(messages$valueMustBe("StartTime", "finite positive numeric"))
-      }
       if (self$DoseInterval == "Single") {
         # for single dose set end time to infinity
         endTime <- Inf
-      } else {
-        isValid <- is.numeric(endTime) && is.finite(endTime) && endTime >= 0
-        if (!isValid) {
-          cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
-        }
       }
 
       # calculate dosing times based on Dosing interval chosen
@@ -469,7 +460,11 @@ SimpleProtocol <- R6::R6Class(
         formulationType = self$Formulation$Type %||% NA,
         formulationName = self$Formulation$Name %||% NA,
         # Formulation need to be encapsulated in a list of length 1 as it is a R6 object
-        formulation = ifelse(is.null(self$Formulation), NA, list(self$Formulation)),
+        formulation = if (is.null(self$Formulation)) {
+          NA
+        } else {
+          list(self$Formulation)
+        },
         formulationKey = self$FormulationKey %||% NA,
         allowedPath = list(self$Path),
         path = list(NULL)
