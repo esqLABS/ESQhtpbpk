@@ -30,6 +30,72 @@ SimpleProtocol <- R6::R6Class(
           if (value == "Custom") {
             cli::cli_abort("`Custom` route is not yet supported.")
           }
+          # ensure infusion time is defined if changing to iv infusion
+          if (value == "IV Infusion" && is.null(private$.InfusionTime)) {
+            cli::cli_warn("No {.code infusionTime} provided, using default value of 60 minutes.")
+            private$.InfusionTime <- 60
+            private$.InfusionTimeUnit <- "min"
+          }
+          # ensure infusion time unit is defined if changing to iv infusion
+          if (value == "IV Infusion" && is.null(private$.InfusionTimeUnit)) {
+            cli::cli_warn("No {.code infusionTimeUnit} provided, using default unit of `min`.")
+            private$.InfusionTimeUnit <- "min"
+          }
+          # ensure infusion time is set to Null if changing from iv infusion
+          if (value != "IV Infusion" && (!is.null(private$.InfusionTime) || !is.null(private$.InfusionTimeUnit))) {
+            cli::cli_warn(
+              paste(
+                "Removing `InfusionTime` and `InfusionTimeUnit` from protocol as ",
+                "they are only used for `IV Infusion` route."
+              )
+            )
+            private$.InfusionTime <- NULL
+            private$.InfusionTimeUnit <- NULL
+          }
+          # ensure water volume is defined if changing to oral
+          if (value == "Oral" && is.null(private$.WaterVolumePerBW)) {
+            cli::cli_warn("No {.code WaterVolPerBW} provided, using default value of 3.5 ml/kg.")
+            private$.WaterVolumePerBW <- 3.5
+            private$.WaterVolumePerBWUnit <- "ml/kg"
+          }
+          # ensure water volume unit is defined if changing to oral
+          if (value == "Oral" && is.null(private$.WaterVolumePerBWUnit)) {
+            cli::cli_warn("No {.code WaterVolPerBWUnit} provided, using default unit of `ml/kg`.")
+            private$.WaterVolumePerBWUnit <- "ml/kg"
+          }
+          # ensure water volume is set to Null if changing from Oral
+          if (value != "Oral" && (!is.null(private$.WaterVolumePerBW) || !is.null(private$.WaterVolumePerBWUnit))) {
+            cli::cli_warn(
+              paste(
+                "Removing `WaterVolPerBW` and `WaterVolPerBWUnit` from protocol as ",
+                "they are only used for `Oral` route."
+              )
+            )
+            private$.WaterVolumePerBW <- NULL
+            private$.WaterVolumePerBWUnit <- NULL
+          }
+          # ensure default formulation is defined if changing to oral
+          if (value == "Oral" && is.null(private$.Formulation)) {
+            cli::cli_warn(
+              c(
+                "No {.code Formulation} provided, using default of dissolved.",
+                "Formulation can be changed with {.code protocolObject$setFormulation(formulation)}."
+              )
+            )
+
+            private$.Formulation <- createDissolvedFormulation(name = "Dissolved")
+            private$.FormulationKey <- "Formulation"
+          }
+          # ensure default formulation is remove if changing from oral
+          if (value != "Oral" && !is.null(private$.Formulation)) {
+            cli::cli_warn(
+              paste(
+                "Removing `Formulation` from protocol as it is only used for `Oral` route."
+              )
+            )
+            private$.Formulation <- NULL
+            private$.FormulationKey <- NULL
+          }
           private$.Route <- value
         }
       }
@@ -47,6 +113,29 @@ SimpleProtocol <- R6::R6Class(
           )
           cli::cli_abort("{msg}")
         } else {
+          # ensure end time is defined if changing to multiple dose
+          if (value != "Single" && is.null(private$.EndTime)) {
+            cli::cli_warn("No {.code endTime} provided, using default value of 24 hours.")
+            private$.EndTime <- 24
+            private$.EndTimeUnit <- "h"
+          }
+          # ensure end time unit is defined if changing to multiple dose
+          if (value != "Single" && is.null(private$.EndTimeUnit)) {
+            cli::cli_warn("No {.code endTimeUnit} provided, using default unit of `h`.")
+            private$.EndTimeUnit <- "h"
+          }
+          # ensure end time is set to Null if changing to single dose
+          if (value == "Single" && (!is.null(private$.EndTime) || !is.null(private$.EndTimeUnit))) {
+            cli::cli_warn(
+              paste(
+                "Removing `EndTime` and `EndTimeUnit` from protocol as they are not used for",
+                "`Single` administrations."
+              )
+            )
+            private$.EndTime <- NULL
+            private$.EndTimeUnit <- NULL
+          }
+
           private$.DoseInterval <- value
         }
       }
@@ -99,7 +188,7 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.StartTimeUnit
       } else {
-        if (!is.null(value) && !(value %in% ospsuite::ospUnits$`Time`)) {
+        if (!(value %in% ospsuite::ospUnits$`Time`)) {
           cli::cli_abort("Supplied start time unit is not valid.")
         } else {
           private$.StartTimeUnit <- value
@@ -111,24 +200,60 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.EndTime
       } else {
-        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
-        if (!isValid) {
-          cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
+        isValid <- isTRUE(is.numeric(value) && is.finite(value) && value >= 0)
+        if (!is.null(private$.DoseInterval)) {
+          # after initialisation
+          if (private$.DoseInterval != "Single") {
+            # if multiple dose required must be not null and valid
+            if (!isValid) {
+              cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
+            }
+          } else {
+            if (!is.null(value)) {
+              # for single dose set to null and warn if not the case
+              cli::cli_warn("EndTime is not used for Single administration.")
+              value <- NULL
+            }
+          }
         } else {
-          private$.EndTime <- value
+          # during initialisation must be either valid or null
+          if (!isValid && !is.null(value)) {
+            cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
+          }
         }
+
+        private$.EndTime <- value
       }
     },
+
     #' @field EndTimeUnit Time unit of administration end time
     EndTimeUnit = function(value) {
       if (missing(value)) {
         private$.EndTimeUnit
       } else {
-        if (!is.null(value) && !(value %in% ospsuite::ospUnits$`Time`)) {
-          cli::cli_abort("Supplied end time unit is not valid.")
+        isValid <- isTRUE(value %in% ospsuite::ospUnits$`Time`)
+        if (!is.null(private$.DoseInterval)) {
+          # after initialisation
+          if (private$.DoseInterval != "Single") {
+            # if multiple dose required must be not null and valid
+            if (!isValid) {
+              cli::cli_abort("Supplied end time unit is not valid.")
+            }
+          } else {
+            if (!is.null(value)) {
+              # for single dose set to null and warn if not the case
+              cli::cli_warn("EndTimeUnit is not used for Single administration.")
+              value <- NULL
+            }
+          }
         } else {
-          private$.EndTimeUnit <- value
+          # during initialisation must be either valid or null
+          if (!isValid && !is.null(value)) {
+            cli::cli_abort("Supplied end time unit is not valid.")
+          }
         }
+
+        private$.EndTimeUnit <- value
       }
     },
     #' @field InfusionTime Duration of infusion
@@ -136,12 +261,29 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.InfusionTime
       } else {
-        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
-        if (!isValid) {
-          cli::cli_abort(messages$valueMustBe("InfusionTime", "finite positive numeric"))
+        isValid <- isTRUE(is.numeric(value) && is.finite(value) && value >= 0)
+        if (!is.null(private$.Route)) {
+          # after initialisation
+          if (private$.Route == "IV Infusion") {
+            # if infusion required must be not null and valid
+            if (!isValid) {
+              cli::cli_abort(messages$valueMustBe("InfusionTime", "finite positive numeric"))
+            }
+          } else {
+            if (!is.null(value)) {
+              # for other types set to null and warn if not the case
+              cli::cli_warn("InfusionTime is not used for {private$.Route} administration.")
+              value <- NULL
+            }
+          }
         } else {
-          private$.InfusionTime <- value
+          # during initialisation must be either valid or null
+          if (!isValid && !is.null(value)) {
+            cli::cli_abort(messages$valueMustBe("InfusionTime", "finite positive numeric"))
+          }
         }
+
+        private$.InfusionTime <- value
       }
     },
     #' @field InfusionTimeUnit Time unit of infusion duration
@@ -149,11 +291,29 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.InfusionTimeUnit
       } else {
-        if (!is.null(value) && !(value %in% ospsuite::ospUnits$`Time`)) {
-          cli::cli_abort("Supplied infusion time unit is not valid.")
+        isValid <- isTRUE(value %in% ospsuite::ospUnits$`Time`)
+        if (!is.null(private$.Route)) {
+          # after initialisation
+          if (private$.Route == "IV Infusion") {
+            # if infusion required must be not null and valid
+            if (!isValid) {
+              cli::cli_abort("Supplied infusion time unit is not valid.")
+            }
+          } else {
+            if (!is.null(value)) {
+              # for other types set to null and warn if not the case
+              cli::cli_warn("InfusionTimeUnit is not used for {private$.Route} administration.")
+              value <- NULL
+            }
+          }
         } else {
-          private$.InfusionTimeUnit <- value
+          # during initialisation must be either valid or null
+          if (!isValid && !is.null(value)) {
+            cli::cli_abort("Supplied infusion time unit is not valid.")
+          }
         }
+
+        private$.InfusionTimeUnit <- value
       }
     },
     #' @field WaterVolPerBW Water volume per body weight
@@ -161,12 +321,29 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.WaterVolumePerBW
       } else {
-        isValid <- is.null(value) || (is.numeric(value) && is.finite(value) && value >= 0)
-        if (!isValid) {
-          cli::cli_abort(messages$valueMustBe("WaterVolPerBW", "finite positive numeric"))
+        isValid <- isTRUE(is.numeric(value) && is.finite(value) && value >= 0)
+        if (!is.null(private$.Route)) {
+          # after initialisation
+          if (private$.Route == "Oral") {
+            # if water volume required must be not null and valid
+            if (!isValid) {
+              cli::cli_abort(messages$valueMustBe("WaterVolPerBW", "finite positive numeric"))
+            }
+          } else {
+            if (!is.null(value)) {
+              # for other types set to null and warn if not the case
+              cli::cli_warn("WaterVolPerBW is not used for {private$.Route} administration.")
+              value <- NULL
+            }
+          }
         } else {
-          private$.WaterVolumePerBW <- value
+          # during initialisation must be either valid or null
+          if (!isValid && !is.null(value)) {
+            cli::cli_abort(messages$valueMustBe("WaterVolPerBW", "finite positive numeric"))
+          }
         }
+
+        private$.WaterVolumePerBW <- value
       }
     },
     #' @field WaterVolPerBWUnit Unit or water volume per body weight
@@ -174,11 +351,29 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.WaterVolumePerBWUnit
       } else {
-        if (!is.null(value) && !(value %in% ospsuite::ospUnits$`Volume per body weight`)) {
-          cli::cli_abort("Supplied Water volume per body weight time unit is not valid.")
+        isValid <- isTRUE(value %in% ospsuite::ospUnits$`Volume per body weight`)
+        if (!is.null(private$.Route)) {
+          # after initialisation
+          if (private$.Route == "Oral") {
+            # if water volume required must be not null and valid
+            if (!isValid) {
+              cli::cli_abort("Supplied Water volume per body weight unit is not valid.")
+            }
+          } else {
+            if (!is.null(value)) {
+              # for other types set to null and warn if not the case
+              cli::cli_warn("Supplied WaterVolPerBWUnit is not used for {private$.Route} administration.")
+              value <- NULL
+            }
+          }
         } else {
-          private$.WaterVolumePerBWUnit <- value
+          # during initialisation must be either valid or null
+          if (!isValid && !is.null(value)) {
+            cli::cli_abort("Supplied Water volume per body weight unit is not valid.")
+          }
         }
+
+        private$.WaterVolumePerBWUnit <- value
       }
     },
     # #' @field TargetOrgan Target organ for user defined administration
@@ -234,7 +429,28 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.Formulation
       } else {
-        ospsuite.utils::validateIsOfType(value, "Formulation", nullAllowed = TRUE)
+        isValid <- inherits(value, "Formulation")
+        if (!is.null(private$.Route)) {
+          # after initialisation
+          if (private$.Route == "Oral") {
+            # formulation required must be not null and valid
+            if (!isValid) {
+              cli::cli_abort(messages$valueMustBe("Formulation", "set for {private$.Route} administration"))
+            }
+          } else {
+            if (!is.null(value)) {
+              # for other types set to null and warn if not the case
+              cli::cli_warn("Formulation is not used for {private$.Route} administration.")
+              value <- NULL
+            }
+          }
+        } else {
+          # during initialisation must be either valid or null
+          if (!isValid && !is.null(value)) {
+            cli::cli_abort(messages$valueMustBe("Formulation", "set for {private$.Route} administration"))
+          }
+        }
+
         private$.Formulation <- value
       }
     },
@@ -243,7 +459,33 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.FormulationKey
       } else {
-        private$.FormulationKey <- value
+        if (missing(value)) {
+          private$.Formulation
+        } else {
+          isValid <- isTRUE(is.character(value) && length(value) == 1)
+          if (!is.null(private$.Route)) {
+            # after initialisation
+            if (private$.Route == "Oral") {
+              # formulation required must be not null and valid
+              if (!isValid) {
+                cli::cli_abort(messages$valueMustBe("FormulationKey", "a character string"))
+              }
+            } else {
+              if (!is.null(value)) {
+                # for other types set to null and warn if not the case
+                cli::cli_warn("FormulationKey is not used for {private$.Route} administration.")
+                value <- NULL
+              }
+            }
+          } else {
+            # during initialisation must be either valid or null
+            if (!is.null(value)) {
+              cli::cli_abort(messages$valueMustBe("FormulationKey", "a character string"))
+            }
+          }
+
+          private$.FormulationKey <- value
+        }
       }
     }
   ),
@@ -284,8 +526,6 @@ SimpleProtocol <- R6::R6Class(
       private$.UUID <- uuid::UUIDgenerate()
       self$Name <- name
       self$Path <- path
-      self$Route <- route
-      self$DoseInterval <- dosingInterval
       self$Dose <- dose
       self$DoseUnit <- doseUnit
       self$StartTime <- startTime
@@ -293,89 +533,19 @@ SimpleProtocol <- R6::R6Class(
       # self$TargetOrgan <- targetOrgan
       # self$TargetCompartment <- targetCompartment
 
-      # Setting default End time for dosing interval other than single
+      # Set endTime and endTimeUnit first (as check and default values are set when change dosing interval)
       self$EndTime <- endTime
       self$EndTimeUnit <- endTimeUnit
-      if (self$DoseInterval != "Single") {
-        if (is.null(self$EndTime)) {
-          cli::cli_warn("No {.code endTime} provided, using default value of 24 hours.")
-          self$EndTime <- 24
-          self$EndTimeUnit <- "h"
-        }
+      self$DoseInterval <- dosingInterval
 
-        if (!is.null(self$EndTime) & is.null(self$EndTimeUnit)) {
-          cli::cli_warn("No {.code endTimeUnit} provided, using default unit of `h`.")
-          self$EndTimeUnit <- "h"
-        }
-      } else {
-        if (!is.null(self$EndTime) || !is.null(self$EndTimeUnit)) {
-          msg <- paste(
-            "Removing `EndTime` and `EndTimeUnit` from protocol as they are not used for",
-            "`Single` administrations."
-          )
-          cli::cli_warn("{msg}")
-          self$EndTime <- NULL
-          self$EndTimeUnit <- NULL
-        }
-      }
-
-      # For IV infusion set default infusion time to 60 min if not given
+      # Set infusionTime and water volume first (as check and default values are set when change route)
       self$InfusionTime <- infusionTime
       self$InfusionTimeUnit <- infusionTimeUnit
 
-      if (self$Route == "IV Infusion") {
-        if (is.null(self$InfusionTime)) {
-          cli::cli_warn("No {.code infusionTime} provided, using default value of 60 minutes.")
-          self$InfusionTime <- 60
-          self$InfusionTimeUnit <- "min"
-        }
-
-        if (!is.null(self$InfusionTime) & is.null(self$InfusionTimeUnit)) {
-          cli::cli_warn("No {.code infusionTimeUnit} provided, using default unit of `minutes`.")
-          self$InfusionTimeUnit <- "min"
-        }
-      } else if (!is.null(self$InfusionTime) || !is.null(self$InfusionTimeUnit)) {
-        cli::cli_warn(
-          paste(
-            "Removing `InfusionTime` and `InfusionTimeUnit` from protocol",
-            "as they are only used for `IV Infusion` route."
-          )
-        )
-        self$InfusionTime <- NULL
-        self$InfusionTimeUnit <- NULL
-      }
-
-      # For oral administration set default water volume per body weight to 3.5 ml/kg if not given
       self$WaterVolPerBW <- waterVolPerBW
       self$WaterVolPerBWUnit <- waterVolPerBWUnit
 
-      if (self$Route == "Oral") {
-        if (is.null(self$WaterVolPerBW)) {
-          cli::cli_warn("No {.code WaterVolPerBW} provided, using default value of 3.5 ml/kg.")
-          self$WaterVolPerBW <- 3.5
-          self$WaterVolPerBWUnit <- "ml/kg"
-        }
-
-        if (!is.null(self$WaterVolPerBW) & is.null(self$WaterVolPerBWUnit)) {
-          cli::cli_warn("No {.code WaterVolPerBWUnit} provided, using default unit of `ml/kg`.")
-          self$WaterVolPerBWUnit <- "ml/kg"
-        }
-      } else if (!is.null(self$WaterVolPerBW) || !is.null(self$waterVolPerBWUnit)) {
-        cli::cli_warn(
-          paste(
-            "Removing `WaterVolPerBW` and `WaterVolPerBWUnit` from protocol as ",
-            "they are only used for `Oral` route."
-          )
-        )
-        self$WaterVolPerBW <- NULL
-        self$WaterVolPerBWUnit <- NULL
-      }
-
-      # Formulation are only needed for Oral and User defined routes, and set to `Dissolved` by default
-      if (self$Route %in% c("Oral", "Custom")) {
-        private$.Formulation <- createDissolvedFormulation(name = "Dissolved")
-        private$.FormulationKey <- "Formulation"
-      }
+      self$Route <- route
 
       # # For custom route set default target is not given
       # if (self$Route == "Custom") {
@@ -419,7 +589,6 @@ SimpleProtocol <- R6::R6Class(
         unit = self$EndTimeUnit
       )
 
-      # check if start time and end time are valid
       if (self$DoseInterval == "Single") {
         # for single dose set end time to infinity
         endTime <- Inf
