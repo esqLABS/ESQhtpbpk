@@ -27,6 +27,7 @@ Imports:
     stringr,
     tibble,
     tidyr,
+    tidyselect,
     uuid
 Suggests: 
     testthat (>= 3.0.0),

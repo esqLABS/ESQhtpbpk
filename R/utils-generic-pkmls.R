@@ -215,7 +215,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   for (model in genericStudyStructure$GenericModel) {
     studySubset <- studyStructureSummary |> dplyr::filter(GenericModel == model)
     studySubset <- studySubset |> dplyr::select(-GenericModel, -StudyID, -Individuals, -PC, -CP)
-    studySubset <- studySubset |> tidyr::unnest(cols = everything())
+    studySubset <- studySubset |> tidyr::unnest(cols = tidyselect::everything())
 
     # summarise protocol x formulation needed for each compound accross studies using the same generic model
     studySubset <- studySubset |>
