@@ -16,7 +16,8 @@ createParticleDissolutionFormulation(
   radiusCV = 1.5,
   radiusMin = 1,
   radiusMax = 19,
-  nBins = 3
+  nBins = 3,
+  path = NULL
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ createParticleDissolutionFormulation(
 \item{radiusMax}{Maximum particle radius, for polydispersed only (default 19)}
 
 \item{nBins}{Number of bins for polydisperse only (default 3)}
+
+\item{path}{prefix of formulation path in the sim. NULL will defaults to \code{{protocolPrefix}|{formulationName}}}
 }
 \value{
 A new \code{Formulation} object.

@@ -10,7 +10,8 @@ createLint80Formulation(
   dissolutionTime80Unit = "min",
   lagTime = 0,
   lagTimeUnit = "min",
-  suspension = TRUE
+  suspension = TRUE,
+  path = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ createLint80Formulation(
 \item{lagTimeUnit}{Time unit for lagTime (default min)}
 
 \item{suspension}{Boolean, whether to use as suspension (default True)}
+
+\item{path}{prefix of formulation path in the sim. NULL will defaults to \code{{protocolPrefix}|{formulationName}}}
 }
 \value{
 A new \code{Formulation} object.

@@ -7,7 +7,8 @@
 createZeroOrderFormulation(
   name = "ZeroOrder",
   endTime = 60,
-  endTimeUnit = "min"
+  endTimeUnit = "min",
+  path = NULL
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ createZeroOrderFormulation(
 \item{endTime}{Time of administration end (default 60)}
 
 \item{endTimeUnit}{Unit for time of administration end (default min)}
+
+\item{path}{prefix of formulation path in the sim. NULL will defaults to \code{{protocolPrefix}|{formulationName}}}
 }
 \value{
 A new \code{Formulation} object.

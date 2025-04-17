@@ -7,9 +7,6 @@
 \description{
 Description of an advanced administration protocol
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{AdvancedProtocol}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -19,11 +16,12 @@ Description of an advanced administration protocol
 
 \item{\code{Schemas}}{List of schemas for the advanced protocol}
 
-\item{\code{Path}}{Prefix path for the administration}
+\item{\code{Path}}{Prefix path for the administration to create default path, otherwise for custom
+pkmls path should be provided for each schema item protocol}
 
 \item{\code{Formulations}}{Formulations used with protocol}
 
-\item{\code{FormulationsKey}}{Formulations Key used with protocol}
+\item{\code{FormulationKey}}{Formulations Key used with protocol}
 }
 \if{html}{\out{</div>}}
 }
@@ -125,9 +123,16 @@ The updated \code{AdvancedProtocol} object.
 Extract all single administration to be applied by a protocol. For easier mapping to path in
 the simulation pkml.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$extractProtocol()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AdvancedProtocol$extractProtocol(path = self$Path)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{path}}{Prefix path for the administration.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 A tibble with the type of administration, time of administration, parameters of the
 administration and the formulation name.

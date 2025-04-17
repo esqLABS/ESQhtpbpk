@@ -17,6 +17,11 @@ messages$valueEnumError <- function(name, value, allowed = NULL) {
   return(msg)
 }
 
+# Value must be
+messages$valueMustBe <- function(name, adjectives) {
+  paste0("The value for '", name, "' must be a ", adjectives, " value.")
+}
+
 # Read-only error message
 messages$readOnly <- function(name) {
   paste0("'", name, "' is read-only.")
@@ -35,4 +40,9 @@ messages$notFound <- function(name, value) {
 # Already exist error message
 messages$alreadyExist <- function(name, value) {
   paste0(name, " '", value, "' already exists.")
+}
+
+# Something went wrong error message
+messages$stgWrong <- function(step) {
+  paste0("Something went wrong during ", step, ".")
 }

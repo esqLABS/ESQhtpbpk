@@ -7,9 +7,6 @@
 \description{
 Description of a formulation
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{Formulation}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -68,7 +65,7 @@ Add a new property/parameter for the formulation
   unit = NULL,
   enum = NULL,
   check = NULL,
-  path = NULL
+  pathPrefix = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -90,8 +87,8 @@ baseUnit of the dimension.}
 
 \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
 
-\item{\code{path}}{Corresponding path in the simulation pkml of the property to add.
-Default to \code{{protocolName}|{formulationName}|parName}}
+\item{\code{pathPrefix}}{Corresponding path in the simulation pkml of the property to add.
+Default to \code{{protocolPrefix}|{formulationName}}}
 }
 \if{html}{\out{</div>}}
 }
@@ -103,7 +100,7 @@ Default to \code{{protocolName}|{formulationName}|parName}}
 Get the paths of all parameters defined for the formulation, using protocolName and formulationName
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Formulation$getAllPropertyPaths(
-  protocolName = NULL,
+  protocolPrefix = NULL,
   formulationName = self$Name
 )}\if{html}{\out{</div>}}
 }
@@ -111,7 +108,7 @@ Get the paths of all parameters defined for the formulation, using protocolName 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{protocolName}}{Name of the protocol in the simulation}
+\item{\code{protocolPrefix}}{Name of the protocol in the simulation}
 
 \item{\code{formulationName}}{Name of the formulation in the simulation}
 }

@@ -211,24 +211,21 @@ Compound <- R6::R6Class(
         ),
         PkaTypes = purrr::compact(
           list(
-            switch(
-              names(private$.allProperties[["Compound type 0"]]$value),
+            switch(names(private$.allProperties[["Compound type 0"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 0"]]$value),
                 Pka = private$.allProperties[["pKa value 0"]]$value
               )
             ),
-            switch(
-              names(private$.allProperties[["Compound type 1"]]$value),
+            switch(names(private$.allProperties[["Compound type 1"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 1"]]$value),
                 Pka = private$.allProperties[["pKa value 1"]]$value
               )
             ),
-            switch(
-              names(private$.allProperties[["Compound type 2"]]$value),
+            switch(names(private$.allProperties[["Compound type 2"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 2"]]$value),
@@ -240,11 +237,13 @@ Compound <- R6::R6Class(
         Parameters = unname(
           purrr::compact(
             purrr::map(private$.allProperties, \(x) {
-              if (!x$name %in% c("Is small molecule",
-                                 "Plasma protein binding partner",
-                                 "Lipophilicity", "Solubility",
-                                 paste("Compound type", 0:2),
-                                 paste("pKa value", 0:2))) {
+              if (!x$name %in% c(
+                "Is small molecule",
+                "Plasma protein binding partner",
+                "Lipophilicity", "Solubility",
+                paste("Compound type", 0:2),
+                paste("pKa value", 0:2)
+              )) {
                 x$toSnapshot()
               }
             })

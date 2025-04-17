@@ -26,8 +26,8 @@ Study <- R6::R6Class(
         if (!is.character(value)) {
           cli::cli_abort(messages$notValid("Individual"))
         }
-        # if no generic model given assume it will be automatically generated, then individual need
-        # to be default individuals
+        # if no generic model given assume it will be automatically generated, then individual
+        # need to be default individuals
         if (is.null(private$.genericModel)) {
           if (!value %in% c(ospsuite::HumanPopulation, ospsuite::Species)) {
             msg <- messages$valueEnumError(
@@ -70,6 +70,15 @@ Study <- R6::R6Class(
       paths <- purrr::list_c(purrr::map(private$.compounds, \(x) {
         x$getAllPropertyPaths()
       }))
+      if (!is.null(private$.simulation)) {
+        availablePaths <- ospsuite::getAllParameterPathsIn(private$.simulation)
+
+        if (!all(paths %in% availablePaths)) {
+          cli::cli_warn("Some paths were not found in the simulation. Please check.")
+        }
+
+        paths <- intersect(paths, availablePaths)
+      }
       return(paths)
     },
 
@@ -152,6 +161,9 @@ Study <- R6::R6Class(
                 Species = ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual),
                 Population = if (self$Individual %in% ospsuite::HumanPopulation) {
                   self$Individual
+                } else if (self$Individual == "Human") {
+                  cli::cli_warn("Using default of `European_ICRP_2002` for population.")
+                  "European_ICRP_2002"
                 } else {
                   NULL
                 }
@@ -170,9 +182,11 @@ Study <- R6::R6Class(
             })
           })
         ),
-        "Protocols" = purrr::map(self$Compounds, \(x) {
-          x$Protocol$toSnapshot()
-        }),
+        "Protocols" = purrr::map(
+          self$Compounds, \(x) {
+            x$Protocol$toSnapshot()
+          }
+        ),
         "Simulations" = list(
           list(
             Name = self$ID,
@@ -192,7 +206,7 @@ Study <- R6::R6Class(
                   Processes = list(),
                   Protocol = list(
                     Name = x$Protocol$Name,
-                    Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationsKey, \(y, z) {
+                    Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationKey, \(y, z) {
                       list(
                         Name = y$Name,
                         Key = z
@@ -220,6 +234,33 @@ Study <- R6::R6Class(
       jsonlite::write_json(self$toSnapshot(), auto_unbox = TRUE, pretty = TRUE, path = file)
     },
     #' @description
+    #' Convert study to a pkml
+    #' @param file file path to save the pkml
+    #' @param overwrite if TRUE, overwrite existing file
+    exportPKML = function(file, overwrite = FALSE) {
+      tempDir <- tempfile()
+      tempFile <- tempfile(tmpdir = tempDir, fileext = ".json")
+      if (!dir.exists(tempDir)) {
+        dir.create(tempDir)
+      }
+
+      self$exportSnapshot(tempFile)
+
+      ospsuite::runSimulationsFromSnapshot(tempFile, exportPKML = TRUE, exportCSV = FALSE, output = tempDir)
+
+      if (!dir.exists(dirname(file))) {
+        dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
+      }
+      if (!file.exists(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml"))) {
+        cli::cli_abort("Something went wrong with the export of the pkml file.")
+      }
+      fs::file_copy(
+        path = fs::path(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")),
+        new_path = file,
+        overwrite = overwrite
+      )
+    },
+    #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)
     #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic
     #' model should be automatically generated.
@@ -231,6 +272,13 @@ Study <- R6::R6Class(
         }
       }
       private$.genericModel <- modelPath
+    },
+    #' @description
+    #' Set simulation model to use if pre-generated (for example from MoBi with PD)
+    #' @param simulation simulation loaded from pkml (to check )
+    setSimulation = function(simulation) {
+      ospsuite.utils::validateIsOfType(simulation, "Simulation")
+      private$.simulation <- simulation
     },
     #' @description
     #' Print the object to the console
@@ -259,6 +307,7 @@ Study <- R6::R6Class(
     .individual = NULL,
     .observedData = list(),
     .genericModel = NULL,
+    .simulation = NULL,
     .outputSchema = list()
   )
 )

@@ -7,9 +7,6 @@
 \description{
 Description of an administration protocol
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{SimpleProtocol}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -39,7 +36,7 @@ Description of an administration protocol
 
 \item{\code{WaterVolPerBWUnit}}{Unit or water volume per body weight}
 
-\item{\code{Path}}{Prefix path for the administration}
+\item{\code{Path}}{Prefix path for the administration (if multiple admin give a vector of all available paths)}
 
 \item{\code{Name}}{Protocol name for the administration}
 
@@ -168,7 +165,7 @@ Extract all parameter paths needed to be changed in the simulation
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{path}}{Prefix path for the administration}
+\item{\code{path}}{Prefix path for the administration (if multiple admin give a vector of all available paths)}
 }
 \if{html}{\out{</div>}}
 }
