@@ -7,9 +7,6 @@
 \description{
 Description of a compound
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{Compound}
-}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -145,7 +142,8 @@ Add a new property for the compound.
 
 \item{\code{value}}{Value for the property.}
 
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
@@ -209,7 +207,8 @@ Add a new process property for the compound.
 
 \item{\code{value}}{Value for the property.}
 
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
@@ -295,7 +294,8 @@ Set the administration protocol to be used for a compound
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{protocol}}{administration protocol to use for the compound. Must be an object of class \code{SimpleProtocol} or \code{AdvancedProtocol}.}
+\item{\code{protocol}}{administration protocol to use for the compound. Must be an object of
+class \code{SimpleProtocol} or \code{AdvancedProtocol}.}
 }
 \if{html}{\out{</div>}}
 }

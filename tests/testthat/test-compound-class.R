@@ -102,16 +102,24 @@ test_that("`addProcessProperty` method throws an error when adding property to a
   )
 })
 
-test_that("`addProcessProperty` method throws an error when adding property multiple processes of the same type (e.g. hepatic clearance)", {
-  expect_error(
-    myCompound$addProcessProperty(
-    processType = "Liver Plasma Clearance",
-    propertyName = "CL",
-    parName = "plasma clearance",
-    dimension = "Flow per weight", value = 10, unit = "ml/min/kg"
+test_that(
+  desc = paste(
+    "`addProcessProperty` method throws an error when adding property multiple",
+    "processes of the same type (e.g. hepatic clearance)"
+  ),
+  code = {
+    expect_error(
+      myCompound$addProcessProperty(
+        processType = "Liver Plasma Clearance",
+        propertyName = "CL",
+        parName = "plasma clearance",
+        dimension = "Flow per weight",
+        value = 10,
+        unit = "ml/min/kg"
+      )
     )
-  )
-})
+  }
+)
 
 
 
@@ -139,12 +147,18 @@ test_that("`getProcessProperty` throws an error if the propety is not found", {
 })
 
 test_that("`getProcessProperty` works", {
-  expect_snapshot(myCompound$getProcessProperty(propertyName = "Thalf", processType = "Liver Mic T1/2"))
+  expect_snapshot(
+    myCompound$getProcessProperty(propertyName = "Thalf", processType = "Liver Mic T1/2")
+  )
 })
 
 test_that("`setProcessProperty` works", {
-  expect_no_error(myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic T1/2", value =  0.5))
-  expect_snapshot(myCompound$getProcessProperty(propertyName = "Thalf", processType = "Liver Mic T1/2"))
+  expect_no_error(
+    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic T1/2", value = 0.5)
+  )
+  expect_snapshot(
+    myCompound$getProcessProperty(propertyName = "Thalf", processType = "Liver Mic T1/2")
+  )
 })
 
 

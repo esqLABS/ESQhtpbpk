@@ -39,7 +39,13 @@ test_that("Create generic PKMLS from study list", {
     po$setFormulation(tablet)
 
     prot <- AdvancedProtocol$new(name = "Protocol 2")
-    prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+    prot$addSchema(
+      schemaName = "Schema 1",
+      timeUnit = "h",
+      timeBetweenRepetitions = 2,
+      numberOfRepetitions = 5,
+      startTime = 12
+    )
     prot$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
 
     comp2$setProtocol(prot)
@@ -56,7 +62,13 @@ test_that("Create generic PKMLS from study list", {
     tablet2 <- createWeibullFormulation(name = "TabletFasterRelease", dissolutionTime50 = 60)
     po2$setFormulation(tablet2)
 
-    prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 3, startTime = 0)
+    prot$addSchema(
+      schemaName = "Schema 2",
+      timeUnit = "h",
+      timeBetweenRepetitions = 12,
+      numberOfRepetitions = 3,
+      startTime = 0
+    )
     prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2)
 
     study3 <- Study$new(ID = "Study3", compounds = list(comp1, comp2), individual = "Rat")
@@ -64,7 +76,12 @@ test_that("Create generic PKMLS from study list", {
     ### Study 4 same as study 1 but in Human
     study4 <- Study$new(ID = "Study4", compounds = list(comp1), individual = "Human")
 
-    ### Study 5 same as study 3 but with compound1 with different process
+    # study 5 same as study 4 but use simple po
+    comp1$setProtocol(po2)
+    study5 <- Study$new(ID = "Study5", compounds = list(comp1), individual = "Human")
+
+    ### Study 6 same as study 3 but with compound1 with different process
+    comp1$setProtocol(prot1)
     comp1$removeProcessProperty(
       processType = "Liver Plasma Clearance",
       propertyName = "Plasma clearance"
@@ -82,18 +99,26 @@ test_that("Create generic PKMLS from study list", {
       dimension = "Concentration (mass)", value = 11, unit = "mg/ml"
     )
 
-    study5 <- Study$new(ID = "Study5", compounds = list(comp1, comp2), individual = "Rat")
+    study6 <- Study$new(ID = "Study6", compounds = list(comp1, comp2), individual = "Rat")
 
 
-    studyList <- list(study1, study2, study3, study4, study5)
+    studyList <- list(study1, study2, study3, study4, study5, study6)
 
-    rtemp <- tempdir(check = T)
-    temp_dir <- tempfile(tmpdir = rtemp)
+    rTemp <- tempdir(check = TRUE)
+    tempDir <- tempfile(tmpdir = rTemp)
   })
 
-  expect_no_error(suppressWarnings(createGenericPKMLs(studyList, outputFolder = temp_dir)))
+  # expect error if not only Study Objects in studyList
+  expect_error(suppressWarnings(createGenericPKMLs(studyList = list(study1, "A"), outputFolder = tempDir)))
 
-  expect_snapshot(list.files(temp_dir))
+  # expect no error if correctly set up
+  expect_no_error(suppressWarnings(createGenericPKMLs(studyList, outputFolder = tempDir)))
 
-  expect_snapshot(purrr::map(studyList, \(x) {x$getAllParameterPaths()}))
+  expect_snapshot(list.files(tempDir))
+
+  expect_snapshot(
+    purrr::map(studyList, \(x) {
+      x$getAllParameterPaths()
+    })
+  )
 })

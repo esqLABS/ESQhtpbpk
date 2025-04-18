@@ -29,7 +29,7 @@ test_that("Creating new Daily IV Infusion Protocol works.", {
 })
 
 test_that("Creating new TID Oral Protocol works.", {
-  expect_no_message(
+  expect_warning(
     SimpleProtocol$new(
       route = "Oral",
       dosingInterval = "8-8-8",
@@ -41,7 +41,9 @@ test_that("Creating new TID Oral Protocol works.", {
       endTimeUnit = "h",
       waterVolPerBW = 3.5,
       waterVolPerBWUnit = "ml/kg"
-    )
+    ),
+    "No `Formulation` provided, using default of dissolved.",
+    fixed = TRUE
   )
 })
 
@@ -85,7 +87,10 @@ test_that("Creating protocol with wrong dose interval does not work.", {
       startTime = 60,
       startTimeUnit = "min"
     ),
-    "Value 'daily' is not allowed for 'dosing interval'. Dosing interval must be one and of `Single`, `24`, `12-12`, `8-8-8`, `6-6-6-6`, and `6-6-12`.",
+    paste(
+      "Value 'daily' is not allowed for 'dosing interval'. Dosing interval must be one and of",
+      "`Single`, `24`, `12-12`, `8-8-8`, `6-6-6-6`, and `6-6-12`."
+    ),
     fixed = TRUE
   )
 })
@@ -158,7 +163,7 @@ test_that("Creating protocol with wrong units does not work.", {
       waterVolPerBW = 10,
       waterVolPerBWUnit = "mL/kg"
     ),
-    "Supplied Water volume per body weight time unit is not valid.",
+    "Supplied Water volume per body weight unit is not valid.",
     fixed = TRUE
   )
 })
@@ -186,7 +191,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       startTime = "a",
       startTimeUnit = "min"
     ),
-    "Start time must be a numeric value.",
+    "The value for 'StartTime' must be a finite positive numeric value.",
     fixed = TRUE
   )
 
@@ -201,7 +206,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       endTime = "48",
       endTimeUnit = "h"
     ),
-    "End time must be a numeric value.",
+    "The value for 'EndTime' must be a finite positive numeric value.",
     fixed = TRUE
   )
 
@@ -216,7 +221,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       infusionTime = "10",
       infusionTimeUnit = "min"
     ),
-    "Infusion time must be a numeric value.",
+    "The value for 'InfusionTime' must be a finite positive numeric value.",
     fixed = TRUE
   )
 
@@ -231,7 +236,7 @@ test_that("Creating protocol with not numeric dose or time does not work.", {
       waterVolPerBW = "10",
       waterVolPerBWUnit = "ml/kg"
     ),
-    "Water volume per body weight must be a numeric value.",
+    "The value for 'WaterVolPerBW' must be a finite positive numeric value.",
     fixed = TRUE
   )
 })
@@ -279,6 +284,153 @@ test_that("Default setting are set.", {
   )
 })
 
+test_that("Test behavior changing to/from iv infusion/oral.", {
+  suppressWarnings({
+    prot <- SimpleProtocol$new(
+      route = "IV Infusion",
+      dosingInterval = "6-6-6-6",
+    )
+  })
+  expect_snapshot(prot)
+
+  expect_warning(
+    prot$Route <- "Oral",
+    "Removing `InfusionTime` and `InfusionTimeUnit`",
+    fixed = TRUE
+  ) |>
+    expect_warning(
+      "No `WaterVolPerBW` provided",
+      fixed = TRUE
+    ) |>
+    expect_warning(
+      "No `Formulation` provided",
+      fixed = TRUE
+    )
+
+  expect_snapshot(
+    prot
+  )
+
+  expect_warning(
+    prot$Route <- "IV Infusion",
+    "No `infusionTime` provided",
+    fixed = TRUE
+  ) |>
+    expect_warning(
+      "Removing `WaterVolPerBW` and `WaterVolPerBWUnit`",
+      fixed = TRUE
+    ) |>
+    expect_warning(
+      "Removing `Formulation`",
+      fixed = TRUE
+    )
+
+  expect_snapshot(
+    prot
+  )
+})
+
+test_that("Test behavior changing to/from single dose", {
+  suppressWarnings({
+    prot <- SimpleProtocol$new(
+      route = "IV Infusion",
+      dosingInterval = "6-6-6-6",
+    )
+  })
+  expect_snapshot(prot)
+
+  expect_warning(
+    prot$DoseInterval <- "Single",
+    "Removing `EndTime` and `EndTimeUnit`",
+    fixed = TRUE
+  )
+
+  expect_snapshot(
+    prot
+  )
+
+  expect_warning(
+    prot$DoseInterval <- "24",
+    "No `endTime` provided",
+    fixed = TRUE
+  )
+
+  expect_snapshot(
+    prot
+  )
+})
+
+test_that("Test that is not possible to change things to null when required or vice versa", {
+  suppressWarnings({
+    prot <- SimpleProtocol$new(
+      route = "IV Infusion",
+      dosingInterval = "6-6-6-6",
+    )
+  })
+
+  expect_error(
+    prot$EndTime <- NULL
+  )
+  expect_error(
+    prot$EndTimeUnit <- NULL
+  )
+  expect_error(
+    prot$InfusionTime <- NULL
+  )
+  expect_error(
+    prot$InfusionTimeUnit <- NULL
+  )
+  expect_warning(
+    prot$WaterVolPerBW <- 1
+  )
+  expect_warning(
+    prot$WaterVolPerBWUnit <- "ml/kg"
+  )
+  expect_warning(
+    prot$Formulation <- 1
+  )
+  expect_warning(
+    prot$FormulationKey <- "a"
+  )
+  expect_snapshot(prot)
+
+  suppressWarnings({
+    prot <- SimpleProtocol$new(
+      route = "Oral",
+      dosingInterval = "Single",
+    )
+  })
+
+  expect_warning(
+    prot$EndTime <- 8,
+    "EndTime is not used"
+  )
+  expect_warning(
+    prot$EndTimeUnit <- "h",
+    "EndTimeUnit is not used"
+  )
+  expect_warning(
+    prot$InfusionTime <- 30
+  )
+  expect_warning(
+    prot$InfusionTimeUnit <- "min"
+  )
+  expect_error(
+    prot$WaterVolPerBW <- NULL
+  )
+  expect_error(
+    prot$WaterVolPerBWUnit <- NULL
+  )
+  expect_error(
+    prot$Formulation <- NULL
+  )
+  expect_error(
+    prot$FormulationKey <- NULL
+  )
+
+  expect_snapshot(prot)
+})
+
 test_that("Extracting protocol works.", {
   prot <- SimpleProtocol$new(
     route = "IV Infusion",
@@ -320,8 +472,8 @@ test_that("getAllParameterPaths works.", {
       dose = 1,
       doseUnit = "mg/m²",
       startTime = 60,
-      startTimeUnit = "min",
-   )
+      startTimeUnit = "min"
+    )
   })
   expect_snapshot(prot$getAllParameterPaths())
 
@@ -405,4 +557,3 @@ test_that("toSnapshot method works.", {
     prot$toSnapshot()
   )
 })
-

@@ -1,7 +1,7 @@
 # Create generic PKMLS from study list
 
     Code
-      list.files(temp_dir)
+      list.files(tempDir)
     Output
       [1] "Model1.pkml" "Model2.pkml" "Model3.pkml" "Model4.pkml"
 
@@ -194,6 +194,33 @@
       [22] "Events|Compound1 Protocol|Application_2|ProtocolSchemaItem|Start time"       
       
       [[5]]
+       [1] "Compound1|Lipophilicity"                                                                              
+       [2] "Compound1|Fraction unbound (plasma, reference value)"                                                 
+       [3] "Compound1|Plasma protein binding partner"                                                             
+       [4] "Compound1|Is small molecule"                                                                          
+       [5] "Compound1|Molecular weight"                                                                           
+       [6] "Compound1|Br"                                                                                         
+       [7] "Compound1|Cl"                                                                                         
+       [8] "Compound1|F"                                                                                          
+       [9] "Compound1|I"                                                                                          
+      [10] "Compound1|pKa value 0"                                                                                
+      [11] "Compound1|Compound type 0"                                                                            
+      [12] "Compound1|pKa value 1"                                                                                
+      [13] "Compound1|Compound type 1"                                                                            
+      [14] "Compound1|pKa value 2"                                                                                
+      [15] "Compound1|Compound type 2"                                                                            
+      [16] "Compound1|Reference pH"                                                                               
+      [17] "Compound1|Solubility at reference pH"                                                                 
+      [18] "Compound1-Total Hepatic Clearance-Liver Plasma Clearance|Plasma clearance"                            
+      [19] "Events|Compound1 Protocol|Oral Weibull 1|Application_3|ProtocolSchemaItem|Dose"                       
+      [20] "Events|Compound1 Protocol|Oral Weibull 1|Application_3|ProtocolSchemaItem|Start time"                 
+      [21] "Events|Compound1 Protocol|Oral Weibull 1|Application_3|ProtocolSchemaItem|Volume of water/body weight"
+      [22] "Events|Compound1 Protocol|Oral Weibull 1|Dissolution time (50% dissolved)"                            
+      [23] "Events|Compound1 Protocol|Oral Weibull 1|Lag time"                                                    
+      [24] "Events|Compound1 Protocol|Oral Weibull 1|Dissolution shape"                                           
+      [25] "Events|Compound1 Protocol|Oral Weibull 1|Use as suspension"                                           
+      
+      [[6]]
        [1] "Compound1|Lipophilicity"                                                                              
        [2] "Compound1|Fraction unbound (plasma, reference value)"                                                 
        [3] "Compound1|Plasma protein binding partner"                                                             

@@ -44,7 +44,7 @@ FormulationType <- ospsuite.utils::enum(
 )
 
 #' @keywords internal
-ParticleSizeDistributionType = ospsuite.utils::enum(
+ParticleSizeDistributionType <- ospsuite.utils::enum(
   c(
     "Monodisperse" = 0,
     "Polydisperse" = 1
@@ -52,7 +52,7 @@ ParticleSizeDistributionType = ospsuite.utils::enum(
 )
 
 #' @keywords internal
-ParticleSizeDistribution = ospsuite.utils::enum(
+ParticleSizeDistribution <- ospsuite.utils::enum(
   c(
     "Normal" = 0,
     "LogNormal" = 1
@@ -128,7 +128,7 @@ ProcessPrefixes <- ospsuite.utils::enum(
 # Main process parameter for initialising processes for generic pkml
 #' @keywords internal
 MainProcessProperty <- list(
-  "Liver Plasma Clearance" = list(Name = "Plasma clearance", dimension = "Flow per weight" , value = 0),
+  "Liver Plasma Clearance" = list(Name = "Plasma clearance", dimension = "Flow per weight", value = 0),
   "Hep T1/2" = list(Name = "t1/2 (hepatocyte assay)", dimension = "Time", value = 1e16),
   "Hep Residuals" = list(Name = "Residual fraction", dimension = "Fraction", value = 1),
   "Liver Mic T1/2" = list(Name = "t1/2 (microsomal assay)", dimension = "Time", value = 1e16),
