@@ -94,9 +94,8 @@ test_that("Create generic PKMLS from study list", {
 
     ### Study 6 same as study 3 but with compound1 with different process
     comp1$setProtocol(prot1)
-    comp1$removeProcessProperty(
-      processType = "Liver Plasma Clearance",
-      propertyName = "Liver Plasma clearance"
+    comp1$removeProcess(
+      processType = "Liver Plasma Clearance"
     )
     comp1$addProcessProperty(
       processType = "Liver Mic T1/2",
@@ -110,9 +109,8 @@ test_that("Create generic PKMLS from study list", {
       parName = "Amount protein/incubation",
       dimension = "Concentration (mass)", value = 11, unit = "mg/ml"
     )
-    comp1$removeProcessProperty(
-      processType = "Renal Plasma Clearance",
-      propertyName = "Renal Plasma clearance"
+    comp1$removeProcess(
+      processType = "Renal Plasma Clearance"
     )
     comp1$addProcessProperty(
       processType = "GFR",
@@ -139,9 +137,8 @@ test_that("Create generic PKMLS from study list", {
       parName = "Residual fraction",
       dimension = "Fraction", value = 10, unit = "%"
     )
-    comp2$removeProcessProperty(
-      processType = "Hep T1/2",
-      propertyName = "Thalf"
+    comp2$removeProcess(
+      processType = "Hep T1/2"
     )
     comp2$addProcessProperty(
       processType = "Hep Residuals",
@@ -149,9 +146,8 @@ test_that("Create generic PKMLS from study list", {
       parName = "Residual fraction",
       dimension = "Fraction", value = 20, unit = "%"
     )
-    comp1$removeProcessProperty(
-      processType = "GFR",
-      propertyName = "GFR"
+    comp1$removeProcess(
+      processType = "GFR"
     )
     comp1$addProcessProperty(
       processType = "Tub Sec FirstOrder",
