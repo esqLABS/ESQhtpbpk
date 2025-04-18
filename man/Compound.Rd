@@ -148,7 +148,8 @@ baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
-\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
+\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property,
+must take value, unit as argument an retrun an error if the test fails.}
 
 \item{\code{path}}{Corresponding full path of the parameter in the simulation pkml of the property to add
 (default to NULL to create it automatically based on parName).}

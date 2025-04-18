@@ -33,7 +33,7 @@ messages$notValid <- function(name) {
 
 # Unit not valid error message
 messages$unitNotValid <- function(value, dimension) {
-  paste0("Unit '", name, "' is not valid for dimension ", dimension, ".")
+  paste0("Unit '", value, "' is not valid for dimension ", dimension, ".")
 }
 
 # Not found error message

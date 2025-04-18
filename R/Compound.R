@@ -125,7 +125,8 @@ Compound <- R6::R6Class(
     #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the
     #' baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
-    #' @param check (Optional) Function to check the validity of the supplied value for the property.
+    #' @param check (Optional) Function to check the validity of the supplied value for the property,
+    #' must take value, unit as argument an retrun an error if the test fails.
     #' @param path Corresponding full path of the parameter in the simulation pkml of the property to add
     #' (default to NULL to create it automatically based on parName).
     addProperty = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
@@ -237,6 +238,10 @@ Compound <- R6::R6Class(
     #' Remove a all process propertys from the compound.
     #' @param processType Type of the process to remove the property from
     removeProcess = function(processType) {
+      if (!(processType %in% names(private$.allProcessProperties))) {
+        cli::cli_abort("No {processType} processes found.")
+      }
+
       path <- purrr::list_c(purrr::map(private$.allProcessProperties[[processType]], \(x) x$path))
       private$.allProcessProperties[[processType]] <- NULL
       private$.allProcessProperties <- purrr::compact(private$.allProcessProperties)

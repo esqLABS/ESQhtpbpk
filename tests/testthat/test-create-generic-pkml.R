@@ -183,4 +183,18 @@ test_that("Create generic PKMLS from study list", {
       x$getAllParameterPaths()
     })
   )
+
+  # add unexisting property to test error of getAllParameterPaths
+  study1$Compounds[[1]]$addProperty(
+    name = "Test",
+    parName = "Unknown",
+    dimension = "Fraction",
+    value = 50,
+    unit = "%"
+  )
+
+  expect_warning(
+    study1$getAllParameterPaths(),
+    "Some paths were not found"
+  )
 })

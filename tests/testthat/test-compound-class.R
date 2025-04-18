@@ -140,7 +140,12 @@ test_that("`getProcessProperty` throws an error if the propety is not found", {
     processType = "Liver Mic T1/2",
     propertyName = "Thalf",
     parName = "t1/2 (microsomal assay)",
-    dimension = "Time", value = 0.1, unit = "min"
+    dimension = "Time", value = 0.1, unit = "min",
+    check = function(value, unit) {
+      if (value < 0) {
+        stop("Value must be positive")
+      }
+    }
   )
   expect_error(myCompound$getProcessProperty(processType = "Liver Mic T1/2", propertyName = "PPB"))
   expect_error(myCompound$getProcessProperty(processType = "Liver Mic", propertyName = "Thalf"))
@@ -161,7 +166,37 @@ test_that("`setProcessProperty` works", {
   )
 })
 
+test_that("`setProcessProperty` throws an error when removing unknown thinks or setting wrong values", {
+  expect_error(
+    myCompound$setProcessPropertyValue(propertyName = "T1/2", processType = "Liver Mic T1/2", value = 0.5)
+  )
+  expect_error(
+    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic", value = 0.5)
+  )
+  expect_error(
+    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic T1/2", value = 0.5, unit = "l")
+  )
+  expect_error(
+    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic T1/2", value = -5)
+  )
+})
 
 test_that("`getAllPropertyPaths` works", {
   expect_snapshot(myCompound$getAllPropertyPaths())
+})
+
+test_that("`removeProcess` method works", {
+  expect_no_message(
+    myCompound$removeProcess(
+      processType = "Liver Mic T1/2"
+    )
+  )
+})
+
+test_that("`removeProcess` method throws an error when removing an unexisting processType", {
+  expect_error(
+    myCompound$removeProcess(
+      processType = "Liver Mic"
+    )
+  )
 })
