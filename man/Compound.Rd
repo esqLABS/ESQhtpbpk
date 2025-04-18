@@ -37,6 +37,7 @@ Description of a compound
 \item \href{#method-Compound-removeProperty}{\code{Compound$removeProperty()}}
 \item \href{#method-Compound-addProcessProperty}{\code{Compound$addProcessProperty()}}
 \item \href{#method-Compound-removeProcessProperty}{\code{Compound$removeProcessProperty()}}
+\item \href{#method-Compound-removeProcess}{\code{Compound$removeProcess()}}
 \item \href{#method-Compound-getProcessProperty}{\code{Compound$getProcessProperty()}}
 \item \href{#method-Compound-setProcessPropertyValue}{\code{Compound$setProcessPropertyValue()}}
 \item \href{#method-Compound-setProtocol}{\code{Compound$setProtocol()}}
@@ -234,6 +235,23 @@ Remove a process property from the compound.
 \describe{
 \item{\code{propertyName}}{Name of the property to remove}
 
+\item{\code{processType}}{Type of the process to remove the property from}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-removeProcess"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-removeProcess}{}}}
+\subsection{Method \code{removeProcess()}}{
+Remove a all process propertys from the compound.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$removeProcess(processType)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
 \item{\code{processType}}{Type of the process to remove the property from}
 }
 \if{html}{\out{</div>}}
