@@ -174,17 +174,15 @@ Compound <- R6::R6Class(
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
     #' @param path (Optional) Corresponding full path of the parameter in the simulation pkml of the
     #' property to add. Needed when using a predefined pkml for the HTPBPK simulation.
-    addProcessProperty = function(
-      propertyName,
-      processType,
-      parName,
-      dimension,
-      value = 0,
-      unit = NULL,
-      enum = NULL,
-      check = NULL,
-      path = NULL
-    ) {
+    addProcessProperty = function(propertyName,
+                                  processType,
+                                  parName,
+                                  dimension,
+                                  value = 0,
+                                  unit = NULL,
+                                  enum = NULL,
+                                  check = NULL,
+                                  path = NULL) {
       processTypeValid <- processType %in% names(ProcessTypes)
       if (!processTypeValid) {
         cli::cli_abort("ProcessType {.var {processType}} not allowed. Allowed values are {names(ProcessTypes)}.")
