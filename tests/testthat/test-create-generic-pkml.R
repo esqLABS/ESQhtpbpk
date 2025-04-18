@@ -124,7 +124,7 @@ test_that("Create generic PKMLS from study list", {
     comp2$addProcessProperty(
       processType = "Hep T1/2",
       propertyName = "Thalf",
-      parName = "t1/2 (microsomal assay)",
+      parName = "t1/2 (hepatocyte assay)",
       dimension = "Time", value = 5, unit = "min"
     )
     study6 <- Study$new(ID = "Study6", compounds = list(comp1, comp2), individual = "Rat")
@@ -162,7 +162,7 @@ test_that("Create generic PKMLS from study list", {
     comp2$addProcessProperty(
       processType = "Tub Sec MM",
       propertyName = "Tubular secretion max",
-      parName = "TS max",
+      parName = "TSmax",
       dimension = "Amount per time", value = 5, unit = "umol/min"
     )
     study7 <- Study$new(ID = "Study7", compounds = list(comp1, comp2), individual = "Rat")

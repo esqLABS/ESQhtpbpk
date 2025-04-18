@@ -188,7 +188,7 @@ Study <- R6::R6Class(
         ),
         "Compounds" = purrr::map(self$Compounds, \(x) {
           compSnap <- x$toSnapshot()
-          for (procIdx in seq_along(compSnap$Processes) > 0) {
+          for (procIdx in seq_along(compSnap$Processes)) {
             if (self$Individual %in% ospsuite::HumanPopulation) {
               compSnap$Processes[[procIdx]]$Species <- "Human"
             } else {

@@ -135,7 +135,7 @@ MainProcessProperty <- list(
   "Liver Mic Residuals" = list(Name = "Residual fraction", dimension = "Fraction", value = 1),
   "Renal Plasma Clearance" = list(Name = "Plasma clearance", dimension = "Flow per weight", value = 0),
   "Tub Sec FirstOrder" = list(Name = "Tubular secretion", dimension = "Flow", value = 0),
-  "Tub Sec MM" = list(Name = "TSmax", dimension = "Flow", value = 0),
+  "Tub Sec MM" = list(Name = "TSmax", dimension = "Amount per time", value = 0),
   "GFR" = list(Name = "GFR fraction", dimension = "Fraction", value = 0),
   "Biliary Plasma Clearance" = list(Name = "Plasma clearance", dimension = "Flow per weight", value = 0)
 )
