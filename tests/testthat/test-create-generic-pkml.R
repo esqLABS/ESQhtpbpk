@@ -121,10 +121,54 @@ test_that("Create generic PKMLS from study list", {
       dimension = "Fraction", value = 1, unit = ""
     )
 
+    comp2$addProcessProperty(
+      processType = "Hep T1/2",
+      propertyName = "Thalf",
+      parName = "t1/2 (microsomal assay)",
+      dimension = "Time", value = 5, unit = "min"
+    )
     study6 <- Study$new(ID = "Study6", compounds = list(comp1, comp2), individual = "Rat")
 
+    # test all missing processes
+    comp1$removeProcess(
+      processType = "Liver Mic T1/2"
+    )
+    comp1$addProcessProperty(
+      processType = "Liver Mic Residuals",
+      propertyName = "Residual fraction",
+      parName = "Residual fraction",
+      dimension = "Fraction", value = 10, unit = "%"
+    )
+    comp2$removeProcessProperty(
+      processType = "Hep T1/2",
+      propertyName = "Thalf"
+    )
+    comp2$addProcessProperty(
+      processType = "Hep Residuals",
+      propertyName = "Residual fraction",
+      parName = "Residual fraction",
+      dimension = "Fraction", value = 20, unit = "%"
+    )
+    comp1$removeProcessProperty(
+      processType = "GFR",
+      propertyName = "GFR"
+    )
+    comp1$addProcessProperty(
+      processType = "Tub Sec FirstOrder",
+      propertyName = "Tubular secretion",
+      parName = "Tubular secretion",
+      dimension = "Flow", value = 20, unit = "l/min"
+    )
+    comp2$addProcessProperty(
+      processType = "Tub Sec MM",
+      propertyName = "Tubular secretion max",
+      parName = "TS max",
+      dimension = "Amount per time", value = 5, unit = "umol/min"
+    )
+    study7 <- Study$new(ID = "Study7", compounds = list(comp1, comp2), individual = "Rat")
 
-    studyList <- list(study1, study2, study3, study4, study5, study6)
+
+    studyList <- list(study1, study2, study3, study4, study5, study6, study7)
 
     rTemp <- tempdir(check = TRUE)
     tempDir <- tempfile(tmpdir = rTemp)
