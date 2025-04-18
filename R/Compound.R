@@ -198,7 +198,15 @@ Compound <- R6::R6Class(
       }
 
       if (is.null(path)) {
-        path <- paste0("{compoundName}-", paste(ProcessPrefixes[processType], processType, sep = "-"), "|", parName)
+        path <- paste0(
+          "{compoundName}",
+          ifelse(ProcessTypes[processType] == "Hepatic", "-", "|"),
+          paste(ProcessPrefixes[processType], processType, sep = "-")
+        )
+        if (ProcessTypes[processType] %in% c("Renal", "GFR")) {
+          path <- paste0("Neighborhoods|Kidney_pls_Kidney_ur|", path, "-", "{compoundName}")
+        }
+        path <- paste0(path, "|", parName)
       }
       private$.allProcessProperties[[processType]][[propertyName]] <- Property$new(
         name = propertyName,
@@ -349,7 +357,7 @@ Compound <- R6::R6Class(
                 InternalName = unname(as.character(ProcessInternalNames[name])),
                 DataSource = name,
                 # Species will be added when generating study snapshot to match used specie in study
-                Parameters = unname(x %>% purrr::map(\(y) y$toSnapshot()) %>% purrr::compact())
+                Parameters = unname(x |> purrr::map(\(y) y$toSnapshot()) |> purrr::compact())
               )
             })
           )
@@ -393,11 +401,19 @@ Compound <- R6::R6Class(
       res <- as.vector(sapply(private$.allProperties, \(x) {
         glue::glue(x$path)
       }))
-      res <- c(res, as.character(sapply(private$.allProcessProperties, \(x) {
-        sapply(x, \(y) {
-          glue::glue(y$path)
-        })
-      })))
+      res <- c(
+        res,
+        as.character(
+          unlist(
+            sapply(private$.allProcessProperties, \(x) {
+              sapply(x, \(y) {
+                glue::glue(y$path)
+              })
+            }),
+            recursive = TRUE
+          )
+        )
+      )
 
       if (any(c("SimpleProtocol", "AdvancedProtocol") %in% class(self$Protocol))) {
         res <- c(res, self$Protocol$getAllParameterPaths())

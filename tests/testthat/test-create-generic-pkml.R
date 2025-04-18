@@ -5,9 +5,21 @@ test_that("Create generic PKMLS from study list", {
     comp1 <- Compound$new(ID = 1, name = "Alpha")
     comp1$addProcessProperty(
       processType = "Liver Plasma Clearance",
-      propertyName = "Plasma clearance",
+      propertyName = "Liver Plasma clearance",
       parName = "Plasma clearance",
       dimension = "Flow per weight", value = 10, unit = "ml/min/kg"
+    )
+    comp1$addProcessProperty(
+      processType = "Renal Plasma Clearance",
+      propertyName = "Renal Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 1, unit = "ml/min/kg"
+    )
+    comp1$addProcessProperty(
+      processType = "Biliary Plasma Clearance",
+      propertyName = "Biliary Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 3, unit = "ml/min/kg"
     )
 
     prot1 <- SimpleProtocol$new(
@@ -84,7 +96,7 @@ test_that("Create generic PKMLS from study list", {
     comp1$setProtocol(prot1)
     comp1$removeProcessProperty(
       processType = "Liver Plasma Clearance",
-      propertyName = "Plasma clearance"
+      propertyName = "Liver Plasma clearance"
     )
     comp1$addProcessProperty(
       processType = "Liver Mic T1/2",
@@ -97,6 +109,16 @@ test_that("Create generic PKMLS from study list", {
       propertyName = "Conc Incubation",
       parName = "Amount protein/incubation",
       dimension = "Concentration (mass)", value = 11, unit = "mg/ml"
+    )
+    comp1$removeProcessProperty(
+      processType = "Renal Plasma Clearance",
+      propertyName = "Renal Plasma clearance"
+    )
+    comp1$addProcessProperty(
+      processType = "GFR",
+      propertyName = "GFR",
+      parName = "GFR fraction",
+      dimension = "Fraction", value = 1, unit = ""
     )
 
     study6 <- Study$new(ID = "Study6", compounds = list(comp1, comp2), individual = "Rat")

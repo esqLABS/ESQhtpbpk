@@ -175,40 +175,40 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         "HepaticProcesses" = list(
           purrr::map(study$Compounds, \(x) {
             procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "Hepatic") {
-              NULL
+            if (!is.null(procName) && any(ProcessTypes[procName] == "Hepatic")) {
+                procName[ProcessTypes[procName] == "Hepatic"]
             } else {
-              procName
+              NULL
             }
           })
         ),
         "RenalProcesses" = list(
           purrr::map(study$Compounds, \(x) {
             procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "Renal") {
-              NULL
+            if (!is.null(procName) && any(ProcessTypes[procName] == "Renal")) {
+              procName[ProcessTypes[procName] == "Renal"]
             } else {
-              procName
+              NULL
             }
           })
         ),
         "GFRProcesses" = list(
           purrr::map(study$Compounds, \(x) {
             procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "GFR") {
-              NULL
+            if (!is.null(procName) && any(ProcessTypes[procName] == "GFR")) {
+              procName[ProcessTypes[procName] == "GFR"]
             } else {
-              procName
+              NULL
             }
           })
         ),
         "BiliaryProcesses" = list(
           purrr::map(study$Compounds, \(x) {
             procName <- names(x$.__enclos_env__$private$.allProcessProperties)
-            if (is.null(procName) || ProcessTypes[procName] != "Biliary") {
-              NULL
+            if (!is.null(procName) && any(ProcessTypes[procName] == "Biliary")) {
+              procName[ProcessTypes[procName] == "Biliary"]
             } else {
-              procName
+              NULL
             }
           })
         )
