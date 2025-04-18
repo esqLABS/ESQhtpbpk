@@ -176,7 +176,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
           purrr::map(study$Compounds, \(x) {
             procName <- names(x$.__enclos_env__$private$.allProcessProperties)
             if (!is.null(procName) && any(ProcessTypes[procName] == "Hepatic")) {
-                procName[ProcessTypes[procName] == "Hepatic"]
+              procName[ProcessTypes[procName] == "Hepatic"]
             } else {
               NULL
             }

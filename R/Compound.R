@@ -237,7 +237,7 @@ Compound <- R6::R6Class(
     #' Remove a all process propertys from the compound.
     #' @param processType Type of the process to remove the property from
     removeProcess = function(processType) {
-      path <- purrr::list_c(purrr::map(private$.allProcessProperties[[processType]], \(x) {x$path}))
+      path <- purrr::list_c(purrr::map(private$.allProcessProperties[[processType]], \(x) x$path))
       private$.allProcessProperties[[processType]] <- NULL
       private$.allProcessProperties <- purrr::compact(private$.allProcessProperties)
       private$.allPropertyPaths <- private$.allPropertyPaths[-which(private$.allPropertyPaths %in% path)]
