@@ -14,6 +14,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       .extractStudyStructure(studyList)
     },
     error = function(e) {
+      cli::cli_process_failed()
       cli::cli_abort(
         c(
           "x" = messages$stgWrong("the extraction of the study structure"),
@@ -82,6 +83,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       )
     },
     error = function(e) {
+      cli::cli_process_failed()
       cli::cli_abort(
         c(
           "x" = messages$stgWrong("the creation of the generic pkmls"),
@@ -99,6 +101,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       .remapStudyProtocols(studyList, genericStudies, studyStructureSummary)
     },
     error = function(e) {
+      cli::cli_process_failed()
       cli::cli_abort(
         c(
           "x" = messages$stgWrong("renaming of compound/protocol/formulation to match the generic models"),
@@ -417,7 +420,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     "Creating generic models:",
     total = length(genericStudies),
     clear = FALSE,
-    format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({genStudy$ID})",
+    format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({genStudy$ID})"
   )
 
   # load pkmls and add reference to user studies

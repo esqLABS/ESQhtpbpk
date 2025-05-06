@@ -118,10 +118,10 @@ runPredictions <- function(
   # To avoid running out of memory, a threshold for the maximal queued jobs is set.
   queuedRuns <- 0
   remainingStudies <- length(studies)
-  cli::cli_text("Queueing studies.")
   cli::cli_progress_bar(
+    name = "Queueing studies:",
     total = min(remainingStudies, queueSize),
-    format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
+    format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({study$ID})"
   )
   # Add runs to SimulationBatch for every study
   for (study in studies) {
@@ -164,18 +164,20 @@ runPredictions <- function(
       remainingStudies <- remainingStudies - queuedRuns
 
       queuedRuns <- 0
-      cli::cli_text("Queueing studies.")
       cli::cli_progress_bar(
+        name = "Queueing studies:",
         total = min(remainingStudies, queueSize),
-        format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
+        format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({study$ID})"
       )
     }
   }
+  cli::cli_progress_done()
 
   # Simulate and process the remaining runs that are left because queuedRuns != numberOfCores
   if (queuedRuns > 0) {
     results <- c(results, .processBatchRun(simulationsBatches = simulationsBatches, resultsIdsMap = resultsIdsMap, studies =  studies, outputFolder = simResultsFolder, saveResults = saveResults, plotFigures = plotFigures, numberOfCores = numberOfCores))
   }
+
   return(results)
 }
 
