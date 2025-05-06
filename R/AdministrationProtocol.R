@@ -999,7 +999,12 @@ AdvancedProtocol <- R6::R6Class(
                 identical(existingForm[[idx]]$Type, protocol$Formulation$Type)
               )
             ) {
-              cli::cli_abort("Formulation name {.var {protocol$Formulation$Name}} is already used for a different formulation.")
+              cli::cli_abort(
+                paste(
+                  "Formulation name {.var {protocol$Formulation$Name}}",
+                  "is already used for a different formulation."
+                )
+              )
             }
           }
           protocol$FormulationKey <- paste0("Formulation", identicalIdx)

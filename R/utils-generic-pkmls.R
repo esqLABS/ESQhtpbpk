@@ -5,7 +5,6 @@
 #' @param outputFolder Folder were to write the generic pkmls
 #' @param overwrite If TRUE, overwrite existing files
 #' @return The update studyList with model to use, and adjusted paths.
-#' @importFrom dplyr %>%
 #' @export
 createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   options(cli.progress_show_after = 0)
@@ -122,7 +121,12 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' @noRd
 .extractStudyStructure <- function(studyList) {
   # start progress bar
-  cli::cli_progress_bar("Extracting study structure for all studies:", total = length(studyList), clear = FALSE)
+  cli::cli_progress_bar(
+    name = "Extracting study structure for all studies:",
+    total = length(studyList),
+    format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({study$ID})",
+    clear = FALSE
+  )
 
   studyStructureSummary <- tibble::tibble(
     "StudyID" = character(),
@@ -138,18 +142,12 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     "BiliaryProcesses" = list()
   )
 
-  cli::cli_text("Creating study structures.")
-  cli::cli_progress_bar(
-    total = length(studyList),
-    format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
-  )
   for (study in studyList) {
-    cli::cli_progress_update()
-
     if (!("Study" %in% class(study))) {
       cli::cli_abort("All elements of studyList must be of `Study` class.")
     }
     cli::cli_progress_update()
+
     studyStructureSummary <- rbind(
       studyStructureSummary,
       tibble::tibble(
@@ -236,8 +234,6 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' (PC/CP, Individual, Administration type, compounds numbers) .
 #' @noRd
 .createGenericStudyStructure <- function(studyStructureSummary) {
-  cli::cli_text("Creating generic models.")
-
   # for (study in studyList) {
   genericStudyStructure <- studyStructureSummary |>
     dplyr::select(-StudyID, -FormulationsProtocols, -CompoundsID, -GFRProcesses, -BiliaryProcesses) |>
@@ -417,7 +413,12 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' But it return nothing nothing.
 #' @noRd
 .setGenericModel <- function(genericStudies, studyList, studyStructureSummary, outputFolder, overwrite) {
-  cli::cli_progress_bar("Creating generic models", total = length(genericStudies), clear = FALSE)
+  cli::cli_progress_bar(
+    "Creating generic models:",
+    total = length(genericStudies),
+    clear = FALSE,
+    format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({genStudy$ID})",
+  )
 
   # load pkmls and add reference to user studies
   for (genStudy in genericStudies) {
@@ -463,20 +464,16 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' @noRd
 .remapStudyProtocols <- function(studyList, genericStudies, studyStructureSummary) {
   cli::cli_progress_bar(
-    "Updating protocols and formulations to match generic models",
+    "Updating protocols and formulations to match generic models:",
     total = length(studyList),
+    format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({study$ID})",
     clear = FALSE
   )
 
-  cli::cli_text("Updating studies.")
-  cli::cli_progress_bar(
-    total = length(studyList),
-    format = "{cli::pb_bar} {cli::pb_percent} ({study$ID})"
-  )
   for (idx in seq_along(studyList)) {
+    study <- studyList[[idx]]
     cli::cli_progress_update()
 
-    study <- studyList[[idx]]
     genericModel <- studyStructureSummary |>
       dplyr::filter(StudyID == study$ID) |>
       dplyr::pull(GenericModel)
