@@ -1062,9 +1062,9 @@ AdvancedProtocol <- R6::R6Class(
         wantedAdmin[[schemaIdx]] <- dplyr::bind_rows(wantedAdmin[[schemaIdx]])
       }
       wantedAdmin <- dplyr::bind_rows(wantedAdmin)
-      uniqueFormulations <- unique(wantedAdmin$formulation) %>% purrr::compact()
-      wantedAdmin <- wantedAdmin %>%
-        dplyr::rowwise() %>%
+      uniqueFormulations <- unique(wantedAdmin$formulation) |> purrr::compact()
+      wantedAdmin <- wantedAdmin |>
+        dplyr::rowwise() |>
         dplyr::mutate(
           formulationKey = ifelse(
             is.null(formulation),
@@ -1085,7 +1085,7 @@ AdvancedProtocol <- R6::R6Class(
         )
 
       # order wanted admin to set application number by default
-      wantedAdmin <- wantedAdmin %>% dplyr::arrange(time)
+      wantedAdmin <- wantedAdmin |> dplyr::arrange(time)
 
       # loop across admin to set admin number in time order if allowed path were not set
       if (all(is.null(unlist(wantedAdmin$allowedPath)))) {
@@ -1100,17 +1100,17 @@ AdvancedProtocol <- R6::R6Class(
           cli::cli_abort("Check your protocol, either all allowed path should be set or none.")
         }
 
-        wantedAdmin <- wantedAdmin %>% dplyr::group_by(allowedPath)
+        wantedAdmin <- wantedAdmin |> dplyr::group_by(allowedPath)
 
-        tooManyAdminWanted <- wantedAdmin %>%
-          dplyr::summarize(N = dplyr::n() > length(unique(unlist(allowedPath)))) %>%
+        tooManyAdminWanted <- wantedAdmin |>
+          dplyr::summarize(N = dplyr::n() > length(unique(unlist(allowedPath)))) |>
           dplyr::pull(N)
 
         if (any(tooManyAdminWanted)) {
           cli::cli_warn("For multiple admin path, should list all available paths for this type of administrations.")
         }
 
-        wantedAdmin <- wantedAdmin %>% dplyr::mutate(path = unlist(allowedPath)[dplyr::row_number()])
+        wantedAdmin <- wantedAdmin |> dplyr::mutate(path = unlist(allowedPath)[dplyr::row_number()])
       }
 
       return(wantedAdmin)

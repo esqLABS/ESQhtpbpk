@@ -3,6 +3,24 @@ test_that("Create generic PKMLS from study list", {
     ### Study 1
     # Compound 1 with IV Bolus
     comp1 <- Compound$new(ID = 1, name = "Alpha")
+    comp1$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Liver Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 10, unit = "ml/min/kg"
+    )
+    comp1$addProcessProperty(
+      processType = "Renal Plasma Clearance",
+      propertyName = "Renal Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 1, unit = "ml/min/kg"
+    )
+    comp1$addProcessProperty(
+      processType = "Biliary Plasma Clearance",
+      propertyName = "Biliary Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 3, unit = "ml/min/kg"
+    )
 
     prot1 <- SimpleProtocol$new(
       route = "IV Bolus",
@@ -74,7 +92,79 @@ test_that("Create generic PKMLS from study list", {
     comp1$setProtocol(po2)
     study5 <- Study$new(ID = "Study5", compounds = list(comp1), individual = "Human")
 
-    studyList <- list(study1, study2, study3, study4, study5)
+    ### Study 6 same as study 3 but with compound1 with different process
+    comp1$setProtocol(prot1)
+    comp1$removeProcess(
+      processType = "Liver Plasma Clearance"
+    )
+    comp1$addProcessProperty(
+      processType = "Liver Mic T1/2",
+      propertyName = "Thalf",
+      parName = "t1/2 (microsomal assay)",
+      dimension = "Time", value = 10, unit = "min"
+    )
+    comp1$addProcessProperty(
+      processType = "Liver Mic T1/2",
+      propertyName = "Conc Incubation",
+      parName = "Amount protein/incubation",
+      dimension = "Concentration (mass)", value = 11, unit = "mg/ml"
+    )
+    comp1$removeProcess(
+      processType = "Renal Plasma Clearance"
+    )
+    comp1$addProcessProperty(
+      processType = "GFR",
+      propertyName = "GFR",
+      parName = "GFR fraction",
+      dimension = "Fraction", value = 1, unit = ""
+    )
+
+    comp2$addProcessProperty(
+      processType = "Hep T1/2",
+      propertyName = "Thalf",
+      parName = "t1/2 (hepatocyte assay)",
+      dimension = "Time", value = 5, unit = "min"
+    )
+    study6 <- Study$new(ID = "Study6", compounds = list(comp1, comp2), individual = "Rat")
+
+    # test all missing processes
+    comp1$removeProcess(
+      processType = "Liver Mic T1/2"
+    )
+    comp1$addProcessProperty(
+      processType = "Liver Mic Residuals",
+      propertyName = "Residual fraction",
+      parName = "Residual fraction",
+      dimension = "Fraction", value = 10, unit = "%"
+    )
+    comp2$removeProcess(
+      processType = "Hep T1/2"
+    )
+    comp2$addProcessProperty(
+      processType = "Hep Residuals",
+      propertyName = "Residual fraction",
+      parName = "Residual fraction",
+      dimension = "Fraction", value = 20, unit = "%"
+    )
+    comp1$removeProcess(
+      processType = "GFR"
+    )
+    comp1$addProcessProperty(
+      processType = "Tub Sec FirstOrder",
+      propertyName = "Tubular secretion",
+      parName = "Tubular secretion",
+      dimension = "Flow", value = 20, unit = "l/min"
+    )
+    comp2$addProcessProperty(
+      processType = "Tub Sec MM",
+      propertyName = "Tubular secretion max",
+      parName = "TSmax",
+      dimension = "Amount per time", value = 5, unit = "umol/min"
+    )
+    study7 <- Study$new(ID = "Study7", compounds = list(comp1, comp2), individual = "Rat")
+
+
+    studyList <- list(study1, study2, study3, study4, study5, study6, study7)
 
     rTemp <- tempdir(check = TRUE)
     tempDir <- tempfile(tmpdir = rTemp)
@@ -92,5 +182,19 @@ test_that("Create generic PKMLS from study list", {
     purrr::map(studyList, \(x) {
       x$getAllParameterPaths()
     })
+  )
+
+  # add unexisting property to test error of getAllParameterPaths
+  study1$Compounds[[1]]$addProperty(
+    name = "Test",
+    parName = "Unknown",
+    dimension = "Fraction",
+    value = 50,
+    unit = "%"
+  )
+
+  expect_warning(
+    study1$getAllParameterPaths(),
+    "Some paths were not found"
   )
 })

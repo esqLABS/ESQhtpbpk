@@ -74,7 +74,13 @@ Study <- R6::R6Class(
         availablePaths <- ospsuite::getAllParameterPathsIn(private$.simulation)
 
         if (!all(paths %in% availablePaths)) {
-          cli::cli_warn("Some paths were not found in the simulation. Please check.")
+          cli::cli_warn(
+            cli::cli_fmt({
+              cli::cli_text("Some paths were not found in the simulation. Please check.")
+              cli::cli_text("Following paths were not found:")
+              cli::cli_li(paths[!(paths %in% availablePaths)])
+            })
+          )
         }
 
         paths <- intersect(paths, availablePaths)
@@ -140,8 +146,16 @@ Study <- R6::R6Class(
               ),
               list(
                 Name = "Resolution",
-                Value = resolution,
-                Unit = paste0("pts/", timeUnit)
+                Value = if (paste0("pts/", timeUnit) %in% ospsuite::getUnitsForDimension("Resolution")) {
+                  resolution
+                } else {
+                  resolution / ospsuite::toUnit("Time", values = 1, sourceUnit = timeUnit, targetUnit = "min")
+                },
+                Unit = if (paste0("pts/", timeUnit) %in% ospsuite::getUnitsForDimension("Resolution")) {
+                  paste0("pts/", timeUnit)
+                } else {
+                  paste0("pts/min")
+                }
               )
             )
           )
@@ -173,7 +187,15 @@ Study <- R6::R6Class(
           )
         ),
         "Compounds" = purrr::map(self$Compounds, \(x) {
-          x$toSnapshot()
+          compSnap <- x$toSnapshot()
+          for (procIdx in seq_along(compSnap$Processes)) {
+            if (self$Individual %in% ospsuite::HumanPopulation) {
+              compSnap$Processes[[procIdx]]$Species <- "Human"
+            } else {
+              compSnap$Processes[[procIdx]]$Species <- self$Individual
+            }
+          }
+          return(compSnap)
         }),
         "Formulations" = purrr::list_c(
           purrr::map(self$Compounds, \(x) {
@@ -197,21 +219,32 @@ Study <- R6::R6Class(
             Compounds = purrr::map(
               self$Compounds,
               \(x) {
-                list(
-                  Name = x$Name,
-                  CalculationMethods = list(
-                    paste0("Cellular partition coefficient method - ", x$PartitionCoefficientMethod),
-                    paste0("Cellular permeability - ", x$CellularPermeabilityMethod)
-                  ),
-                  Processes = list(),
-                  Protocol = list(
-                    Name = x$Protocol$Name,
-                    Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationKey, \(y, z) {
+                purrr::compact(
+                  list(
+                    Name = x$Name,
+                    CalculationMethods = list(
+                      paste0("Cellular partition coefficient method - ", x$PartitionCoefficientMethod),
+                      paste0("Cellular permeability - ", x$CellularPermeabilityMethod)
+                    ),
+                    Processes = unname(
+                      purrr::imap(x$.__enclos_env__$private$.allProcessProperties, \(y, i) {
+                        list(
+                          Name = paste(ProcessPrefixes[i], i, sep = "-"),
+                          SystemicProcessType = ProcessTypes[[i]]
+                        )
+                      })
+                    ),
+                    Protocol = purrr::compact(
                       list(
-                        Name = y$Name,
-                        Key = z
+                        Name = x$Protocol$Name,
+                        Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationKey, \(y, z) {
+                          list(
+                            Name = y$Name,
+                            Key = z
+                          )
+                        })
                       )
-                    })
+                    )
                   )
                 )
               }

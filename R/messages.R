@@ -9,9 +9,8 @@ messages$valueRangeError <- function(name, valueLower, valueUpper, unit) {
 messages$valueEnumError <- function(name, value, allowed = NULL) {
   msg <- paste0("Value '", value, "' is not allowed for '", name, "'.")
   if (!is.null(allowed)) {
-    msg <- capture.output(
+    msg <- cli::cli_fmt(
       cli::cli_text("{msg} {stringr::str_to_sentence(name)} must be one of {.code {allowed}}."),
-      type = "message"
     )
   }
   return(msg)
@@ -30,6 +29,11 @@ messages$readOnly <- function(name) {
 # Not valid error message
 messages$notValid <- function(name) {
   paste0("'", name, "' is not valid.")
+}
+
+# Unit not valid error message
+messages$unitNotValid <- function(value, dimension) {
+  paste0("Unit '", value, "' is not valid for dimension ", dimension, ".")
 }
 
 # Not found error message

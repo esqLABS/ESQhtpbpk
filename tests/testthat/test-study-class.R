@@ -1,6 +1,12 @@
 suppressWarnings({
   # Compound 1 with IV Bolus
   comp1 <- Compound$new(ID = 1, name = "Compound 1")
+  comp1$addProcessProperty(
+    processType = "Liver Plasma Clearance",
+    propertyName = "Plasma clearance",
+    parName = "Plasma clearance",
+    dimension = "Flow per weight", value = 10, unit = "ml/min/kg"
+  )
 
   prot1 <- SimpleProtocol$new(
     route = "IV Bolus",
