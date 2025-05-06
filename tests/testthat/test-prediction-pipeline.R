@@ -40,7 +40,13 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
     po$setFormulation(tablet)
 
     prot <- AdvancedProtocol$new(name = "Protocol 2")
-    prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+    prot$addSchema(
+      schemaName = "Schema 1",
+      timeUnit = "h",
+      timeBetweenRepetitions = 2,
+      numberOfRepetitions = 5,
+      startTime = 12
+    )
     prot$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
 
     comp2$setProtocol(prot)
@@ -57,7 +63,13 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
     tablet2 <- createWeibullFormulation(name = "TabletFasterRelease", dissolutionTime50 = 60)
     po2$setFormulation(tablet2)
 
-    prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 3, startTime = 0)
+    prot$addSchema(
+      schemaName = "Schema 2",
+      timeUnit = "h",
+      timeBetweenRepetitions = 12,
+      numberOfRepetitions = 3,
+      startTime = 0
+    )
     prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2)
 
     study3 <- Study$new(ID = "Study3", compounds = list(comp1, comp2), individual = "Rat")
@@ -88,35 +100,37 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
 
     studyList <- list(study1, study2, study3, study4, study5)
 
-    rtemp <- tempdir(check = T)
-    temp_dir <- tempfile(tmpdir = rtemp)
+    rtemp <- tempdir(check = TRUE)
+    tempDir <- tempfile(tmpdir = rtemp)
   })
 
   expect_no_error({
     suppressWarnings({
       results <- runPredictions(
         studies = studyList,
-        outputFolder = temp_dir,
+        outputFolder = tempDir,
         saveResults = FALSE,
         saveSimulation = FALSE,
         plotFigures = FALSE,
         numberOfCores = 1,
         queueSize = 100, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
-        simulationResolution = c(0, 10*24*60, 1/60)
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
       )
     })
   })
 
-  create_plot <- function() {
+  createPlot <- function() {
     dc <- ospsuite::DataCombined$new()
-    dc$addSimulationResults(simulationResults = results$Study1, quantitiesOrPaths = results$Study1$allQuantityPaths, individualIds = results$Study1$allIndividualIds)
+    dc$addSimulationResults(
+      simulationResults = results$Study1,
+      quantitiesOrPaths = results$Study1$allQuantityPaths,
+      individualIds = results$Study1$allIndividualIds
+    )
     pc <- ospsuite::DefaultPlotConfiguration$new()
-    pc$yAxisScale = "lin"
+    pc$yAxisScale <- "lin"
     plot <- ospsuite::plotIndividualTimeProfile(dc, defaultPlotConfiguration = pc)
     return(plot)
   }
 
-  vdiffr::expect_doppelganger("Study1-Comp1", create_plot)
-
+  vdiffr::expect_doppelganger("Study1-Comp1", createPlot)
 })
-

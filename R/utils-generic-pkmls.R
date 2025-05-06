@@ -377,7 +377,12 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
           timeUnit = "h"
         )
 
-        sp <- SimpleProtocol$new(name = "SimpleProtocol", dosingInterval = "Single", route = admins$type[i], waterVolPerBW = 0)
+        sp <- SimpleProtocol$new(
+          name = "SimpleProtocol",
+          dosingInterval = "Single",
+          route = admins$type[i],
+          waterVolPerBW = 0
+        )
 
         if (!is.na(admins$formulationType[i])) {
           fun <- get(paste0("create", admins$formulationType[i], "Formulation"))
@@ -434,7 +439,8 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     # load generic simulation once and add reference to user study
     sim <- ospsuite::loadSimulation(pkmlFile)
 
-    # update simulation administration start time all to 0 (was set differently for easier mapping of admin path) and resave
+    # update simulation administration start time all to 0 (was set differently for easier mapping of
+    # admin path) and resave
     ospsuite::setParameterValues(
       parameters = ospsuite::getAllParametersMatching("Events|**|Start time", sim),
       values = 0
@@ -446,7 +452,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       dplyr::filter(GenericModel == genStudy$ID) |>
       dplyr::pull(StudyID)
 
-    for (idx in which(sapply(studyList, \(x) {x$ID}) %in% studyIDs)) {
+    for (idx in which(sapply(studyList, \(x) x$ID) %in% studyIDs)) {
       studyList[[idx]]$setGenericModel(file.path(outputFolder, paste0(genStudy$ID, ".pkml")))
     }
   }

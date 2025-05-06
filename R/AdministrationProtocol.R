@@ -995,8 +995,8 @@ AdvancedProtocol <- R6::R6Class(
             if (
               !(
                 identical(existingForm[[idx]]$Name, protocol$Formulation$Name) &&
-                identical(existingForm[[idx]]$Parameters, protocol$Formulation$Parameters) &&
-                identical(existingForm[[idx]]$Type, protocol$Formulation$Type)
+                  identical(existingForm[[idx]]$Parameters, protocol$Formulation$Parameters) &&
+                  identical(existingForm[[idx]]$Type, protocol$Formulation$Type)
               )
             ) {
               cli::cli_abort(
@@ -1083,8 +1083,8 @@ AdvancedProtocol <- R6::R6Class(
                     uniqueFormulations,
                     \(x) {
                       identical(x$Name, formulation$Name) &&
-                      identical(x$Parameters, formulation$Parameters) &&
-                      identical(x$Type, formulation$Type)
+                        identical(x$Parameters, formulation$Parameters) &&
+                        identical(x$Type, formulation$Type)
                     }
                   )
                 )

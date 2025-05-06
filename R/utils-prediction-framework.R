@@ -23,7 +23,7 @@ runPredictions <- function(
     plotFigures = FALSE,
     numberOfCores = ospsuite::getOSPSuiteSetting("numberOfCores"),
     queueSize = 1000, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma*(Peripheral Venous Blood)"),
-    simulationResolution = c(0, 10*24*60, 1/3)) {
+    simulationResolution = c(0, 10 * 24 * 60, 1 / 3)) {
   # Make the output folder unique using the current date and time
   outputFolder <- file.path(outputFolder, format(Sys.time(), "%Y-%m-%d_%H-%M-%S"))
   simResultsFolder <- file.path(outputFolder, "SimulationResults")
@@ -31,21 +31,35 @@ runPredictions <- function(
   results <- list()
 
   # Load all simulation once and associate with the study
-  pkmlsList <- sapply(studies, \(x) {x$.__enclos_env__$private$.genericModel})
+  pkmlsList <- sapply(studies, \(x) x$.__enclos_env__$private$.genericModel)
   if (any(sapply(pkmlsList, is.null))) {
-    cli::cli_inform("Generic Model not set for some studies. Generic pkml will be automatically created for those studies.")
-    createGenericPKMLs(studies[which(sapply(studies, \(x) {is.null(x$.__enclos_env__$private$.genericModel)}))], file.path(outputFolder, "GenericModels"), overwrite = FALSE)
+    cli::cli_inform(
+      paste(
+        "Generic Model not set for some studies.",
+        "Generic pkml will be automatically created for those studies."
+      )
+    )
+    createGenericPKMLs(
+      studyList = studies[which(sapply(studies, \(x) is.null(x$.__enclos_env__$private$.genericModel)))],
+      outputFolder =  file.path(outputFolder, "GenericModels"),
+      overwrite = FALSE
+    )
   }
-  pkmlsList <- sapply(studies, \(x) {x$.__enclos_env__$private$.genericModel})
+  pkmlsList <- sapply(studies, \(x) x$.__enclos_env__$private$.genericModel)
 
   for (pkml in unique(pkmlsList)) {
     sim <- ospsuite::loadSimulation(pkml)
     idx <- which(pkmlsList == pkml)
 
-    outputSelectionsNew <- sapply(ospsuite::getAllQuantitiesMatching(paths = outputSelections, sim), \(x) {x$path})
+    outputSelectionsNew <- sapply(ospsuite::getAllQuantitiesMatching(paths = outputSelections, sim), \(x) x$path)
     if (length(outputSelectionsNew) > 0) {
       ospsuite::setOutputs(simulation = sim, quantitiesOrPaths = outputSelectionsNew)
-      ospsuite::setOutputInterval(simulation = sim, startTime = simulationResolution[1], resolution = simulationResolution[3], endTime = simulationResolution[2])
+      ospsuite::setOutputInterval(
+        simulation = sim,
+        startTime = simulationResolution[1],
+        resolution = simulationResolution[3],
+        endTime = simulationResolution[2]
+      )
 
       for (i in idx) {
         studies[[i]]$setSimulation(sim)
@@ -68,9 +82,16 @@ runPredictions <- function(
   # check that all defined paths are included in the used simulation
   toSkip <- c()
   for (studyIdx in seq_along(studies)) {
-    paths <- tryCatch(studies[[studyIdx]]$getAllParameterPaths(), warning = function(w) {return(NULL)})
+    paths <- tryCatch(studies[[studyIdx]]$getAllParameterPaths(), warning = function(w) {
+      return(NULL)
+    })
     if (is.null(paths)) {
-      cli::cli_warn("Study {.var {studies[[studyIdx]]$ID}} is not configured correctly. Some paths could not be found in the associated study. Skipping the study.")
+      cli::cli_warn(
+        paste(
+          "Study {.var {studies[[studyIdx]]$ID}} is not configured correctly.",
+          "Some paths could not be found in the associated study. Skipping the study."
+        )
+      )
       toSkip <- c(toSkip, studyIdx)
     }
   }
@@ -81,11 +102,11 @@ runPredictions <- function(
   }
 
   cli::cli_text("Initialising simulation batches.")
-  simulations <- unique(sapply(studies, \(x) {x$.__enclos_env__$private$.simulation}))
+  simulations <- unique(sapply(studies, \(x) x$.__enclos_env__$private$.simulation))
   # Create a simulation batch for each generic model
   simulationsBatches <- lapply(
     simulations,
-    \(x){
+    \(x) {
       sim <- x
 
       parametersPaths <- unique(
@@ -107,7 +128,7 @@ runPredictions <- function(
       return(batch)
     }
   )
-  names(simulationsBatches) <- sapply(simulations, \(x) {x$sourceFile})
+  names(simulationsBatches) <- sapply(simulations, \(x) x$sourceFile)
 
   # Each combination of a scenario and simulated study gets an ID
   resultsIdsMap <- data.frame(
@@ -125,7 +146,6 @@ runPredictions <- function(
   )
   # Add runs to SimulationBatch for every study
   for (study in studies) {
-
     cli::cli_progress_update()
 
     # Get the simulation batch for the current generic model
@@ -146,21 +166,38 @@ runPredictions <- function(
     )
 
     # reset updated parameters (where set just to get formula values if any)
-    lapply(ospsuite::getAllQuantitiesMatching(simulationBatch$getVariableParameters(), simulationBatch$simulation), \(x) {x$reset()})
+    lapply(
+      ospsuite::getAllQuantitiesMatching(
+        paths = simulationBatch$getVariableParameters(),
+        container = simulationBatch$simulation
+      ),
+      \(x) x$reset()
+    )
 
     resultsIdsMap <- rbind(
-        resultsIdsMap,
-        data.frame(
-          runValuesId,
-          studyId = study$ID
-        )
+      resultsIdsMap,
+      data.frame(
+        runValuesId,
+        studyId = study$ID
       )
+    )
     queuedRuns <- queuedRuns + 1
 
     # If the number of queued runs has exceeds the specified core limit,
     # simulate and process
     if (queuedRuns >= queueSize) {
-      results <- c(results, .processBatchRun(simulationsBatches = simulationsBatches, resultsIdsMap = resultsIdsMap, studies =  studies, outputFolder = simResultsFolder, saveResults = saveResults, plotFigures = plotFigures, numberOfCores = numberOfCores))
+      results <- c(
+        results,
+        .processBatchRun(
+          simulationsBatches = simulationsBatches,
+          resultsIdsMap = resultsIdsMap,
+          studies = studies,
+          outputFolder = simResultsFolder,
+          saveResults = saveResults,
+          plotFigures = plotFigures,
+          numberOfCores = numberOfCores
+        )
+      )
       remainingStudies <- remainingStudies - queuedRuns
 
       queuedRuns <- 0
@@ -175,7 +212,18 @@ runPredictions <- function(
 
   # Simulate and process the remaining runs that are left because queuedRuns != numberOfCores
   if (queuedRuns > 0) {
-    results <- c(results, .processBatchRun(simulationsBatches = simulationsBatches, resultsIdsMap = resultsIdsMap, studies =  studies, outputFolder = simResultsFolder, saveResults = saveResults, plotFigures = plotFigures, numberOfCores = numberOfCores))
+    results <- c(
+      results,
+      .processBatchRun(
+        simulationsBatches = simulationsBatches,
+        resultsIdsMap = resultsIdsMap,
+        studies = studies,
+        outputFolder = simResultsFolder,
+        saveResults = saveResults,
+        plotFigures = plotFigures,
+        numberOfCores = numberOfCores
+      )
+    )
   }
 
   return(results)
@@ -217,7 +265,6 @@ runPredictions <- function(
 
   # Apply all compound parametrization
   for (compound in study$Compounds) {
-    compoundName <- compound$name
     for (property in compound$.__enclos_env__$private$.allProperties) {
       parameterStartValues <- .updateValueFromProperty(property, parameterStartValues, compoundName = compound$Name)
     }
@@ -231,8 +278,8 @@ runPredictions <- function(
     allAdmins <- compound$Protocol$extractProtocol()
     for (adminIdx in seq_len(nrow(allAdmins))) {
       protocolName <- compound$Protocol$Name
-      prot <- allAdmins[adminIdx,]$parameters[[1]]
-      pathPrefix <- glue::glue(allAdmins[adminIdx,]$path[[1]])
+      prot <- allAdmins[adminIdx, ]$parameters[[1]]
+      pathPrefix <- glue::glue(allAdmins[adminIdx, ]$path[[1]])
 
       if (ospsuite::getDimensionForUnit(prot$DoseUnit) == ospsuite::ospDimensions$Mass) {
         doseParamName <- "Dose"
@@ -241,22 +288,46 @@ runPredictions <- function(
       } else if (ospsuite::getDimensionForUnit(prot$DoseUnit) == ospsuite::ospDimensions$`Dose per body surface area`) {
         doseParamName <- "DosePerBodySurfaceArea"
       }
-      doseQuantity <- ospsuite::getQuantity(paste(pathPrefix, "ProtocolSchemaItem", doseParamName, sep = "|"), container = simulation)
-      parameterStartValues[[doseQuantity$path]] <- ospsuite::toBaseUnit(quantityOrDimension = doseQuantity, values = prot$Dose, unit = prot$DoseUnit)
-      parameterStartValues[[paste(pathPrefix, "ProtocolSchemaItem", "Start time", sep = "|")]] <- allAdmins[adminIdx,]$time
+      doseQuantity <- ospsuite::getQuantity(
+        path = paste(pathPrefix, "ProtocolSchemaItem", doseParamName, sep = "|"),
+        container = simulation
+      )
+      parameterStartValues[[doseQuantity$path]] <- ospsuite::toBaseUnit(
+        quantityOrDimension = doseQuantity,
+        values = prot$Dose,
+        unit = prot$DoseUnit
+      )
+
+      parPath <- paste(pathPrefix, "ProtocolSchemaItem", "Start time", sep = "|")
+      parameterStartValues[[parPath]] <- allAdmins[adminIdx, ]$time
+
       if (!is.null(prot$InfusionTime)) {
-        parameterStartValues[[paste(pathPrefix, "ProtocolSchemaItem", "Infusion time", sep = "|")]] <- ospsuite::toBaseUnit("Time", values = prot$InfusionTime, unit = prot$InfusionTimeUnit)
+        parPath <- paste(pathPrefix, "ProtocolSchemaItem", "Infusion time", sep = "|")
+        parameterStartValues[[parPath]] <- ospsuite::toBaseUnit(
+          quantityOrDimension = "Time",
+          values = prot$InfusionTime,
+          unit = prot$InfusionTimeUnit
+        )
       }
+
       if (!is.null(prot$WaterVolPerBW)) {
-        parameterStartValues[[paste(pathPrefix, "ProtocolSchemaItem", "Volume of water/body weight", sep = "|")]] <- ospsuite::toBaseUnit("Volume per body weight", values = prot$WaterVolPerBW, unit = prot$WaterVolPerBWUnit)
+        parPath <- paste(pathPrefix, "ProtocolSchemaItem", "Volume of water/body weight", sep = "|")
+        parameterStartValues[[parPath]] <- ospsuite::toBaseUnit(
+          quantityOrDimension = "Volume per body weight",
+          values = prot$WaterVolPerBW,
+          unit = prot$WaterVolPerBWUnit
+        )
       }
 
       if (!is.null(prot$Formulation)) {
         for (formulationParameter in prot$Formulation$Parameters) {
-          parameterStartValues <- .updateValueFromProperty(formulationParameter, parameterStartValues, formulationName = prot$Formulation$Name, protocolPrefix = paste0("Events|",protocolName))
+          parameterStartValues <- .updateValueFromProperty(
+            formulationParameter,
+            parameterStartValues,
+            formulationName = prot$Formulation$Name,
+            protocolPrefix = paste0("Events|", protocolName)
+          )
         }
-        # parameterStartValues
-        # allParamPaths <- c(allParamPaths, self$Formulation$getAllPropertyPaths(protocolPrefix = path))
       }
     }
   }
@@ -353,11 +424,21 @@ runPredictions <- function(
   return(runValuesId)
 }
 
-.processBatchRun <- function(simulationsBatches, resultsIdsMap, studies, outputFolder, plotFigures, numberOfCores, saveResults = TRUE) {
+.processBatchRun <- function(
+    simulationsBatches,
+    resultsIdsMap,
+    studies,
+    outputFolder,
+    plotFigures,
+    numberOfCores,
+    saveResults = TRUE) {
   cli::cli_text("Running queued jobs.")
   cli::cli_text("Started at {Sys.time()}")
   # run all simulations batches
-  simulationBatchResults <- ospsuite::runSimulationBatches(simulationsBatches, simulationRunOptions = ospsuite::SimulationRunOptions$new(numberOfCores = numberOfCores))
+  simulationBatchResults <- ospsuite::runSimulationBatches(
+    simulationBatches = simulationsBatches,
+    simulationRunOptions = ospsuite::SimulationRunOptions$new(numberOfCores = numberOfCores)
+  )
 
   # Save simulated results
   simulationResults <- unlist(simulationBatchResults)
