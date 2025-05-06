@@ -7,9 +7,6 @@
 \description{
 Description of a study
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{Study}
-}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -218,7 +215,8 @@ Set generic model to use if pre-generated (for example from MoBi with PD)
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.}
+\item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic
+model should be automatically generated.}
 }
 \if{html}{\out{</div>}}
 }
@@ -227,7 +225,7 @@ Set generic model to use if pre-generated (for example from MoBi with PD)
 \if{html}{\out{<a id="method-Study-setSimulation"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-setSimulation}{}}}
 \subsection{Method \code{setSimulation()}}{
-Set generic model to use if pre-generated (for example from MoBi with PD)
+Set simulation model to use if pre-generated (for example from MoBi with PD)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Study$setSimulation(simulation)}\if{html}{\out{</div>}}
 }

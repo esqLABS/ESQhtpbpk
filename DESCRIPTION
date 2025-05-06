@@ -1,6 +1,6 @@
 Package: ESQhtpbpk
 Title: A package for more user-friendly definition of HT-PBPK pipelines
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person("ESQlabs GmbH", role = c("cph", "fnd")),
     person("Pavel", "Balazki", , email = "pavel.balazki@esqlabs.com", role = c("cre", "aut")),
@@ -19,14 +19,15 @@ Imports:
     dplyr,
     glue,
     jsonlite,
-    ospsuite (>= 12.1.0.9008),
-    ospsuite.utils,
+    ospsuite (>= 12.2.0),
+    ospsuite.utils (>= 1.7.0),
     purrr,
     R6,
     readr,
     stringr,
     tibble,
     tidyr,
+    tidyselect,
     uuid,
     vdiffr
 Suggests: 

@@ -7,9 +7,6 @@
 \description{
 Description of a compound
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{Compound}
-}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -40,6 +37,7 @@ Description of a compound
 \item \href{#method-Compound-removeProperty}{\code{Compound$removeProperty()}}
 \item \href{#method-Compound-addProcessProperty}{\code{Compound$addProcessProperty()}}
 \item \href{#method-Compound-removeProcessProperty}{\code{Compound$removeProcessProperty()}}
+\item \href{#method-Compound-removeProcess}{\code{Compound$removeProcess()}}
 \item \href{#method-Compound-getProcessProperty}{\code{Compound$getProcessProperty()}}
 \item \href{#method-Compound-setProcessPropertyValue}{\code{Compound$setProcessPropertyValue()}}
 \item \href{#method-Compound-setProtocol}{\code{Compound$setProtocol()}}
@@ -145,11 +143,13 @@ Add a new property for the compound.
 
 \item{\code{value}}{Value for the property.}
 
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
-\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
+\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property,
+must take value, unit as argument an retrun an error if the test fails.}
 
 \item{\code{path}}{Corresponding full path of the parameter in the simulation pkml of the property to add
 (default to NULL to create it automatically based on parName).}
@@ -209,7 +209,8 @@ Add a new process property for the compound.
 
 \item{\code{value}}{Value for the property.}
 
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.}
+\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+baseUnit of the dimension.}
 
 \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
 
@@ -235,6 +236,23 @@ Remove a process property from the compound.
 \describe{
 \item{\code{propertyName}}{Name of the property to remove}
 
+\item{\code{processType}}{Type of the process to remove the property from}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-removeProcess"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-removeProcess}{}}}
+\subsection{Method \code{removeProcess()}}{
+Remove a all process propertys from the compound.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$removeProcess(processType)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
 \item{\code{processType}}{Type of the process to remove the property from}
 }
 \if{html}{\out{</div>}}
@@ -295,7 +313,8 @@ Set the administration protocol to be used for a compound
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{protocol}}{administration protocol to use for the compound. Must be an object of class \code{SimpleProtocol} or \code{AdvancedProtocol}.}
+\item{\code{protocol}}{administration protocol to use for the compound. Must be an object of
+class \code{SimpleProtocol} or \code{AdvancedProtocol}.}
 }
 \if{html}{\out{</div>}}
 }

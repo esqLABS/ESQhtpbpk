@@ -4,7 +4,6 @@
 #' @format NULL
 Formulation <- R6::R6Class(
   "Formulation",
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field Type Type of Formulation
     Type = function(value) {
@@ -69,13 +68,22 @@ Formulation <- R6::R6Class(
     #' @param parName Corresponding parameter name of the property to add in the simulation
     #' @param dimension Dimension of the property to add.
     #' @param value Value for the property.
-    #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
+    #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the
+    #' baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
-    #' @param pathPrefix Corresponding path in the simulation pkml of the property to add. Default to `{protocolPrefix}|{formulationName}`
-    addParameter = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, pathPrefix = NULL) {
+    #' @param pathPrefix Corresponding path in the simulation pkml of the property to add.
+    #' Default to `{protocolPrefix}|{formulationName}`
+    addParameter = function(name,
+                            parName,
+                            dimension,
+                            value = 0,
+                            unit = NULL,
+                            enum = NULL,
+                            check = NULL,
+                            pathPrefix = NULL) {
       if (name %in% names(private$.Parameters)) {
-        stop("Property '", name, "' already exists.")
+        cli::cli_abort(messages$alreadyExist("Property", name))
       }
       pathPrefix <- ifelse(!is.null(pathPrefix), pathPrefix, paste0("{protocolPrefix}|{formulationName}"))
       private$.Parameters[[name]] <- Property$new(
@@ -106,7 +114,7 @@ Formulation <- R6::R6Class(
           purrr::map(self$Parameters, \(x) {
             glue::glue(x$path)
           }),
-          use.names = F
+          use.names = FALSE
         )
       }
     },
@@ -143,10 +151,12 @@ Formulation <- R6::R6Class(
 
       for (param in private$.Parameters) {
         if (is.list(param$enum) && !is.null(names(param$enum))) {
-          private$printLine(param$name, names(param$value))
+          lst <- list(names(param$value))
         } else {
-          private$printLine(param$name, paste(param$value, param$unit))
+          lst <- list(paste(param$value, param$unit))
         }
+        names(lst) <- param$name
+        ospsuite.utils::ospPrintItems(lst)
       }
       invisible(self)
     }
@@ -155,7 +165,9 @@ Formulation <- R6::R6Class(
     .Name = NULL,
     .Type = NULL,
     .Parameters = list(),
-    deep_clone = function(...) {.myDeepClone(...)}
+    deep_clone = function(...) {
+      .myDeepClone(...)
+    }
   )
 )
 

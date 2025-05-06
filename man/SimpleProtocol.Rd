@@ -7,9 +7,6 @@
 \description{
 Description of an administration protocol
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{SimpleProtocol}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -152,7 +149,8 @@ Extract all single administration to be applied by a protocol. For easier mappin
 }
 
 \subsection{Returns}{
-A tibble with the type of administration, time of administration, parameters of the administration and the formulation name.
+A tibble with the type of administration, time of administration, parameters of the administration
+and the formulation name.
 }
 }
 \if{html}{\out{<hr>}}

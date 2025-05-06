@@ -75,7 +75,7 @@ test_that("createFirstOrderFormulation works", {
 
 test_that("Create unknown formulation does not works", {
   expect_error(
-    Formulation$new(type = "Wrong", name = "Wrong type"),
+    ESQhtpbpk:::Formulation$new(type = "Wrong", name = "Wrong type"),
     regexp = "Value 'Wrong' is not allowed for 'Formulation type'.",
     fixed = TRUE
   )

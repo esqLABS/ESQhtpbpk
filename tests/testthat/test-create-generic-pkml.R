@@ -5,9 +5,21 @@ test_that("Create generic PKMLS from study list", {
     comp1 <- Compound$new(ID = 1, name = "Alpha")
     comp1$addProcessProperty(
       processType = "Liver Plasma Clearance",
-      propertyName = "Plasma clearance",
+      propertyName = "Liver Plasma clearance",
       parName = "Plasma clearance",
       dimension = "Flow per weight", value = 10, unit = "ml/min/kg"
+    )
+    comp1$addProcessProperty(
+      processType = "Renal Plasma Clearance",
+      propertyName = "Renal Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 1, unit = "ml/min/kg"
+    )
+    comp1$addProcessProperty(
+      processType = "Biliary Plasma Clearance",
+      propertyName = "Biliary Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight", value = 3, unit = "ml/min/kg"
     )
 
     prot1 <- SimpleProtocol$new(
@@ -39,7 +51,13 @@ test_that("Create generic PKMLS from study list", {
     po$setFormulation(tablet)
 
     prot <- AdvancedProtocol$new(name = "Protocol 2")
-    prot$addSchema(schemaName = "Schema 1", timeUnit = "h", timeBetweenRepetitions = 2, numberOfRepetitions = 5, startTime = 12)
+    prot$addSchema(
+      schemaName = "Schema 1",
+      timeUnit = "h",
+      timeBetweenRepetitions = 2,
+      numberOfRepetitions = 5,
+      startTime = 12
+    )
     prot$addProtocolToSchema(schemaName = "Schema 1", protocol = po)
 
     comp2$setProtocol(prot)
@@ -56,7 +74,13 @@ test_that("Create generic PKMLS from study list", {
     tablet2 <- createWeibullFormulation(name = "TabletFasterRelease", dissolutionTime50 = 60)
     po2$setFormulation(tablet2)
 
-    prot$addSchema(schemaName = "Schema 2", timeUnit = "h", timeBetweenRepetitions = 12, numberOfRepetitions = 3, startTime = 0)
+    prot$addSchema(
+      schemaName = "Schema 2",
+      timeUnit = "h",
+      timeBetweenRepetitions = 12,
+      numberOfRepetitions = 3,
+      startTime = 0
+    )
     prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2)
 
     study3 <- Study$new(ID = "Study3", compounds = list(comp1, comp2), individual = "Rat")
@@ -64,10 +88,14 @@ test_that("Create generic PKMLS from study list", {
     ### Study 4 same as study 1 but in Human
     study4 <- Study$new(ID = "Study4", compounds = list(comp1), individual = "Human")
 
-    ### Study 5 same as study 3 but with compound1 with different process
-    comp1$removeProcessProperty(
-      processType = "Liver Plasma Clearance",
-      propertyName = "Plasma clearance"
+    # study 5 same as study 4 but use simple po
+    comp1$setProtocol(po2)
+    study5 <- Study$new(ID = "Study5", compounds = list(comp1), individual = "Human")
+
+    ### Study 6 same as study 3 but with compound1 with different process
+    comp1$setProtocol(prot1)
+    comp1$removeProcess(
+      processType = "Liver Plasma Clearance"
     )
     comp1$addProcessProperty(
       processType = "Liver Mic T1/2",
@@ -81,19 +109,92 @@ test_that("Create generic PKMLS from study list", {
       parName = "Amount protein/incubation",
       dimension = "Concentration (mass)", value = 11, unit = "mg/ml"
     )
+    comp1$removeProcess(
+      processType = "Renal Plasma Clearance"
+    )
+    comp1$addProcessProperty(
+      processType = "GFR",
+      propertyName = "GFR",
+      parName = "GFR fraction",
+      dimension = "Fraction", value = 1, unit = ""
+    )
 
-    study5 <- Study$new(ID = "Study5", compounds = list(comp1, comp2), individual = "Rat")
+    comp2$addProcessProperty(
+      processType = "Hep T1/2",
+      propertyName = "Thalf",
+      parName = "t1/2 (hepatocyte assay)",
+      dimension = "Time", value = 5, unit = "min"
+    )
+    study6 <- Study$new(ID = "Study6", compounds = list(comp1, comp2), individual = "Rat")
+
+    # test all missing processes
+    comp1$removeProcess(
+      processType = "Liver Mic T1/2"
+    )
+    comp1$addProcessProperty(
+      processType = "Liver Mic Residuals",
+      propertyName = "Residual fraction",
+      parName = "Residual fraction",
+      dimension = "Fraction", value = 10, unit = "%"
+    )
+    comp2$removeProcess(
+      processType = "Hep T1/2"
+    )
+    comp2$addProcessProperty(
+      processType = "Hep Residuals",
+      propertyName = "Residual fraction",
+      parName = "Residual fraction",
+      dimension = "Fraction", value = 20, unit = "%"
+    )
+    comp1$removeProcess(
+      processType = "GFR"
+    )
+    comp1$addProcessProperty(
+      processType = "Tub Sec FirstOrder",
+      propertyName = "Tubular secretion",
+      parName = "Tubular secretion",
+      dimension = "Flow", value = 20, unit = "l/min"
+    )
+    comp2$addProcessProperty(
+      processType = "Tub Sec MM",
+      propertyName = "Tubular secretion max",
+      parName = "TSmax",
+      dimension = "Amount per time", value = 5, unit = "umol/min"
+    )
+    study7 <- Study$new(ID = "Study7", compounds = list(comp1, comp2), individual = "Rat")
 
 
-    studyList <- list(study1, study2, study3, study4, study5)
+    studyList <- list(study1, study2, study3, study4, study5, study6, study7)
 
-    rtemp <- tempdir(check = T)
-    temp_dir <- tempfile(tmpdir = rtemp)
+    rTemp <- tempdir(check = TRUE)
+    tempDir <- tempfile(tmpdir = rTemp)
   })
 
-  expect_no_error(suppressWarnings(createGenericPKMLs(studyList, outputFolder = temp_dir)))
+  # expect error if not only Study Objects in studyList
+  expect_error(suppressWarnings(createGenericPKMLs(studyList = list(study1, "A"), outputFolder = tempDir)))
 
-  expect_snapshot(list.files(temp_dir))
+  # expect no error if correctly set up
+  expect_no_error(suppressWarnings(createGenericPKMLs(studyList, outputFolder = tempDir)))
 
-  expect_snapshot(purrr::map(studyList, \(x) {x$getAllParameterPaths()}))
+  expect_snapshot(list.files(tempDir))
+
+  expect_snapshot(
+    purrr::map(studyList, \(x) {
+      x$getAllParameterPaths()
+    })
+  )
+
+  # add unexisting property to test error of getAllParameterPaths
+  study1$Compounds[[1]]$addProperty(
+    name = "Test",
+    parName = "Unknown",
+    dimension = "Fraction",
+    value = 50,
+    unit = "%"
+  )
+
+  expect_warning(
+    study1$getAllParameterPaths(),
+    "Some paths were not found"
+  )
 })

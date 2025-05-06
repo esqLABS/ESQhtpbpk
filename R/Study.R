@@ -6,14 +6,15 @@
 Study <- R6::R6Class(
   "Study",
   cloneable = FALSE,
-  inherit = ospsuite.utils::Printable,
   active = list(
     #' @field Compounds List of administered compounds (with administration protocol), object of class `Compound`
     Compounds = function(value) {
       if (missing(value)) {
         private$.compounds
       } else {
-        lapply(value, \(x) {ospsuite.utils::validateIsOfType(x, "Compound", nullAllowed = TRUE)})
+        lapply(value, \(x) {
+          ospsuite.utils::validateIsOfType(x, "Compound", nullAllowed = TRUE)
+        })
         private$.compounds <- purrr::map(value, \(x) x$clone(deep = TRUE))
       }
     },
@@ -25,10 +26,16 @@ Study <- R6::R6Class(
         if (!is.character(value)) {
           cli::cli_abort(messages$notValid("Individual"))
         }
-        # if no generic model given assume it will be automatically generated, then individual need to be default individuals
+        # if no generic model given assume it will be automatically generated, then individual
+        # need to be default individuals
         if (is.null(private$.genericModel)) {
           if (!value %in% c(ospsuite::HumanPopulation, ospsuite::Species)) {
-            cli::cli_abort(messages$valueEnumError("Individual", value, allowed = c(ospsuite::Species, ospsuite::HumanPopulation)))
+            msg <- messages$valueEnumError(
+              name = "Individual",
+              value = value,
+              allowed = c(ospsuite::Species, ospsuite::HumanPopulation)
+            )
+            cli::cli_abort("{msg}")
           }
         }
         private$.individual <- value
@@ -67,7 +74,13 @@ Study <- R6::R6Class(
         availablePaths <- ospsuite::getAllParameterPathsIn(private$.simulation)
 
         if (!all(paths %in% availablePaths)) {
-          cli::cli_warn("Paths {.vars {paths[!paths %in% availablePaths]}} were not found in the simulation. Please check.")
+          cli::cli_warn(
+            cli::cli_fmt({
+              cli::cli_text("Some paths were not found in the simulation. Please check.")
+              cli::cli_text("Following paths were not found:")
+              cli::cli_li(paths[!(paths %in% availablePaths)])
+            })
+          )
         }
 
         paths <- intersect(paths, availablePaths)
@@ -79,6 +92,11 @@ Study <- R6::R6Class(
     #' Add DataSet objects to the study
     #' @param dataSets a DataSet object
     addDataSets = function(dataSets) {
+      # if only single dataset given wrap in list
+      if (!("list" %in% class(dataSets))) {
+        dataSets <- list(dataSets)
+      }
+
       ospsuite.utils::validateIsOfType(dataSets, "DataSet", nullAllowed = FALSE)
       for (dataSet in dataSets) {
         private$.observedData[[dataSet$name]] <- dataSet
@@ -107,7 +125,7 @@ Study <- R6::R6Class(
     #' @param endTime end time of the interval in time units
     #' @param resolution resolution of the interval in pts/time units
     #' @param timeUnit time unit of the interval
-    addOutputInterval  = function(startTime, endTime, timeUnit, resolution) {
+    addOutputInterval = function(startTime, endTime, timeUnit, resolution) {
       ospsuite.utils::validateIsNumeric(c(startTime, endTime, resolution))
       ospsuite::validateUnit(unit = timeUnit, dimension = "Time")
 
@@ -149,7 +167,7 @@ Study <- R6::R6Class(
     toSnapshot = function() {
       data <- list(
         "Version" = 80,
-        "Individuals" =  list(
+        "Individuals" = list(
           list(
             Name = self$Individual,
             OriginData = purrr::compact(
@@ -170,13 +188,27 @@ Study <- R6::R6Class(
         ),
         "Compounds" = purrr::map(self$Compounds, \(x) {
           compSnap <- x$toSnapshot()
-          for (procIdx in seq_along(compSnap$Processes) > 0) {
-            compSnap$Processes[[procIdx]]$Species <- ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
+          for (procIdx in seq_along(compSnap$Processes)) {
+            if (self$Individual %in% ospsuite::HumanPopulation) {
+              compSnap$Processes[[procIdx]]$Species <- "Human"
+            } else {
+              compSnap$Processes[[procIdx]]$Species <- self$Individual
+            }
           }
           return(compSnap)
         }),
-        "Formulations" = purrr::list_c(purrr::map(self$Compounds, \(x) {purrr::map(x$Protocol$Formulations, \(y) {y$toSnapshot()})})),
-        "Protocols" = purrr::map(self$Compounds, \(x) {x$Protocol$toSnapshot()}),
+        "Formulations" = purrr::list_c(
+          purrr::map(self$Compounds, \(x) {
+            purrr::map(x$Protocol$Formulations, \(y) {
+              y$toSnapshot()
+            })
+          })
+        ),
+        "Protocols" = purrr::map(
+          self$Compounds, \(x) {
+            x$Protocol$toSnapshot()
+          }
+        ),
         "Simulations" = list(
           list(
             Name = self$ID,
@@ -195,7 +227,7 @@ Study <- R6::R6Class(
                       paste0("Cellular permeability - ", x$CellularPermeabilityMethod)
                     ),
                     Processes = unname(
-                      purrr::imap(x$.__enclos_env__$private$.allProcessProperties, \(y,i) {
+                      purrr::imap(x$.__enclos_env__$private$.allProcessProperties, \(y, i) {
                         list(
                           Name = paste(ProcessPrefixes[i], i, sep = "-"),
                           SystemicProcessType = ProcessTypes[[i]]
@@ -205,7 +237,7 @@ Study <- R6::R6Class(
                     Protocol = purrr::compact(
                       list(
                         Name = x$Protocol$Name,
-                        Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationsKey, \(y, z) {
+                        Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationKey, \(y, z) {
                           list(
                             Name = y$Name,
                             Key = z
@@ -223,7 +255,8 @@ Study <- R6::R6Class(
       )
       # update Fu species
       for (compIndex in seq_along(data$Compounds)) {
-        data$Compounds[[compIndex]]$FractionUnbound[[1]]$Species <- ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
+        data$Compounds[[compIndex]]$FractionUnbound[[1]]$Species <-
+          ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
       }
       return(data)
     },
@@ -238,27 +271,32 @@ Study <- R6::R6Class(
     #' @param file file path to save the pkml
     #' @param overwrite if TRUE, overwrite existing file
     exportPKML = function(file, overwrite = FALSE) {
-      temp_dir <- tempfile()
-      temp_file <- tempfile(tmpdir = temp_dir,  fileext = ".json")
-      if (!dir.exists(temp_dir)) {
-        dir.create(temp_dir)
+      tempDir <- tempfile()
+      tempFile <- tempfile(tmpdir = tempDir, fileext = ".json")
+      if (!dir.exists(tempDir)) {
+        dir.create(tempDir)
       }
 
-      self$exportSnapshot(temp_file)
+      self$exportSnapshot(tempFile)
 
-      ospsuite::runSimulationsFromSnapshot(temp_file, exportPKML = TRUE, exportCSV = FALSE, output = temp_dir)
+      ospsuite::runSimulationsFromSnapshot(tempFile, exportPKML = TRUE, exportCSV = FALSE, output = tempDir)
 
       if (!dir.exists(dirname(file))) {
         dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
       }
-      if (!file.exists(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml"))) {
+      if (!file.exists(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml"))) {
         cli::cli_abort("Something went wrong with the export of the pkml file.")
       }
-      fs::file_copy(path = fs::path(paste0(gsub(temp_file, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")), new_path = file, overwrite = overwrite)
+      fs::file_copy(
+        path = fs::path(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")),
+        new_path = file,
+        overwrite = overwrite
+      )
     },
     #' @description
     #' Set generic model to use if pre-generated (for example from MoBi with PD)
-    #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic model should be automatically generated.
+    #' @param modelPath path of the pkml model to use for the study. Keep to NULL if a generic
+    #' model should be automatically generated.
     setGenericModel = function(modelPath) {
       # ensure it exist and is a pkml file
       if (!is.null(modelPath)) {
@@ -269,7 +307,7 @@ Study <- R6::R6Class(
       private$.genericModel <- modelPath
     },
     #' @description
-    #' Set generic model to use if pre-generated (for example from MoBi with PD)
+    #' Set simulation model to use if pre-generated (for example from MoBi with PD)
     #' @param simulation simulation loaded from pkml (to check )
     setSimulation = function(simulation) {
       ospsuite.utils::validateIsOfType(simulation, "Simulation")
@@ -279,19 +317,19 @@ Study <- R6::R6Class(
     #' Print the object to the console
     #' @param ... Rest arguments.
     print = function(...) {
-      private$printClass()
+      ospsuite.utils::ospPrintClass(self)
       cli::cli_text("ID: ", self$ID)
       cli::cli_text("Individual: ", self$Individual)
       if (!is.null(self$Compounds)) {
         cli::cli_par()
         cli::cli_text("Compounds: ")
-        purrr::map(self$Compounds,
+        purrr::map(
+          self$Compounds,
           \(x) {
             cli::cli_li(paste0(x$Name, " with protocol ", x$Protocol$Name))
             ul1 <- cli::cli_ul()
             x$print()
           }
-
         )
       }
       invisible(self)

@@ -21,7 +21,7 @@
       SimpleProtocol$new(route = "IV Infusion", infusionTime = 10)
     Condition
       Warning:
-      No `infusionTimeUnit` provided, using default unit of `minutes`.
+      No `infusionTimeUnit` provided, using default unit of `min`.
     Message
         * Route: Intravenous infusion
         * Dose: 0 mg/kg
@@ -35,7 +35,7 @@
       SimpleProtocol$new(route = "IV Bolus", infusionTime = 10)
     Condition
       Warning:
-      Removing `InfusionTime` or `InfusionTimeUnit` from protocol as they are only used for `IV Infusion` route.
+      Removing `InfusionTime` and `InfusionTimeUnit` from protocol as they are only used for `IV Infusion` route.
     Message
         * Route: Intravenous bolus
         * Dose: 0 mg/kg
@@ -49,6 +49,9 @@
     Condition
       Warning:
       No `WaterVolPerBW` provided, using default value of 3.5 ml/kg.
+      Warning:
+      No `Formulation` provided, using default of dissolved.
+      Formulation can be changed with `protocolObject$setFormulation(formulation)`.
     Message
         * Route: Oral
         * Dose: 0 mg/kg
@@ -64,6 +67,9 @@
     Condition
       Warning:
       No `WaterVolPerBWUnit` provided, using default unit of `ml/kg`.
+      Warning:
+      No `Formulation` provided, using default of dissolved.
+      Formulation can be changed with `protocolObject$setFormulation(formulation)`.
     Message
         * Route: Oral
         * Dose: 0 mg/kg
@@ -78,12 +84,108 @@
       SimpleProtocol$new(route = "IV Bolus", waterVolPerBW = 5)
     Condition
       Warning:
-      Removing `WaterVolPerBW` or `WaterVolPerBWUnit` from protocol as they are only used for `Oral` route.
+      Removing `WaterVolPerBW` and `WaterVolPerBWUnit` from protocol as they are only used for `Oral` route.
     Message
         * Route: Intravenous bolus
         * Dose: 0 mg/kg
         * Dose Interval: Single Dose
         * Start Time: 0 h
+
+# Test behavior changing to/from iv infusion/oral.
+
+    Code
+      prot
+    Message
+        * Route: Intravenous infusion
+        * Dose: 0 mg/kg
+        * Dose Interval: Every 6 hours
+        * Start Time: 0 h
+        * End Time: 24 h
+        * Infusion Time: 60 min
+
+---
+
+    Code
+      prot
+    Message
+        * Route: Oral
+        * Dose: 0 mg/kg
+        * Dose Interval: Every 6 hours
+        * Start Time: 0 h
+        * End Time: 24 h
+        * Volume of water per body weight: 3.5 ml/kg
+        * Formulation: Dissolved
+
+---
+
+    Code
+      prot
+    Message
+        * Route: Intravenous infusion
+        * Dose: 0 mg/kg
+        * Dose Interval: Every 6 hours
+        * Start Time: 0 h
+        * End Time: 24 h
+        * Infusion Time: 60 min
+
+# Test behavior changing to/from single dose
+
+    Code
+      prot
+    Message
+        * Route: Intravenous infusion
+        * Dose: 0 mg/kg
+        * Dose Interval: Every 6 hours
+        * Start Time: 0 h
+        * End Time: 24 h
+        * Infusion Time: 60 min
+
+---
+
+    Code
+      prot
+    Message
+        * Route: Intravenous infusion
+        * Dose: 0 mg/kg
+        * Dose Interval: Single Dose
+        * Start Time: 0 h
+        * Infusion Time: 60 min
+
+---
+
+    Code
+      prot
+    Message
+        * Route: Intravenous infusion
+        * Dose: 0 mg/kg
+        * Dose Interval: Once each 24 hours
+        * Start Time: 0 h
+        * End Time: 24 h
+        * Infusion Time: 60 min
+
+# Test that is not possible to change things to null when required or vice versa
+
+    Code
+      prot
+    Message
+        * Route: Intravenous infusion
+        * Dose: 0 mg/kg
+        * Dose Interval: Every 6 hours
+        * Start Time: 0 h
+        * End Time: 24 h
+        * Infusion Time: 60 min
+
+---
+
+    Code
+      prot
+    Message
+        * Route: Oral
+        * Dose: 0 mg/kg
+        * Dose Interval: Single Dose
+        * Start Time: 0 h
+        * Volume of water per body weight: 3.5 ml/kg
+        * Formulation: Dissolved
 
 # Extracting protocol works.
 
@@ -190,6 +292,9 @@
     Condition
       Warning:
       No `WaterVolPerBW` provided, using default value of 3.5 ml/kg.
+      Warning:
+      No `Formulation` provided, using default of dissolved.
+      Formulation can be changed with `protocolObject$setFormulation(formulation)`.
     Message
         * Route: Oral
         * Dose: 1 mg
