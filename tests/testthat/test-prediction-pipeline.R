@@ -129,7 +129,7 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
     pc <- ospsuite::DefaultPlotConfiguration$new()
     pc$yAxisScale <- "lin"
     plot <- ospsuite::plotIndividualTimeProfile(dc, defaultPlotConfiguration = pc)
-    return(plot)
+    return(print(plot))
   }
 
   vdiffr::expect_doppelganger("Study1-Comp1", createPlot)
