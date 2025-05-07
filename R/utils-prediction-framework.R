@@ -232,7 +232,7 @@ runPredictions <- function(
 .updateValueFromProperty <- function(property, parameterStartValues, ...) {
   # additional argument for glue
   additionalArgs <- list(...)
-  if (length(additionalArgs > 0)) {
+  if (length(additionalArgs) > 0) {
     for (i in seq_along(additionalArgs)) {
       assign(names(additionalArgs[i]), additionalArgs[[i]])
     }
