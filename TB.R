@@ -3,7 +3,8 @@ library(readxl)
 library(ESQhtpbpk)
 library(dplyr)
 library(ggplot2)
-
+library(ggrepel)
+library(scales)
 
 # Reading TB data
 TBStudies <- read_excel("TBStudyInputsForHTPBPK.xlsx", sheet = 1)
@@ -27,18 +28,18 @@ for (compoundIdx in seq_len(nrow(TBCompounds))) {
   comp$setPropertyValue("Solubility", 10^TBCompounds$`logS - ADMETLab (mol/l)`[compoundIdx] * TBCompounds$`MW (g/mol)`[compoundIdx], unit = "g/l")
   # comp$setPropertyValue("Lipophilicity", TBCompounds$`logP - ADMETLab (mol/l)`[compoundIdx])
   comp$setPropertyValue("Lipophilicity", TBCompounds$`logD - ADMETLab (mol/l)`[compoundIdx])
-  comp$setPropertyValue("pKa value 0", TBCompounds$`pka_basic - ADMETLab`[compoundIdx])
-  comp$setPropertyValue("Compound type 0", "Basic")
-  comp$setPropertyValue("pKa value 1", TBCompounds$`pka_acidic - ADMETLab`[compoundIdx])
-  comp$setPropertyValue("Compound type 1", "Acidic")
+  # comp$setPropertyValue("pKa value 0", TBCompounds$`pka_basic - ADMETLab`[compoundIdx])
+  # comp$setPropertyValue("Compound type 0", "Basic")
+  # comp$setPropertyValue("pKa value 1", TBCompounds$`pka_acidic - ADMETLab`[compoundIdx])
+  # comp$setPropertyValue("Compound type 1", "Acidic")
   comp$setPropertyValue("Fraction unbound", TBCompounds$`Fu - ADMETLab`[compoundIdx], unit = "%")
-  comp$addProperty(
-    name = "PInt",
-    parName = "Specific intestinal permeability (transcellular)",
-    dimension = "Velocity",
-    value = 10^TBCompounds$`logMDCK - ADMETLab (cm/s)`[compoundIdx],
-    unit = "cm/s"
-  )
+  # comp$addProperty(
+  #   name = "PInt",
+  #   parName = "Specific intestinal permeability (transcellular)",
+  #   dimension = "Velocity",
+  #   value = 10^TBCompounds$`logMDCK - ADMETLab (cm/s)`[compoundIdx],
+  #   unit = "cm/s"
+  # )
   # comp$addProperty(
   #   name = "PInt",
   #   parName = "Specific intestinal permeability (transcellular)",
@@ -145,10 +146,10 @@ for (compoundIdx in seq_len(nrow(TBCompounds))) {
 }
 
 results <- vector("list", length = 10)
-
+dir.create("TB2_PK-SimPInt")
 for (i in 1:10) {
   results[[i]] <- runPredictions(
-    Studies[seq(i, 1230, by = 10)], outputFolder = "TB2_PkA",
+    Studies[seq(i, 1230, by = 10)], outputFolder = "TB2_PK-SimPInt",
     numberOfCores = 5,
     outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
     simulationResolution = c(0, max(TBStudies$`EndTime (days)`) * 24 * 60, 1),
@@ -188,7 +189,7 @@ importerConfiguration$addGroupingColumn("StudyID")
 importerConfiguration$namingPattern <- "{StudyID}"
 
 # reload previous results
-outputFolder <- "TB2_PkA"
+outputFolder <- "TB2_PK-SimPInt"
 results <- vector("list", length = length(list.dirs(outputFolder, recursive = FALSE)))
 for (i in seq_along(results)) {
   dir <- list.dirs(outputFolder, recursive = FALSE)[i]
@@ -206,7 +207,7 @@ for (i in seq_along(results)) {
 
 results2 <- unlist(results, recursive = F)
 
-pdf("TB2_PkA/Plots.pdf", width = 6, height = 5)
+pdf("TB2_PK-SimPInt/Plots.pdf", width = 6, height = 5)
 for (i in seq_along(TBStudies$StudyID)) {
   studyID <- TBStudies$StudyID[i]
   print(studyID)
@@ -372,7 +373,7 @@ View(metric_results %>% mutate(AUC4fold = AUCfold <= 4 & AUCfold >= 1/4) %>% sel
 View(metric_results %>% mutate(Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4)  %>% select(-studyID) %>% group_by(method) %>% summarize(shareCmax4fold = sum(Cmax4fold) / n() * 100))
 
 
-write.csv(metric_results, file = "TB2_PkA/metrics.csv", row.names = FALSE)
+write.csv(metric_results, file = "TB2_PK-SimPInt/metrics.csv", row.names = FALSE)
 
 
 # get percents of studies within 2 and 5x
@@ -409,6 +410,57 @@ ggplot(metric_results) + geom_point(aes(y=AUCfold, x= cMaxFold, color= method)) 
 
 ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y=log2(AUCfold), x= log2(cMaxFold), color= method), alpha=0.5) + geom_hline(yintercept = -1, linetype = "dashed") + geom_hline(yintercept = +1, linetype = "dashed") + geom_vline(xintercept = -1, linetype = "dashed") + geom_vline(xintercept = +1, linetype = "dashed")
 
-ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y=AUCfold, x=cMaxFold, color= Compound), alpha=0.5) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + scale_x_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 0.5, linetype = "dashed") + geom_hline(yintercept = 2, linetype = "dashed") + geom_vline(xintercept = 0.5, linetype = "dashed") + geom_vline(xintercept = 2, linetype = "dashed") + theme_bw()
-ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_boxplot(aes(y=AUCfold, x= Compound)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 2, linetype = "dashed") + geom_hline(yintercept = 0.5, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_boxplot(aes(y=cMaxFold, x= Compound)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 2, linetype = "dashed") + geom_hline(yintercept = 0.5, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y=AUCfold, x=cMaxFold, color= Compound), alpha=0.5, size = 3) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + scale_x_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 0.5, linetype = "dashed") + geom_hline(yintercept = 2, linetype = "dashed") + geom_vline(xintercept = 0.5, linetype = "dashed") + geom_vline(xintercept = 2, linetype = "dashed") + theme_bw()
+p <- p + theme(text = element_text(size = 90), aspect.ratio = 1)
+ggsave("TB2/plots_AUCfold_vs_cMaxfold.png", plot = p, width = 12, height = 6, dpi = 600, device = "png", limitsize = FALSE)
+
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_boxplot(aes(y=AUCfold, x= Compound, fill=Compound)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 2, linetype = "dashed") + geom_hline(yintercept = 0.5, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p <- p + theme(text = element_text(size = 130), aspect.ratio = 0.4)
+ggsave("TB2/plots_AUCfold_vs_compound.png", plot = p, width = 12, height = 6, dpi = 600, device = "png", limitsize = FALSE)
+
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_boxplot(aes(y=cMaxFold, x= Compound, fill=Compound)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 2, linetype = "dashed") + geom_hline(yintercept = 0.5, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p <- p + theme(text = element_text(size = 130), aspect.ratio = 0.4)
+ggsave("TB2/plots_cMaxFold_vs_compound.png", plot = p, width = 12, height = 6, dpi = 600, device = "png", limitsize = FALSE)
+
+
+ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_boxplot(aes(y=cMaxFold, x= Compound,)) + scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + geom_hline(yintercept = 2, linetype = "dashed") + geom_hline(yintercept = 0.5, linetype = "dashed") + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# compare results to input qsar
+metric_results$Lipo <- TBCompounds$`logD - ADMETLab (mol/l)`[match(metric_results$Compound, TBCompounds$Compound)]
+metric_results$Solubility <- TBCompounds$`logS - ADMETLab (mol/l)`[match(metric_results$Compound, TBCompounds$Compound)]
+metric_results$PInt <- TBCompounds$`logMDCK - ADMETLab (cm/s)`[match(metric_results$Compound, TBCompounds$Compound)]
+metric_results$MW <- TBCompounds$`MW (g/mol)`[match(metric_results$Compound, TBCompounds$Compound)]
+metric_results$Fu <- TBCompounds$`Fu - ADMETLab`[match(metric_results$Compound, TBCompounds$Compound)]
+metric_results$Cl <- TBCompounds$`cl-plasma - ADMETLab (ml/min/kg)`[match(metric_results$Compound, TBCompounds$Compound)]
+
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y = log2(AUCfold), x = Lipo, color = Compound), alpha=0.5) + geom_hline(yintercept = -1, linetype = "dashed") + geom_hline(yintercept = +1, linetype = "dashed")
+p
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y = log2(AUCfold), x = Cl, color = Compound), alpha=0.5) + geom_hline(yintercept = -1, linetype = "dashed") + geom_hline(yintercept = +1, linetype = "dashed")
+p
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y = log2(AUCfold), x = Fu, color = Compound), alpha=0.5) + geom_hline(yintercept = -1, linetype = "dashed") + geom_hline(yintercept = +1, linetype = "dashed")
+p
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + geom_point(aes(y = log2(AUCfold), x = Solubility, color = Compound), alpha=0.5) + geom_hline(yintercept = -1, linetype = "dashed") + geom_hline(yintercept = +1, linetype = "dashed")
+p
+
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim") %>% summarise(log2AUCfold_avg = mean(log2(AUCfold)), .by = c(Compound, Lipo, Cl, Fu, Solubility, PInt, MW))) + geom_point(aes(y = Fu, x = Lipo, color = log2AUCfold_avg), alpha=0.5) + geom_hline(yintercept = -1, linetype = "dashed") + geom_hline(yintercept = +1, linetype = "dashed")
+p
+
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim") %>% summarise(log2AUCfold_avg = mean(log2(AUCfold)), .by = c(Compound, Lipo, Cl, Fu, Solubility, PInt, MW)))
+p <- p + scale_fill_gradient2(low = alpha(muted("blue"), 0.7),
+                              mid = alpha("white",0.7),
+                              high = alpha(muted("red"), 0.7),
+  midpoint = 0, limits = c(-4,4), oob = scales::squish) + geom_label_repel(aes(y = Fu, x = Lipo, label = Compound, fill = log2AUCfold_avg), label.size = NA, size = 15, segment.size = 0.25, label.padding = 0.1)
+p <- p + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p <- p + theme(text = element_text(size = 60), aspect.ratio = 1) + labs(y = "Fraction unbound (%)", x = "LogD", fill = bquote(log[2]*"("*AUC[fold]*")"))
+# p
+ggsave("TB2/plots_Lipo_Fu.png", plot = p, width = 4, height = 4, dpi = 600, device = "png", limitsize = FALSE)
+
+p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim") %>% summarise(log2AUCfold_avg = mean(log2(AUCfold)), .by = c(Compound, Lipo, Cl, Fu, Solubility, PInt, MW)))
+p <- p + scale_fill_gradient2(low = alpha(muted("blue"), 0.7),
+                              mid = alpha("white",0.7),
+                              high = alpha(muted("red"), 0.7),
+                              midpoint = 0, limits = c(-4,4), oob = scales::squish) + geom_label_repel(aes(y = Cl, x = Solubility, label = Compound, fill = log2AUCfold_avg), label.size = NA, size = 15, segment.size = 0.25, label.padding = 0.1)
+p <- p + theme_bw() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p <- p + theme(text = element_text(size = 60), aspect.ratio = 1) + labs(x = "logS (mol/l)", y = "Plasma Clearance (ml/min/kg)", fill = bquote(log[2]*"("*AUC[fold]*")"))
+# p
+ggsave("TB2/plots_Cl_Solu.png", plot = p, width = 4, height = 4, dpi = 600, device = "png", limitsize = FALSE)
