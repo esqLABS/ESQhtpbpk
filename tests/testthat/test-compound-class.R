@@ -168,7 +168,7 @@ test_that("`getAllProcessProperty` works", {
 })
 
 test_that("`getAllProcessProperty` throws an error if the property is not found", {
-  expect_error(myCompound$getAllProcessProperty(processType = "Liver Mic", propertyName = "Thalf"))
+  expect_error(myCompound$getAllProcessProperty(processType = "Liver Mic"),  "not found")
 })
 
 test_that("`getAllProcessProperty` works", {

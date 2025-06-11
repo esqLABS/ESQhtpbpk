@@ -330,11 +330,12 @@ runPredictions <- function(
 #' @return id of the progress bar
 .showQueueProgress <- function(remainingStudies, queueSize) {
   id <- cli::cli_progress_bar(
-    .envir = parent.frame(),
+    .envir = parent.frame(n = 2),
     name = "Queueing studies:",
     total = min(remainingStudies, queueSize),
     format = "{cli::pb_name} {cli::pb_bar} {cli::pb_percent} ({study$ID})"
   )
+
   return(id)
 }
 
@@ -494,7 +495,7 @@ runPredictions <- function(
     outputSelections,
     simulationResolution) {
   # create generic pkml if not already set up
-  pkmlsList <- sapply(studies, \(x) x$getGenericModel())
+  pkmlsList <- sapply(studies, \(x) x$getGenericModel(silent = TRUE))
   if (any(sapply(pkmlsList, is.null))) {
     cli::cli_inform(
       paste(

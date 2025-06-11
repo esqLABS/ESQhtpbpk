@@ -264,9 +264,23 @@ test_that("Wrong inputs fails:", {
       saveSimulation = FALSE,
       plotFigures = FALSE,
       numberOfCores = 1,
-      queueSize = "a",
+      queueSize = 100,
       outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60, 10)
+    )
+  })
+
+  expect_error({
+    results <- runPredictions(
+      studies = list(study1),
+      outputFolder = tempDir,
+      saveResults = FALSE,
+      saveSimulation = FALSE,
+      plotFigures = FALSE,
+      numberOfCores = 1,
+      queueSize = 100,
+      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      simulationResolution = c(10 * 24 * 60, 1 * 24 * 60, 1 / 60)
     )
   })
 })

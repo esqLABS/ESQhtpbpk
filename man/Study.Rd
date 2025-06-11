@@ -229,12 +229,21 @@ model should be automatically generated.}
 \subsection{Method \code{getGenericModel()}}{
 Get generic model path assigned to the study (either from automatic pkml creation or
 preassigned by user).
-@return path of the pkml model used for the study, or NULL if not set. If path is not
-valid the model is unset.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$getGenericModel()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Study$getGenericModel(silent = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{silent}}{if TRUE, do not print a message if the model is not set.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+path of the pkml model used for the study, or NULL if not set. If path is not
+valid the model is unset.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setSimulation"></a>}}

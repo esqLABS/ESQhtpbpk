@@ -306,10 +306,11 @@ Study <- R6::R6Class(
     },
     #' @description
     #' Get generic model path assigned to the study (either from automatic pkml creation or
-    #'  preassigned by user).
-    #'  @return path of the pkml model used for the study, or NULL if not set. If path is not
-    #'  valid the model is unset.
-    getGenericModel = function() {
+    #' preassigned by user).
+    #' @param silent if TRUE, do not print a message if the model is not set.
+    #' @return path of the pkml model used for the study, or NULL if not set. If path is not
+    #' valid the model is unset.
+    getGenericModel = function(silent = FALSE) {
       pkmlpath <- private$.genericModel
       # check it exist and is a pkml file
       if (!is.null(pkmlpath)) {
@@ -319,7 +320,9 @@ Study <- R6::R6Class(
           self$setGenericModel(pkmlpath)
         }
       } else {
-        cli::cli_inform("Model is not set.")
+        if (!silent) {
+          cli::cli_inform("Model is not set.")
+        }
       }
       return(pkmlpath)
     },
