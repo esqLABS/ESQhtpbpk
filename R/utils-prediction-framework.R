@@ -25,7 +25,6 @@ runPredictions <- function(
     queueSize = 1000,
     outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma*(Peripheral Venous Blood)"),
     simulationResolution = c(0, 10 * 24 * 60, 1 / 3)) {
-
   # validate inputs
   if (!is.list(studies) || length(studies) == 0 || any(sapply(studies, \(x) !("Study" %in% class(x))))) {
     cli::cli_abort("The {.arg studies} argument must be a non-empty list of Study objects.")
@@ -361,7 +360,6 @@ runPredictions <- function(
     simResultsFolder,
     plotFigures,
     numberOfCores) {
-
   # initialised needed objects
   queuedRuns <- 0
   remainingStudies <- length(studies)
