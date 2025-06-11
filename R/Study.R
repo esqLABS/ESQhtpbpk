@@ -74,7 +74,7 @@ Study <- R6::R6Class(
         availablePaths <- ospsuite::getAllParameterPathsIn(private$.simulation)
 
         if (!all(paths %in% availablePaths)) {
-          cli::cli_warn(
+          cli::cli_abort(
             cli::cli_fmt({
               cli::cli_text("Some paths were not found in the simulation. Please check.")
               cli::cli_text("Following paths were not found:")
@@ -82,8 +82,6 @@ Study <- R6::R6Class(
             })
           )
         }
-
-        paths <- intersect(paths, availablePaths)
       }
       return(paths)
     },
@@ -227,7 +225,7 @@ Study <- R6::R6Class(
                       paste0("Cellular permeability - ", x$CellularPermeabilityMethod)
                     ),
                     Processes = unname(
-                      purrr::imap(x$.__enclos_env__$private$.allProcessProperties, \(y, i) {
+                      purrr::imap(x$getAllProcessProperty(), \(y, i) {
                         list(
                           Name = paste(ProcessPrefixes[i], i, sep = "-"),
                           SystemicProcessType = ProcessTypes[[i]]
@@ -307,11 +305,35 @@ Study <- R6::R6Class(
       private$.genericModel <- modelPath
     },
     #' @description
+    #' Get generic model path assigned to the study (either from automatic pkml creation or
+    #'  preassigned by user).
+    #'  @return path of the pkml model used for the study, or NULL if not set. If path is not
+    #'  valid the model is unset.
+    getGenericModel = function() {
+      pkmlpath <- private$.genericModel
+      # check it exist and is a pkml file
+      if (!is.null(pkmlpath)) {
+        if (!file.exists(pkmlpath) || !grepl(".pkml$", pkmlpath)) {
+          cli::cli_warn("Model path {pkmlpath} does not exist or is not a pkml file. Unsetting.")
+          pkmlpath <- NULL
+          self$setGenericModel(pkmlpath)
+        }
+      } else {
+        cli::cli_inform("Model is not set.")
+      }
+      return(pkmlpath)
+    },
+    #' @description
     #' Set simulation model to use if pre-generated (for example from MoBi with PD)
     #' @param simulation simulation loaded from pkml (to check )
     setSimulation = function(simulation) {
       ospsuite.utils::validateIsOfType(simulation, "Simulation")
       private$.simulation <- simulation
+    },
+    #' @description
+    #' Get simulation model used for the study
+    getSimulation = function() {
+      return(private$.simulation)
     },
     #' @description
     #' Print the object to the console

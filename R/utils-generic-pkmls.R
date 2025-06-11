@@ -182,7 +182,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         ),
         "HepaticProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            procNames <- names(x$getAllProcessProperty())
             if (!is.null(procNames) && any(ProcessTypes[procNames] == "Hepatic")) {
               procNames[ProcessTypes[procNames] == "Hepatic"]
             } else {
@@ -192,7 +192,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         ),
         "RenalProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            procNames <- names(x$getAllProcessProperty())
             if (!is.null(procNames) && any(ProcessTypes[procNames] == "Renal")) {
               procNames[ProcessTypes[procNames] == "Renal"]
             } else {
@@ -202,7 +202,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         ),
         "GFRProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            procNames <- names(x$getAllProcessProperty())
             if (!is.null(procNames) && any(ProcessTypes[procNames] == "GFR")) {
               procNames[ProcessTypes[procNames] == "GFR"]
             } else {
@@ -212,7 +212,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         ),
         "BiliaryProcesses" = list(
           purrr::map(study$Compounds, \(x) {
-            procNames <- names(x$.__enclos_env__$private$.allProcessProperties)
+            procNames <- names(x$getAllProcessProperty())
             if (!is.null(procNames) && any(ProcessTypes[procNames] == "Biliary")) {
               procNames[ProcessTypes[procNames] == "Biliary"]
             } else {

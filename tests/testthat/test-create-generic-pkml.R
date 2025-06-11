@@ -193,10 +193,10 @@ test_that("Create generic PKMLS from study list", {
     unit = "%"
   )
   # set simulation with generic model pkml
-  simGeneric <- ospsuite::loadSimulation(study1$.__enclos_env__$private$.genericModel)
+  simGeneric <- ospsuite::loadSimulation(study1$getGenericModel())
   study1$setSimulation(simGeneric)
 
-  expect_warning(
+  expect_error(
     study1$getAllParameterPaths(),
     "Some paths were not found"
   )

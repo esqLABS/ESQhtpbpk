@@ -159,25 +159,157 @@ test_that("Test saving simulation and results:", {
   expect_snapshot(list.files(subdir, recursive = TRUE))
 })
 
+test_that("Wrong inputs fails:", {
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1, "a"),
+        outputFolder = tempDir,
+        saveResults = FALSE,
+        saveSimulation = FALSE,
+        plotFigures = FALSE,
+        numberOfCores = 1,
+        queueSize = 2,
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+      )
+    }
+  )
+
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1),
+        outputFolder = 1,
+        saveResults = FALSE,
+        saveSimulation = FALSE,
+        plotFigures = FALSE,
+        numberOfCores = 1,
+        queueSize = 2,
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+      )
+    }
+  )
+
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1),
+        outputFolder = tempDir,
+        saveResults = 1,
+        saveSimulation = FALSE,
+        plotFigures = FALSE,
+        numberOfCores = 1,
+        queueSize = 2,
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+      )
+    }
+  )
+
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1),
+        outputFolder = tempDir,
+        saveResults = FALSE,
+        saveSimulation = 1,
+        plotFigures = FALSE,
+        numberOfCores = 1,
+        queueSize = 2,
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+      )
+    }
+  )
+
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1),
+        outputFolder = tempDir,
+        saveResults = FALSE,
+        saveSimulation = FALSE,
+        plotFigures = 1,
+        numberOfCores = 1,
+        queueSize = 2,
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+      )
+    }
+  )
+
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1),
+        outputFolder = tempDir,
+        saveResults = FALSE,
+        saveSimulation = FALSE,
+        plotFigures = FALSE,
+        numberOfCores = "a",
+        queueSize = 2,
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+      )
+    }
+  )
+
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1),
+        outputFolder = tempDir,
+        saveResults = FALSE,
+        saveSimulation = FALSE,
+        plotFigures = FALSE,
+        numberOfCores = 1,
+        queueSize = "a",
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+      )
+    }
+  )
+
+  expect_error(
+    {
+      results <- runPredictions(
+        studies = list(study1),
+        outputFolder = tempDir,
+        saveResults = FALSE,
+        saveSimulation = FALSE,
+        plotFigures = FALSE,
+        numberOfCores = 1,
+        queueSize = "a",
+        outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        simulationResolution = c(0, 10 * 24 * 60, 1 / 60, 10)
+      )
+    }
+  )
+})
+
 test_that("Wrong output selection fails:", {
   expect_error(
     {
-      expect_warning({
-        results <- runPredictions(
-          studies = list(study1),
-          outputFolder = tempDir,
-          saveResults = FALSE,
-          saveSimulation = FALSE,
-          plotFigures = FALSE,
-          numberOfCores = 1,
-         queueSize = 2, outputSelections = c("Organism|PVB|**|Plasma *(Peripheral Venous Blood)"),
-          simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
-        )
-      },
-      "None of the selected outputs were found in the the simulation."
-    )
-  },
-  "No studies to simulate."
+      expect_warning(
+        {
+          results <- runPredictions(
+            studies = list(study1),
+            outputFolder = tempDir,
+            saveResults = FALSE,
+            saveSimulation = FALSE,
+            plotFigures = FALSE,
+            numberOfCores = 1,
+            queueSize = 2,
+            outputSelections = c("Organism|PVB|**|Plasma *(Peripheral Venous Blood)"),
+            simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
+          )
+        },
+        "None of the selected outputs were found in the the simulation."
+      )
+    },
+    "No studies to simulate."
   )
 })
 

@@ -82,7 +82,12 @@ Compound <- R6::R6Class(
         return(private$.allProperties[[name]]$print(compoundName = self$name))
       }
     },
-
+    #' @description
+    #' Get all defined properties of the compound
+    #' @return A list of all compound properties.
+    getAllProperty = function() {
+      return(private$.allProperties)
+    },
     # Setter
     #' @description
     #' Update specific property value for the compound.
@@ -252,7 +257,7 @@ Compound <- R6::R6Class(
     #' Get specific process property of the compound
     #' @param propertyName Name of the property to get values from
     #' @param processType Type of the process to get the property from
-    #' #' @return The corresponding property object.
+    #' @return The corresponding property object.
     getProcessProperty = function(propertyName, processType) {
       if (!processType %in% names(private$.allProcessProperties)) {
         cli::cli_abort(messages$notFound("ProcessType", processType))
@@ -263,7 +268,21 @@ Compound <- R6::R6Class(
         return(private$.allProcessProperties[[processType]][[propertyName]]$print(compoundName = self$name))
       }
     },
-
+    #' @description
+    #' Get all process properties defined in the compound (or from a specific process type)
+    #' @param processType (optional) process type for which to get all the properties defined in compound
+    #' if NULL or not given all process properties for all process types are retuned
+    #' @return List of all process properties defined in the compound (for a specific process type if supplied).
+    getAllProcessProperty = function(processType = NULL) {
+      if (!is.null(processType)) {
+        if (!processType %in% names(private$.allProcessProperties)) {
+          cli::cli_abort(messages$notFound("ProcessType", processType))
+        }
+        return(private$.allProcessProperties[[processType]])
+      } else {
+        return(private$.allProcessProperties)
+      }
+    },
     # Setter
     #' @description
     #' Update specific process property value for the compound.
@@ -404,7 +423,6 @@ Compound <- R6::R6Class(
 
       return(snap)
     },
-
     #' @description
     #' Get the paths of all parameters defined for the compound
     #' @param compoundName name of the compound in the simulations

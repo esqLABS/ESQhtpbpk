@@ -67,12 +67,16 @@ test_that("getAllParameterPaths method works", {
   expect_snapshot(study$getAllParameterPaths())
 })
 
-test_that("toSnapshot method works and can be run", {
+# Set temp folder to test snapshot export, setting and getting model, ...
+suppressMessages({
   tempDir <- tempfile()
   dir.create(tempDir)
   tempFile <- tempfile(fileext = ".json", tmpdir = tempDir)
 
   study <- Study$new(ID = "Study1", compounds = list(comp1, comp2), individual = "Rat")
+})
+
+test_that("toSnapshot method works and can be run", {
   expect_no_message(study$exportSnapshot(tempFile))
 
   expect_no_error(
@@ -80,6 +84,17 @@ test_that("toSnapshot method works and can be run", {
   )
   expect_true(file.exists(gsub("\\.json$", "-Study1.pkml", tempFile)))
   expect_no_error(study$setGenericModel(modelPath = gsub("\\.json$", "-Study1.pkml", tempFile)))
+})
+
+test_that("getGenericModel method works", {
+  expect_no_error(study$getGenericModel())
+})
+
+test_that("getGenericModel throw a warning if file is not found.", {
+  pkmlPath <- study$getGenericModel()
+  file.remove(pkmlPath)
+
+  expect_warning(study$getGenericModel())
 })
 
 test_that("setOutputInterval method works and can be run", {

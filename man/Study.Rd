@@ -36,7 +36,9 @@ Description of a study
 \item \href{#method-Study-exportSnapshot}{\code{Study$exportSnapshot()}}
 \item \href{#method-Study-exportPKML}{\code{Study$exportPKML()}}
 \item \href{#method-Study-setGenericModel}{\code{Study$setGenericModel()}}
+\item \href{#method-Study-getGenericModel}{\code{Study$getGenericModel()}}
 \item \href{#method-Study-setSimulation}{\code{Study$setSimulation()}}
+\item \href{#method-Study-getSimulation}{\code{Study$getSimulation()}}
 \item \href{#method-Study-print}{\code{Study$print()}}
 }
 }
@@ -222,6 +224,19 @@ model should be automatically generated.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-getGenericModel"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-getGenericModel}{}}}
+\subsection{Method \code{getGenericModel()}}{
+Get generic model path assigned to the study (either from automatic pkml creation or
+preassigned by user).
+@return path of the pkml model used for the study, or NULL if not set. If path is not
+valid the model is unset.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$getGenericModel()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setSimulation"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-setSimulation}{}}}
 \subsection{Method \code{setSimulation()}}{
@@ -237,6 +252,16 @@ Set simulation model to use if pre-generated (for example from MoBi with PD)
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-getSimulation"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-getSimulation}{}}}
+\subsection{Method \code{getSimulation()}}{
+Get simulation model used for the study
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$getSimulation()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-print"></a>}}
