@@ -992,7 +992,13 @@ AdvancedProtocol <- R6::R6Class(
         if (protocol$Formulation$Name %in% purrr::list_c(purrr::map(existingForm, ~ .x$Name))) {
           identicalIdx <- which(purrr::list_c(purrr::map(existingForm, ~ .x$Name)) == protocol$Formulation$Name)
           for (idx in identicalIdx) {
-            if (!identical(existingForm[[idx]], protocol$Formulation)) {
+            if (
+              !(
+                identical(existingForm[[idx]]$Name, protocol$Formulation$Name) &&
+                  identical(existingForm[[idx]]$Parameters, protocol$Formulation$Parameters) &&
+                  identical(existingForm[[idx]]$Type, protocol$Formulation$Type)
+              )
+            ) {
               cli::cli_abort(
                 paste(
                   "Formulation name {.var {protocol$Formulation$Name}}",
@@ -1067,15 +1073,18 @@ AdvancedProtocol <- R6::R6Class(
         dplyr::rowwise() |>
         dplyr::mutate(
           formulationKey = ifelse(
-            is.null(formulation),
+            is.null(formulation) || identical(formulation, NA),
             NA,
             paste0(
               "Formulation",
               which(
                 purrr::list_c(
                   purrr::map(
-                    uniqueFormulations, \(x) {
-                      identical(x, formulation)
+                    uniqueFormulations,
+                    \(x) {
+                      identical(x$Name, formulation$Name) &&
+                        identical(x$Parameters, formulation$Parameters) &&
+                        identical(x$Type, formulation$Type)
                     }
                   )
                 )

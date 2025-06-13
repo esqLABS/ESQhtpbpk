@@ -31,7 +31,8 @@ Imports:
     uuid
 Suggests: 
     testthat (>= 3.0.0),
-    devtools
+    devtools,
+    vdiffr
 Config/testthat/edition: 3
 Remotes: 
     ospsuite.utils=Open-Systems-Pharmacology/OSPSuite.RUtils,

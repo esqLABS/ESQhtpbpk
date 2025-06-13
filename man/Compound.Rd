@@ -32,6 +32,7 @@ Description of a compound
 \itemize{
 \item \href{#method-Compound-new}{\code{Compound$new()}}
 \item \href{#method-Compound-getProperty}{\code{Compound$getProperty()}}
+\item \href{#method-Compound-getAllProperty}{\code{Compound$getAllProperty()}}
 \item \href{#method-Compound-setPropertyValue}{\code{Compound$setPropertyValue()}}
 \item \href{#method-Compound-addProperty}{\code{Compound$addProperty()}}
 \item \href{#method-Compound-removeProperty}{\code{Compound$removeProperty()}}
@@ -39,6 +40,7 @@ Description of a compound
 \item \href{#method-Compound-removeProcessProperty}{\code{Compound$removeProcessProperty()}}
 \item \href{#method-Compound-removeProcess}{\code{Compound$removeProcess()}}
 \item \href{#method-Compound-getProcessProperty}{\code{Compound$getProcessProperty()}}
+\item \href{#method-Compound-getAllProcessProperty}{\code{Compound$getAllProcessProperty()}}
 \item \href{#method-Compound-setProcessPropertyValue}{\code{Compound$setProcessPropertyValue()}}
 \item \href{#method-Compound-setProtocol}{\code{Compound$setProtocol()}}
 \item \href{#method-Compound-toSnapshot}{\code{Compound$toSnapshot()}}
@@ -91,6 +93,19 @@ Get specific property of the compound
 }
 \subsection{Returns}{
 The corresponding property object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-getAllProperty"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-getAllProperty}{}}}
+\subsection{Method \code{getAllProperty()}}{
+Get all defined properties of the compound
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$getAllProperty()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A list of all compound properties.
 }
 }
 \if{html}{\out{<hr>}}
@@ -272,10 +287,33 @@ Get specific process property of the compound
 \describe{
 \item{\code{propertyName}}{Name of the property to get values from}
 
-\item{\code{processType}}{Type of the process to get the property from
-#' @return The corresponding property object.}
+\item{\code{processType}}{Type of the process to get the property from}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The corresponding property object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Compound-getAllProcessProperty"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-getAllProcessProperty}{}}}
+\subsection{Method \code{getAllProcessProperty()}}{
+Get all process properties defined in the compound (or from a specific process type)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Compound$getAllProcessProperty(processType = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{processType}}{(optional) process type for which to get all the properties defined in compound
+if NULL or not given all process properties for all process types are retuned}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+List of all process properties defined in the compound (for a specific process type if supplied).
 }
 }
 \if{html}{\out{<hr>}}

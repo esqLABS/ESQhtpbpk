@@ -46,6 +46,10 @@ test_that("`getProperty` works", {
   expect_snapshot(myCompound$getProperty("Plasma protein binding partner"))
 })
 
+test_that("`getAllProperty` works ", {
+  expect_snapshot(myCompound$getAllProperty())
+})
+
 test_that("`setProperty` works", {
   expect_no_error(myCompound$setPropertyValue("Lipophilicity", 0.5))
   expect_snapshot(myCompound$getProperty("Lipophilicity"))
@@ -135,7 +139,7 @@ test_that("`removeProcessProperty` works", {
 })
 
 
-test_that("`getProcessProperty` throws an error if the propety is not found", {
+test_that("`getProcessProperty` throws an error if the property is not found", {
   myCompound$addProcessProperty(
     processType = "Liver Mic T1/2",
     propertyName = "Thalf",
@@ -154,6 +158,22 @@ test_that("`getProcessProperty` throws an error if the propety is not found", {
 test_that("`getProcessProperty` works", {
   expect_snapshot(
     myCompound$getProcessProperty(propertyName = "Thalf", processType = "Liver Mic T1/2")
+  )
+})
+
+test_that("`getAllProcessProperty` works", {
+  expect_snapshot(
+    myCompound$getAllProcessProperty(processType = "Liver Mic T1/2")
+  )
+})
+
+test_that("`getAllProcessProperty` throws an error if the property is not found", {
+  expect_error(myCompound$getAllProcessProperty(processType = "Liver Mic"),  "not found")
+})
+
+test_that("`getAllProcessProperty` works", {
+  expect_snapshot(
+    myCompound$getAllProcessProperty()
   )
 })
 
