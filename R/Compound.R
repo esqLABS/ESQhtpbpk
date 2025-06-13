@@ -65,7 +65,9 @@ Compound <- R6::R6Class(
 
       private$.allProperties <- private$.initializePropertiesFromJSON(filledTemplate)
       names(private$.allProperties) <- sapply(private$.allProperties, \(x) x$name)
-      private$.allPropertyPaths <- sapply(private$.allProperties, \(x) x$path)
+      private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {
+        x$path
+      })
     },
 
     # Getter
@@ -80,7 +82,12 @@ Compound <- R6::R6Class(
         return(private$.allProperties[[name]]$print(compoundName = self$name))
       }
     },
-
+    #' @description
+    #' Get all defined properties of the compound
+    #' @return A list of all compound properties.
+    getAllProperty = function() {
+      return(private$.allProperties)
+    },
     # Setter
     #' @description
     #' Update specific property value for the compound.
@@ -123,7 +130,8 @@ Compound <- R6::R6Class(
     #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the
     #' baseUnit of the dimension.
     #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
-    #' @param check (Optional) Function to check the validity of the supplied value for the property.
+    #' @param check (Optional) Function to check the validity of the supplied value for the property,
+    #' must take value, unit as argument an retrun an error if the test fails.
     #' @param path Corresponding full path of the parameter in the simulation pkml of the property to add
     #' (default to NULL to create it automatically based on parName).
     addProperty = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
@@ -144,34 +152,171 @@ Compound <- R6::R6Class(
       if (is.null(path)) {
         path <- paste0("{compoundName}|", parName)
       }
-      private$.allPropertyPaths <- c(private$.allParameterPaths, path)
+      private$.allPropertyPaths <- c(private$.allPropertyPaths, path)
     },
-    # # Add a new process
-    # #' @description
-    # #' Add a new process for the compound.
-    # #' @param name Name of the property to add.
-    # #' @param processName Corresponding parameter name in the simulation pkml of the property to add.
-    # #' @param dimension Dimension of the property to add.
-    # #' @param value Value for the property.
-    # #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the baseUnit of the dimension.
-    # #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
-    # #' @param check (Optional) Function to check the validity of the supplied value for the property.
-    # addProcessProperty = function(name, processName, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL) {
-    #
-    # },
-    # removeProcessProperty = function(name) {
-    #
-    # },
     # Remove a property
     #' @description
     #' Remove a property from the compound.
     #' @param name Name of the property to remove
     removeProperty = function(name) {
+      path <- private$.allProperties[[name]]$path
       private$.allProperties[[name]] <- NULL
-      compoundName <- self$name
-      private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {
-        glue::glue(x$path)
-      })
+      private$.allPropertyPaths <- private$.allPropertiesPaths[-which(private$.allPropertiesPaths == path)]
+    },
+    # Add a new process
+    #' @description
+    #' Add a new process property for the compound.
+    #' @param propertyName Name of the property to add.
+    #' @param processType Corresponding Process type. Allowed Process types are:
+    #' "Liver Plasma Clearance", "Hep T1/2", "Hep Residuals", "Liver Mic T1/2",
+    #' "Liver Mic Residuals", "Renal Plasma Clearance", "Tub Sec FirstOrder",
+    #' "Tub Sec MM", "GFR", "Biliary Plasma Clearance".
+    #' @param parName Corresponding parameter name in the simulation pkml of the property to add.
+    #' @param dimension Dimension of the property to add.
+    #' @param value Value for the property.
+    #' @param unit (Optional) Unit to use for the property. If not given, it is assumed to be the
+    #' baseUnit of the dimension.
+    #' @param enum (Optional) Name list mapping user friendly values to PK-Sim allowed values.
+    #' @param check (Optional) Function to check the validity of the supplied value for the property.
+    #' @param path (Optional) Corresponding full path of the parameter in the simulation pkml of the
+    #' property to add. Needed when using a predefined pkml for the HTPBPK simulation.
+    addProcessProperty = function(propertyName,
+                                  processType,
+                                  parName,
+                                  dimension,
+                                  value = 0,
+                                  unit = NULL,
+                                  enum = NULL,
+                                  check = NULL,
+                                  path = NULL) {
+      processTypeValid <- processType %in% names(ProcessTypes)
+      if (!processTypeValid) {
+        cli::cli_abort("ProcessType {.var {processType}} not allowed. Allowed values are {names(ProcessTypes)}.")
+      }
+      # only allow one type of hepatic or renal clearance
+      processSubTypeExist <- processType %in% names(private$.allProcessProperties)
+      processTypeExist <- ProcessTypes[processType] %in% ProcessTypes[names(private$.allProcessProperties)]
+      if (!processSubTypeExist && processTypeExist) {
+        cli::cli_abort("Only one {tolower(ProcessTypes[processType])} clearace process is allowed.")
+      }
+      if (propertyName %in% names(private$.allProcessProperties[[processType]])) {
+        cli::cli_abort(messages$alreadyExist("Property", propertyName))
+      }
+
+      if (is.null(path)) {
+        path <- paste0(
+          "{compoundName}",
+          ifelse(ProcessTypes[processType] == "Hepatic", "-", "|"),
+          paste(ProcessPrefixes[processType], processType, sep = "-")
+        )
+        if (ProcessTypes[processType] %in% c("Renal", "GFR")) {
+          path <- paste0("Neighborhoods|Kidney_pls_Kidney_ur|", path, "-", "{compoundName}")
+        }
+        path <- paste0(path, "|", parName)
+      }
+      private$.allProcessProperties[[processType]][[propertyName]] <- Property$new(
+        name = propertyName,
+        parName = parName,
+        path = path,
+        dimension = dimension,
+        value = value,
+        unit = unit,
+        enum = enum,
+        check = check
+      )
+
+      private$.allPropertyPaths <- c(private$.allPropertyPaths, path)
+    },
+    # Remove a process property
+    #' @description
+    #' Remove a process property from the compound.
+    #' @param propertyName Name of the property to remove
+    #' @param processType Type of the process to remove the property from
+    removeProcessProperty = function(propertyName, processType) {
+      path <- private$.allProcessProperties[[processType]][[propertyName]]$path
+      private$.allProcessProperties[[processType]][[propertyName]] <- NULL
+      private$.allProcessProperties <- purrr::compact(private$.allProcessProperties)
+      private$.allPropertyPaths <- private$.allPropertyPaths[-which(private$.allPropertyPaths == path)]
+    },
+    # Remove a process
+    #' @description
+    #' Remove a all process propertys from the compound.
+    #' @param processType Type of the process to remove the property from
+    removeProcess = function(processType) {
+      if (!(processType %in% names(private$.allProcessProperties))) {
+        cli::cli_abort("No {processType} processes found.")
+      }
+
+      path <- purrr::list_c(purrr::map(private$.allProcessProperties[[processType]], \(x) x$path))
+      private$.allProcessProperties[[processType]] <- NULL
+      private$.allProcessProperties <- purrr::compact(private$.allProcessProperties)
+      private$.allPropertyPaths <- private$.allPropertyPaths[-which(private$.allPropertyPaths %in% path)]
+    },
+    # Getter
+    #' @description
+    #' Get specific process property of the compound
+    #' @param propertyName Name of the property to get values from
+    #' @param processType Type of the process to get the property from
+    #' @return The corresponding property object.
+    getProcessProperty = function(propertyName, processType) {
+      if (!processType %in% names(private$.allProcessProperties)) {
+        cli::cli_abort(messages$notFound("ProcessType", processType))
+      }
+      if (!propertyName %in% names(private$.allProcessProperties[[processType]])) {
+        cli::cli_abort(messages$notFound("Property", propertyName))
+      } else {
+        return(private$.allProcessProperties[[processType]][[propertyName]]$print(compoundName = self$name))
+      }
+    },
+    #' @description
+    #' Get all process properties defined in the compound (or from a specific process type)
+    #' @param processType (optional) process type for which to get all the properties defined in compound
+    #' if NULL or not given all process properties for all process types are retuned
+    #' @return List of all process properties defined in the compound (for a specific process type if supplied).
+    getAllProcessProperty = function(processType = NULL) {
+      if (!is.null(processType)) {
+        if (!processType %in% names(private$.allProcessProperties)) {
+          cli::cli_abort(messages$notFound("ProcessType", processType))
+        }
+        return(private$.allProcessProperties[[processType]])
+      } else {
+        return(private$.allProcessProperties)
+      }
+    },
+    # Setter
+    #' @description
+    #' Update specific process property value for the compound.
+    #' @param propertyName Name of the property to set values for
+    #' @param processType Type of the process to set the property from
+    #' @param value New value for the property.
+    #' @param unit New unit to use for the property, if not given the unit is assumed to be the same as previously.
+    setProcessPropertyValue = function(propertyName, processType, value, unit = NULL) {
+      if (!processType %in% names(private$.allProcessProperties)) {
+        cli::cli_abort(messages$notFound("ProcessType", processType))
+      }
+      if (!propertyName %in% names(private$.allProcessProperties[[processType]])) {
+        cli::cli_abort(messages$notFound("Property", propertyName))
+      } else {
+        prop <- private$.allProcessProperties[[processType]][[propertyName]]
+
+        # check validity of unit with regards to dimension
+        if (!is.null(unit) && !(unit %in% ospsuite::getUnitsForDimension(prop$dimension))) {
+          cli::cli_abort(messages$unitNotValid(unit, prop$dimension))
+        }
+
+        # if unit is not given assume it is unchanged
+        if (is.null(unit)) {
+          unit <- prop$unit
+        }
+
+        # Check validity of value
+        if (!is.null(prop$check)) {
+          prop$check(value, unit)
+        }
+
+        prop$unit <- unit
+        prop$value <- value
+      }
     },
 
     # Set the administration protocol of a compound
@@ -206,29 +351,31 @@ Compound <- R6::R6Class(
         Solubility = list(
           list(
             Name = "Solubility",
-            Parameters = list(private$.allProperties[["Solubility"]]$toSnapshot())
+            Parameters = purrr::compact(
+              list(
+                private$.allProperties[["Solubility"]]$toSnapshot(),
+                private$.allProperties[["Reference pH"]]$toSnapshot()
+              )
+            )
           )
         ),
         PkaTypes = purrr::compact(
           list(
-            switch(
-              names(private$.allProperties[["Compound type 0"]]$value),
+            switch(names(private$.allProperties[["Compound type 0"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 0"]]$value),
                 Pka = private$.allProperties[["pKa value 0"]]$value
               )
             ),
-            switch(
-              names(private$.allProperties[["Compound type 1"]]$value),
+            switch(names(private$.allProperties[["Compound type 1"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 1"]]$value),
                 Pka = private$.allProperties[["pKa value 1"]]$value
               )
             ),
-            switch(
-              names(private$.allProperties[["Compound type 2"]]$value),
+            switch(names(private$.allProperties[["Compound type 2"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 2"]]$value),
@@ -237,14 +384,29 @@ Compound <- R6::R6Class(
             )
           )
         ),
+        Processes = purrr::compact(
+          unname(
+            purrr::imap(private$.allProcessProperties, \(x, name) {
+              list(
+                InternalName = unname(as.character(ProcessInternalNames[name])),
+                DataSource = name,
+                # Species will be added when generating study snapshot to match used specie in study
+                Parameters = unname(x |> purrr::map(\(y) y$toSnapshot()) |> purrr::compact())
+              )
+            })
+          )
+        ),
         Parameters = unname(
           purrr::compact(
             purrr::map(private$.allProperties, \(x) {
-              if (!x$name %in% c("Is small molecule",
-                                 "Plasma protein binding partner",
-                                 "Lipophilicity", "Solubility",
-                                 paste("Compound type", 0:2),
-                                 paste("pKa value", 0:2))) {
+              if (!x$name %in% c(
+                "Is small molecule",
+                "Plasma protein binding partner",
+                "Lipophilicity", "Fraction unbound",
+                "Solubility", "Reference pH",
+                paste("Compound type", 0:2),
+                paste("pKa value", 0:2)
+              )) {
                 x$toSnapshot()
               }
             })
@@ -261,7 +423,6 @@ Compound <- R6::R6Class(
 
       return(snap)
     },
-
     #' @description
     #' Get the paths of all parameters defined for the compound
     #' @param compoundName name of the compound in the simulations
@@ -270,11 +431,24 @@ Compound <- R6::R6Class(
       if (is.null(compoundName)) {
         compoundName <- self$Name
       }
-      res <- sapply(private$.allProperties, \(x) {
+      res <- as.vector(sapply(private$.allProperties, \(x) {
         glue::glue(x$path)
-      })
+      }))
+      res <- c(
+        res,
+        as.character(
+          unlist(
+            sapply(private$.allProcessProperties, \(x) {
+              sapply(x, \(y) {
+                glue::glue(y$path)
+              })
+            }),
+            recursive = TRUE
+          )
+        )
+      )
 
-      if (!is.null(self$Protocol)) {
+      if (any(c("SimpleProtocol", "AdvancedProtocol") %in% class(self$Protocol))) {
         res <- c(res, self$Protocol$getAllParameterPaths())
       }
       return(unique(unname(res)))
@@ -284,7 +458,7 @@ Compound <- R6::R6Class(
     #' Print the object to the console
     #' @param ... Rest arguments.
     print = function(...) {
-      cli::cli_li("Compound properties:")
+      cli::cli_li("Compound Properties:")
       ul <- cli::cli_ul()
       for (prop in private$.allProperties) {
         if (is.list(prop$enum) && !is.null(names(prop$enum))) {
@@ -293,6 +467,26 @@ Compound <- R6::R6Class(
           cli::cli_li(paste0(prop$name, ": ", prop$value, " ", prop$unit))
         }
       }
+      cli::cli_end(ul)
+      if (length(private$.allProcessProperties) > 0) {
+        cli::cli_li("Compound Processes:")
+        ulproc <- cli::cli_ul()
+        for (procIdx in seq_along(private$.allProcessProperties)) {
+          cli::cli_li(names(private$.allProcessProperties)[procIdx])
+          ulprop <- cli::cli_ul()
+          for (prop in private$.allProcessProperties[[procIdx]]) {
+            if (is.list(prop$enum) && !is.null(names(prop$enum))) {
+              cli::cli_li(paste0(prop$name, ": ", names(prop$value)))
+            } else {
+              cli::cli_li(paste0(prop$name, ": ", prop$value, " ", prop$unit))
+            }
+          }
+          cli::cli_end(ulprop)
+        }
+        cli::cli_end(ulproc)
+      }
+      cli::cli_li("Compound Methods:")
+      ul <- cli::cli_ul()
       cli::cli_li(paste0("Partition Coefficient Method: ", self$PartitionCoefficientMethod))
       cli::cli_li(paste0("Cellular Permeability Method: ", self$CellularPermeabilityMethod))
       cli::cli_end(ul)
@@ -308,6 +502,7 @@ Compound <- R6::R6Class(
   ),
   private = list(
     .allProperties = list(),
+    .allProcessProperties = list(),
     .allPropertyPaths = c(),
     .protocol = list(),
     .pc = NULL,

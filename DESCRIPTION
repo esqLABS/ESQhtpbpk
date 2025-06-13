@@ -1,6 +1,6 @@
 Package: ESQhtpbpk
 Title: A package for more user-friendly definition of HT-PBPK pipelines
-Version: 0.0.0.9000
+Version: 0.0.0.9003
 Authors@R: c(
     person("ESQlabs GmbH", role = c("cph", "fnd")),
     person("Pavel", "Balazki", , email = "pavel.balazki@esqlabs.com", role = c("cre", "aut")),
@@ -25,12 +25,16 @@ Imports:
     R6,
     readr,
     stringr,
+    tibble,
+    tidyr,
+    tidyselect,
     uuid
 Suggests: 
     testthat (>= 3.0.0),
     devtools,
     knitr,
-    rmarkdown
+    rmarkdown,
+    vdiffr
 Config/testthat/edition: 3
 Remotes: 
     ospsuite.utils=Open-Systems-Pharmacology/OSPSuite.RUtils,

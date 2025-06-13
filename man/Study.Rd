@@ -7,9 +7,6 @@
 \description{
 Description of a study
 }
-\section{Super class}{
-\code{\link[ospsuite.utils:Printable]{ospsuite.utils::Printable}} -> \code{Study}
-}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -37,7 +34,11 @@ Description of a study
 \item \href{#method-Study-addOutputInterval}{\code{Study$addOutputInterval()}}
 \item \href{#method-Study-toSnapshot}{\code{Study$toSnapshot()}}
 \item \href{#method-Study-exportSnapshot}{\code{Study$exportSnapshot()}}
+\item \href{#method-Study-exportPKML}{\code{Study$exportPKML()}}
 \item \href{#method-Study-setGenericModel}{\code{Study$setGenericModel()}}
+\item \href{#method-Study-getGenericModel}{\code{Study$getGenericModel()}}
+\item \href{#method-Study-setSimulation}{\code{Study$setSimulation()}}
+\item \href{#method-Study-getSimulation}{\code{Study$getSimulation()}}
 \item \href{#method-Study-print}{\code{Study$print()}}
 }
 }
@@ -186,6 +187,25 @@ Convert study to a snapshot
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-exportPKML"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-exportPKML}{}}}
+\subsection{Method \code{exportPKML()}}{
+Convert study to a pkml
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$exportPKML(file, overwrite = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{file path to save the pkml}
+
+\item{\code{overwrite}}{if TRUE, overwrite existing file}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setGenericModel"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-setGenericModel}{}}}
 \subsection{Method \code{setGenericModel()}}{
@@ -202,6 +222,55 @@ model should be automatically generated.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-getGenericModel"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-getGenericModel}{}}}
+\subsection{Method \code{getGenericModel()}}{
+Get generic model path assigned to the study (either from automatic pkml creation or
+preassigned by user).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$getGenericModel(silent = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{silent}}{if TRUE, do not print a message if the model is not set.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+path of the pkml model used for the study, or NULL if not set. If path is not
+valid the model is unset.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-setSimulation"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-setSimulation}{}}}
+\subsection{Method \code{setSimulation()}}{
+Set simulation model to use if pre-generated (for example from MoBi with PD)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$setSimulation(simulation)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{simulation}}{simulation loaded from pkml (to check )}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Study-getSimulation"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-getSimulation}{}}}
+\subsection{Method \code{getSimulation()}}{
+Get simulation model used for the study
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Study$getSimulation()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-print"></a>}}
