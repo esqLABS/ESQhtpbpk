@@ -29,6 +29,11 @@ runPredictions <- function(
   if (!is.list(studies) || length(studies) == 0 || any(sapply(studies, \(x) !("Study" %in% class(x))))) {
     cli::cli_abort("The {.arg studies} argument must be a non-empty list of Study objects.")
   }
+  # check unicity of studyIDs
+  if (any(duplicated(sapply(studies, \(x) x$ID)))) {
+    cli::cli_abort("The {.arg studies} argument must contain unique study IDs.")
+  }
+
   ospsuite.utils::validateIsCharacter(outputFolder)
   ospsuite.utils::validateIsLogical(saveResults)
   ospsuite.utils::validateIsLogical(saveSimulation)
