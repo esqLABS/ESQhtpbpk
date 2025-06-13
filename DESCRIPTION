@@ -1,6 +1,6 @@
 Package: ESQhtpbpk
 Title: A package for more user-friendly definition of HT-PBPK pipelines
-Version: 0.0.0.9002
+Version: 0.0.0.9003
 Authors@R: c(
     person("ESQlabs GmbH", role = c("cph", "fnd")),
     person("Pavel", "Balazki", , email = "pavel.balazki@esqlabs.com", role = c("cre", "aut")),
