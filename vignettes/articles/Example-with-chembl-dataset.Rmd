@@ -1,0 +1,857 @@
+---
+title: "Example with chembl dataset"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+For this example we will load a few libraries
+
+```{r setup}
+library(ESQhtpbpk) # package for HTPBPK
+library(readxl) # package to read xlsx files that contains input data
+library(dplyr) # package for easy manipulation of data
+library(tidyr) # package for easy manipulation of data
+library(stringr) # package for string manipulation
+# packages for plotting
+library(ggplot2)
+library(ggrepel)
+library(scales)
+# packages for parallel computing
+library(doParallel)
+```
+
+Based on [this paper](https://link.springer.com/article/10.1007/s00204-024-03764-9) and more specifically [Table 1](https://link.springer.com/article/10.1007/s00204-024-03764-9/tables/1), we will use QSAR from ADMETlab as input to the HT-PBPK model. A dataset of Cmax and AUC extracted and curated from CHEMBL is available in the package as an example dataset.
+
+The platform allows to test easily multiple scenarios by adjusting inputs as needed. The output metrics have to be customized to the one required for a specific analysis here various AUC and Cmax are calculated to matched the observed dataset.
+
+```{r multiple scenarios, eval = F}
+outputFolder <- "Chembl_Test_Pipeline"
+dir.create(outputFolder, showWarnings = FALSE)
+
+scenarios <- read.csv(system.file("extdata", "Chembl_Test_Pipeline", "scenarios.csv", package = "ESQhtpbpk"), stringsAsFactors = FALSE)
+
+# Reading curated chembl dataset with AUC and Cmax values
+path <- system.file("extdata", "Chembl_preprocessed_curated.xlsx", package = "ESQhtpbpk")
+
+InputStudies <- read_excel(path, sheet = 1)
+InputProtocol <- read_excel(path, sheet = 2)
+InputCompounds <- read_excel(path, sheet = 3) # QSARs obtained from ADMETlab 3.0
+
+
+# register  parallel  backend 
+cl <- makePSOCKcluster(5, outfile = file.path(outputFolder, "parallel_log.txt"))
+registerDoParallel(cl)
+
+# Create studies for each compound and each scenario
+for (scenario_number in seq_len(nrow(scenarios))) {
+  Studies <- list()
+
+  for (compoundIdx in seq_len(nrow(InputCompounds))) {
+    compName <- InputCompounds$molecule_chembl_id[compoundIdx]
+    
+    # set new compound with compound name
+    comp <- Compound$new(ID = compName)
+  
+    # if halogens are considered set halogenes numbers
+    if (scenarios$Halogen[scenario_number] == 1) {
+      # Set halogen numbers p to 10 allowed in PK-Sim
+      comp$setPropertyValue("Chlorine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "Cl")))
+      comp$setPropertyValue("Bromine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "Br")))
+      comp$setPropertyValue("Fluorine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "F")))
+      comp$setPropertyValue("Iodine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "I")))
+    }
+    
+    # set molecular weight
+    comp$setPropertyValue("Molecular weight", InputCompounds$MW[compoundIdx], unit = "g/mol")
+    
+    # set solubity depending on scenario
+    switch(
+      as.character(scenarios$Solubility[scenario_number]), 
+      logS = {
+        # set solubility in g/l
+        comp$setPropertyValue("Solubility", 10^InputCompounds$logS[compoundIdx] * InputCompounds$MW[compoundIdx], unit = "g/l") # logS is in mol/l
+      }, 
+      High = {
+        # set arbitrary high solubility
+        comp$setPropertyValue("Solubility", 1000, unit = "g/l")
+      }
+    )
+    
+    # set lipophilicity based on scenario
+    switch(
+      as.character(scenarios$Lipophilicity[scenario_number]), 
+      logP = {
+        # set logP
+        comp$setPropertyValue("Lipophilicity", InputCompounds$logP[compoundIdx], unit = "Log Units")
+      },
+      logD = {
+        # use logD as lipophilicity input
+        comp$setPropertyValue("Lipophilicity", InputCompounds$logD[compoundIdx], unit = "Log Units")
+      },
+      logMA1 = {
+        # use logMA as lipophilicity input
+         comp$setPropertyValue("Lipophilicity", 1.294 + 0.304 * InputCompounds$logP[compoundIdx], unit = "Log Units")
+      },
+      logMA_Pearce = {
+        # use logMA as lipophilicity input
+        comp$setPropertyValue("Lipophilicity", 0.0166 * 37 + 0.882 * InputCompounds$logP[compoundIdx], unit = "Log Units")
+      }
+    )
+    
+    # set Fu based on scenario
+    switch(
+      as.character(scenarios$Fu[scenario_number]), 
+      Fu = {
+        comp$setPropertyValue("Fraction unbound", InputCompounds$Fu[compoundIdx], unit = "%")
+      },
+      PPB = {
+        comp$setPropertyValue("Fraction unbound", 100 - InputCompounds$PPB[compoundIdx], unit = "%")
+      }
+    )
+
+    # Set intestinal permeability based on scenario
+    switch(
+      as.character(scenarios$Pint[scenario_number]), 
+      MDCK = {
+        # set Pint to MDCK value
+        comp$addProperty(
+          name = "PInt",
+          parName = "Specific intestinal permeability (transcellular)",
+          dimension = "Velocity",
+          value = 10^InputCompounds$MDCK[compoundIdx], # MDCK is in log cm/s,
+          unit = "cm/s"
+        )
+        comp$setPropertyValue("Fraction unbound", InputCompounds$Fu[compoundIdx], unit = "%")
+      },
+      Caco2 = {
+        # set Pint to Caco2 value
+        comp$addProperty(
+          name = "PInt",
+          parName = "Specific intestinal permeability (transcellular)",
+          dimension = "Velocity",
+          value = 10^InputCompounds$caco2[compoundIdx], # Caco2 is in log cm/s,
+          unit = "cm/s"
+        )
+      },
+      PAMPA = {
+        # set Pint to PAMPA value
+        comp$addProperty(
+          name = "PInt",
+          parName = "Specific intestinal permeability (transcellular)",
+          dimension = "Velocity",
+          value = InputCompounds$PAMPA[compoundIdx] * 1e-6, # PAMPA is in 10E-6 cm/s,
+          unit = "cm/s"
+        )
+      }
+    )
+    
+    # set Perm based on scenario arbitrarly high
+    if (scenarios$Perm[scenario_number] ==  "High") {
+      comp$addProperty(
+        name = "Perm",
+        parName = "Permeability",
+        dimension = "Velocity",
+        value = 10,
+        unit = "cm/s"
+      )
+    }
+   
+    # add total clearance (as hepatic clearance)
+    comp$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight",
+      value = InputCompounds$`cl-plasma`[compoundIdx], 
+      unit = "ml/min/kg"
+    )
+    comp$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Lipophilicity",
+      parName = "Lipophilicity (experiment)",
+      dimension = "Log Units",
+      value = suppressMessages(comp$getProperty("Lipophilicity")$value),
+      unit = suppressMessages(comp$getProperty("Lipophilicity")$unit)
+    )
+    comp$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Fraction unbound",
+      parName = "Fraction unbound (experiment)",
+      dimension = "Fraction",
+      value = suppressMessages(comp$getProperty("Fraction unbound")$value),
+      unit = suppressMessages(comp$getProperty("Fraction unbound")$unit)
+    )
+    
+    if (scenarios$PkA[scenario_number] == 1) {
+      comp$setPropertyValue(
+        name = "pKa value 0", 
+        value = min(max(c(0,InputCompounds$pka_acidic[compoundIdx])), 14)
+        )
+      comp$setPropertyValue("Compound type 0", "Acidic")
+      
+      comp$setPropertyValue(
+        name = "pKa value 1", 
+        value = min(max(c(0,InputCompounds$pka_basic[compoundIdx])), 14)
+      )
+      comp$setPropertyValue("Compound type 1", "Basic")
+    }
+    
+    if (scenarios$GFR[scenario_number] == 1) {
+      comp$addProcessProperty(
+        processType = "GFR",
+        propertyName = "GFR",
+        parName = "GFR fraction",
+        dimension = "Dimensionless",
+        value = 1
+      )
+    }
+
+    if (scenarios$Enzyme_correction[scenario_number] == 1) {
+      # set enzyme correction
+      comp$addProcessProperty(
+        processType = "Liver Plasma Clearance",
+        propertyName = "Enzyme correction",
+        parName = "Enzyme concentration",
+        dimension = "Concentration (molar)",
+        value = 1/0.667, # 1/0.667 is the correction factor for the enzyme activity
+        unit = "umol/l"
+      )
+    }
+    
+    # create studies using the compound
+    for (studyId in unique(InputStudies$StudyID[which(InputStudies$molecule_chembl_id == compName)])) {
+      print(studyId)
+      studyIdx <- which(InputStudies$StudyID == studyId)
+      studyProtocolId <- unique(InputStudies$ProtocolID[studyIdx])
+      protocolTable <- InputProtocol[InputProtocol$ProtocolID == studyProtocolId,]
+      
+      # create advance protocol (1 protocol can be defie by multiple line in excel with different 
+      # admin, for example with loading dose)
+      prot <- AdvancedProtocol$new()
+      
+      # skip is dose norm not available
+      if (any(is.na(protocolTable$`Dose Norm`))) {
+        next()
+      }
+      
+      for (i in seq_len(nrow(protocolTable))) {
+        prot$addSchema(
+          schemaName = paste0("Schema_", i),
+          startTime = protocolTable$Time[i],
+          timeBetweenRepetitions = ifelse(is.na(protocolTable$Time_between_rep[i]), 0, protocolTable$Time_between_rep[i]),
+          numberOfRepetitions = ifelse(is.na(protocolTable$Nrep[i]), 1, protocolTable$Nrep[i]),
+          timeUnit = protocolTable$TimeUnit[i]
+        )
+        
+        switch(
+          as.character(scenarios$Dose[scenario_number]), 
+          Flat = {
+            # set dose as flat dose (or BW if given as BW)
+            admin <- SimpleProtocol$new(
+              route = c("ORAL" = "Oral", "IV INFUSION" = "IV Infusion")[protocolTable$Route[i]],
+              dose = protocolTable$`Dose`[i],
+              doseUnit = protocolTable$`Dose Unit`[i],
+              infusionTime = if (is.na(protocolTable$Infusion_duration[i])) {NULL} else {protocolTable$Infusion_duration[i]},
+              infusionTimeUnit = if (is.na(protocolTable$Infusion_duration_unit[i])) {
+                  NULL
+                } else { 
+                  protocolTable$Infusion_duration_unit[i] 
+                }
+            )
+          },
+          BW = {
+            admin <- SimpleProtocol$new(
+              route = c("ORAL" = "Oral", "IV INFUSION" = "IV Infusion")[protocolTable$Route[i]],
+              dose = protocolTable$`Dose Norm`[i],
+              doseUnit = protocolTable$`Dose Norm Unit`[i],
+              infusionTime = if (is.na(protocolTable$Infusion_duration[i])) {NULL} else {protocolTable$Infusion_duration[i]},
+              infusionTimeUnit = if (is.na(protocolTable$Infusion_duration_unit[i])) {
+                  NULL
+                } else { 
+                  protocolTable$Infusion_duration_unit[i] 
+                }
+            )
+          }
+        )
+        
+        if (protocolTable$Route[i] == "Oral") {
+          formulation <- createDissolvedFormulation(name = "Dissolved")
+          admin$setFormulation(formulation = formulation)
+        }
+        
+        prot$addProtocolToSchema(admin, schemaName = paste0("Schema_", i))
+      }
+      comp$setProtocol(prot)
+      
+      comp$PartitionCoefficientMethod <- "PK-Sim"
+      comp$CellularPermeabilityMethod <- "PK-Sim"
+          
+      study <- Study$new(ID = paste(studyId, comp$PartitionCoefficientMethod, comp$CellularPermeabilityMethod, sep = "_"), 
+                         compounds = list(comp), individual = "Human")
+          
+      Studies <- c(Studies, study)
+    }
+  }
+  names(Studies) <- sapply(Studies, function(x) x$ID)
+  
+  
+  # Create folder to save the results and run the simulations
+  outputFolderScenario <- file.path(outputFolder, paste0("Chembl_Scenario_", scenarios$Scenario[scenario_number]))
+  dir.create(outputFolderScenario, showWarnings = FALSE)
+  results <- runPredictions(
+    Studies,
+    outputFolder = outputFolderScenario,
+    numberOfCores = 5,
+    outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
+    simulationResolution = c(0, max(InputStudies$`t_end [h]`) * 60, 0.1),
+    saveResults = FALSE,
+    saveSimulation = FALSE,
+    queueSize = 200
+  )
+  
+  predData <- list()
+  #  get predicted data 
+  for (studyID in unique(InputStudies$StudyID)) {
+
+    # extract sim data 
+    simID <- paste(studyID, "PK-Sim Standard", "PK-Sim Standard", sep = "_")
+    predDataTmp <- ospsuite::getOutputValues(results[[simID]], individualIds = results$allIndividualIds)
+    
+    # convert time unit to match obs data
+    predDataTmp$data$Time <- ospsuite::toUnit(
+        quantityOrDimension = predDataTmp$metaData$Time$dimension,
+        values = predDataTmp$data$Time,
+        sourceUnit = predDataTmp$metaData$Time$unit,
+        targetUnit = "h"
+      )
+    predDataTmp$metaData$Time$unit <- "h"
+    predDataTmp$metaData$MW <- list(
+      value = suppressMessages(Studies[[simID]]$Compounds[[1]]$getProperty("Molecular weight")$value), 
+      unit = suppressMessages(Studies[[simID]]$Compounds[[1]]$getProperty("Molecular weight")$unit)
+    )
+                                                            
+    
+    predData <- c(predData, list(predDataTmp))
+    names(predData)[length(predData)] <- studyID
+  }
+  
+  print("Calculating metrics")
+  # Calculate observed metrics on the predicted curves
+  metric_results <- foreach::foreach(
+    i = seq_len(nrow(InputStudies)), 
+    .combine = rbind, 
+    .packages = c("dplyr", "PKNCA", "ospsuite"),
+    .export = c("predData", "InputStudies"),
+    .errorhandling = "pass",
+    .verbose = T
+  ) %dopar% {
+    studyID <- InputStudies$StudyID[i]
+    obsData <- InputStudies[i,]
+
+    print(i)
+    if (obsData$Metric %in% c("AUC", "Cmax")) {
+      simData <- predData[[studyID]]$data %>% 
+        dplyr::filter(
+          Time <= min(obsData$`t_end [h]`, as.numeric(obsData$`Metric_t2 [h]`)), 
+          Time >= obsData$`Metric_t1 [h]`, 
+      )
+    } else {
+      simData <- predData[[studyID]]$data
+    } 
+      
+    if (obsData$Metric == "AUC") {
+      resPred <- PKNCA::pk.nca(
+        PKNCA::PKNCAdata(
+          data.conc = PKNCA::PKNCAconc(
+            simData, `Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`~Time|IndividualId
+          ), 
+          data.dose = PKNCA::PKNCAdose(
+            data.frame(IndividualId = 0, dose = 1), dose~1|IndividualId
+          ), 
+          intervals = data.frame(
+            start = obsData$`Metric_t1 [h]`, 
+            end = as.numeric(obsData$`Metric_t2 [h]`), 
+            auclast = TRUE,
+            aucinf.pred = TRUE,
+            aucinf.obs = TRUE,
+            half.life = FALSE
+          )
+        )
+      )
+        
+      if (is.finite(as.numeric(obsData$`Metric_t2 [h]`))) {
+        resPred <- resPred$result %>% filter(PPTESTCD == "aucinf.pred") %>% pull(PPORRES)
+      }else {
+        resPred <- resPred$result %>% filter(PPTESTCD == "auclast") %>% pull(PPORRES)
+      }
+      
+      resPred <- ospsuite::toUnit(
+        quantityOrDimension = "AUC (mass)",
+        values = resPred,
+        sourceUnit = gsub(
+          pattern = "/", 
+          replacement = paste0("*", predData[[studyID]]$metaData$Time$unit, "/"),
+          x = predData[[studyID]]$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$unit,
+        ),
+        targetUnit = obsData$OspUnits,
+        molWeight = predData[[studyID]]$metaData$MW$value,
+        molWeightUnit = predData[[studyID]]$metaData$MW$unit
+      )
+      
+    } else if (obsData$Metric %in% c("Cmax", "C")) {
+      resPred <- ospsuite::toUnit(
+        quantityOrDimension = predData[[studyID]]$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$dimension,
+        values = simData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`,
+        sourceUnit = predData[[studyID]]$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$unit,
+        targetUnit = obsData$OspUnits,
+        molWeight = predData[[studyID]]$metaData$MW$value,
+        molWeightUnit = predData[[studyID]]$metaData$MW$unit
+      )
+      
+      if (obsData$Metric  == "Cmax") {
+        resPred <- max(resPred)
+      } else {
+        # interpolate to get value at time
+        resPred <- approx(
+          x =  predData[[studyID]]$data$Time, 
+          y =  resPred, 
+          xout = obsData$`Metric_t1 [h]`, 
+          rule = 2
+        )
+        resPred <- resPred$y 
+      }
+    }
+    return( cbind(obsData, SimMetric  = resPred))
+  }
+  
+  write.csv(
+    metric_results, 
+    file = file.path(outputFolder, paste0("metrics_", "scenario_", scenarios$Scenario[scenario_number], ".csv")), 
+    row.names = FALSE
+  )
+} 
+
+stopCluster(cl)
+```
+
+The results have already been calculated and are available in the package. 
+You can load them using the following code. Here for the default scenario 1:
+
+```{r load_results}
+path <- system.file("extdata", "Chembl_Test_Pipeline", "metric_scenario_1.csv", package = "ESQhtpbpk")
+metric_results_01 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+``` 
+
+The predicted can be check with observed data. 
+
+The AUC 0-Inf for all compounds is centered around 1 the observed value: 
+```{r echo=FALSE}
+metric_results_01 %>% 
+  filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    AUC0InfAvg = mean(Value, na.rm = TRUE), 
+    AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
+    AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  ggplot() +
+    geom_boxplot(aes(y = AUC0InfRatio)) + 
+    scale_y_log10() + 
+    theme_bw() + 
+    theme(aspect.ratio = 5)
+```
+
+```{r include=FALSE}
+tmp <- metric_results_01 %>% 
+  filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    AUC0InfAvg = mean(Value, na.rm = TRUE), 
+    AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
+    AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    AUC0InfRatio_2Fold = mean(AUC0InfRatio <= 2 & AUC0InfRatio >= 1/2, na.rm = TRUE) * 100,
+    AUC0InfRatio_4Fold = mean(AUC0InfRatio <= 4 & AUC0InfRatio >= 1/4, na.rm = TRUE) * 100,
+    AUC0InfRatio_10Fold = mean(AUC0InfRatio <= 10 & AUC0InfRatio >= 1/10, na.rm = TRUE) * 100,
+  )
+```
+There are `r signif(tmp$AUC0InfRatio_2Fold,3` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
+
+```{r}
+metric_results_01 %>% 
+  filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    AUC0InfAvg = mean(Value, na.rm = TRUE), 
+    AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
+    AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    AUC0InfRatio5th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.05)),
+    AUC0InfRatio25th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.25)),
+    AUC0InfRatio50th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.50)),
+    AUC0InfRatio75th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.75)),
+    AUC0InfRatio95th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.95))
+  )
+```
+
+If we look more in detail at the AUC 0-Inf 
+(one dot is one studies and one compound i.e. one color can have multiple studies associated), 
+we can see that most of the studies/compounds are within 10-fold of the observed value, with one 
+compound being particularly underpredicted.
+
+```{r}
+metric_results_01 %>% filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+  ggplot(aes(x = Value, y = SimMetric, color = molecule_pref_name, shape = Meal)) + 
+  geom_point(show.legend = F) + 
+  geom_abline(slope = 1, intercept = 0) + 
+  labs(x = "Observed AUC0Inf", y = "Predicted AUC0Inf") + 
+  scale_x_log10() + scale_y_log10() +
+  geom_abline(slope = 1, intercept = log10(2), col = "grey50", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = -log10(2), col = "grey50", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = 1, col = "grey80", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = -1, col = "grey80", linetype = "dashed") + 
+  theme_bw()
+```
+Similarly we can also look at other metrics such as Cmax. 
+The Cmax for all compounds tend to be overpredicted.
+
+```{r echo=FALSE}
+metric_results_01 %>% 
+  filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    CmaxAvg = mean(Value, na.rm = TRUE), 
+    CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
+    CmaxRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  ggplot() +
+    geom_boxplot(aes(y = CmaxRatio)) + 
+    scale_y_log10() + 
+    theme_bw() + 
+    theme(aspect.ratio = 5)
+```
+
+```{r include=FALSE}
+tmp <- metric_results_01 %>% 
+  filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    CmaxAvg = mean(Value, na.rm = TRUE), 
+    CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
+    CmaxRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    CmaxRatio_2Fold = mean(CmaxRatio <= 2 & CmaxRatio >= 1/2, na.rm = TRUE) * 100,
+    CmaxRatio_4Fold = mean(CmaxRatio <= 4 & CmaxRatio >= 1/4, na.rm = TRUE) * 100,
+    CmaxRatio_10Fold = mean(CmaxRatio <= 10 & CmaxRatio >= 1/10, na.rm = TRUE) * 100,
+  )
+```
+
+There are `r signif(tmp$CmaxRatio_2Fold,3` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
+
+```{r}
+metric_results_01 %>% 
+  filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    CmaxAvg = mean(Value, na.rm = TRUE), 
+    CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
+    CmaxRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    CmaxRatio5th = 2^quantile(abs(log2(CmaxRatio)), c(0.05)),
+    CmaxRatio25th = 2^quantile(abs(log2(CmaxRatio)), c(0.25)),
+    CmaxRatio50th = 2^quantile(abs(log2(CmaxRatio)), c(0.50)),
+    CmaxRatio75th = 2^quantile(abs(log2(CmaxRatio)), c(0.75)),
+    CmaxRatio95th = 2^quantile(abs(log2(CmaxRatio)), c(0.95))
+  )
+```
+
+The comparison of Cmax can be slightly more difficult as the sample time points could affect the observed estimated value, 
+and the full observed pk profiles are not available.
+
+If we look more in detail at the Cmax 
+(one dot is one studies and one compound i.e. one color can have multiple studies associated), 
+we can see that most of the studies/compounds are within 10-fold of the observed value, with one 
+compound being particularly underpredicted.
+
+
+```{r}
+metric_results_01 %>% filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+  ggplot(aes(x = Value, y = SimMetric, color = molecule_pref_name, shape = Meal)) + 
+  geom_point(show.legend = F) + 
+  geom_abline(slope = 1, intercept = 0) + 
+  labs(x = "Observed Cmax", y = "Predicted Cmax") + 
+  scale_x_log10() + scale_y_log10() +
+  geom_abline(slope = 1, intercept = log10(2), col = "grey50", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = -log10(2), col = "grey50", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = 1, col = "grey80", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = -1, col = "grey80", linetype = "dashed") + 
+  theme_bw()
+```
+Looking at AUC and Cmax ratio together:  
+```{r}
+metric_results_01 %>% 
+  filter((Metric == "Cmax" & `Metric_t1 [h]` == 0 ) | (Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf)) %>% 
+  tidyr::pivot_wider(
+    id_cols = c(StudyID, ProtocolID, molecule_pref_name, canonical_smiles, Meal), 
+    names_from = Metric, 
+    values_from = c(Value, SimMetric), 
+    values_fn = c("Value" = ~ mean(.x), "SimMetric" = ~ mean(.x))
+  ) %>%
+  mutate(AUC0Inf_Ratio = SimMetric_AUC / Value_AUC, 
+         Cmax_Ratio = SimMetric_Cmax / Value_Cmax) %>%
+  ggplot(aes(x = AUC0Inf_Ratio, y = Cmax_Ratio, color = molecule_pref_name, shape = Meal)) + 
+  geom_point(show.legend = F) + 
+  geom_abline(slope = 1, intercept = 0) + 
+  labs(x = "AUC0Inf ratio", y = "Cmax ratio") + 
+  scale_x_log10() + scale_y_log10() +
+  geom_vline(xintercept = 2, col = "grey50", linetype = "dashed") + 
+  geom_vline(xintercept = 0.5, col = "grey50", linetype = "dashed") + 
+  geom_vline(xintercept = 10, col = "grey80", linetype = "dashed") + 
+  geom_vline(xintercept = 0.1, col = "grey80", linetype = "dashed") + 
+  geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 10, col = "grey80", linetype = "dashed") + 
+  geom_hline(yintercept = 0.1, col = "grey80", linetype = "dashed") + 
+  theme_bw()
+```
+
+We can additional try to understand for which compounds the AUC and Cmax are less well predicted, 
+to better understand the potential applicability domain of the pipeline even though
+it will be mostly constrained by applicability domain of the used QSAR inputs as well as the PBPK 
+model. 
+
+Compounds with high lipophilicty or low lipophilicity values tends to be the 
+most problematic and not well predicted. Similarly compounds that have a very low solubility are 
+also poorly predicted
+ 
+```{r}
+full_join(
+  x = metric_results_01 %>% 
+    filter(Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf) %>% 
+    mutate(AUC0Inf_Ratio = SimMetric / Value),
+  y = InputCompounds, 
+  by = c("molecule_pref_name", "canonical_smiles")
+) %>% 
+  ggplot(aes(x = logD, y = AUC0Inf_Ratio)) + 
+  geom_point() + 
+  geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 10, col = "grey80", linetype = "dashed") + 
+  geom_hline(yintercept = 0.1, col = "grey80", linetype = "dashed") + 
+  scale_y_log10() + 
+  labs(x = "Compound logD", y = "AUC0Inf ratio") + 
+  theme_bw() 
+```
+
+```{r}
+full_join(
+  x = metric_results_01 %>% 
+    filter(Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf) %>% 
+    mutate(AUC0Inf_Ratio = SimMetric / Value),
+  y = InputCompounds, 
+  by = c("molecule_pref_name", "canonical_smiles")
+) %>% 
+  ggplot(aes(x = Fu, y = AUC0Inf_Ratio)) + 
+  geom_point() + 
+  geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 10, col = "grey80", linetype = "dashed") + 
+  geom_hline(yintercept = 0.1, col = "grey80", linetype = "dashed") + 
+  scale_y_log10() + 
+  labs(x = "Compound Fraction unbound", y = "AUC0Inf ratio") + 
+  theme_bw() 
+```
+
+```{r}
+full_join(
+  x = metric_results_01 %>% 
+    filter(Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf) %>% 
+    mutate(AUC0Inf_Ratio = SimMetric / Value),
+  y = InputCompounds, 
+  by = c("molecule_pref_name", "canonical_smiles")
+) %>% 
+  ggplot(aes(x = logS, y = AUC0Inf_Ratio)) + 
+  geom_point() + 
+  geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") + 
+  geom_hline(yintercept = 10, col = "grey80", linetype = "dashed") + 
+  geom_hline(yintercept = 0.1, col = "grey80", linetype = "dashed") + 
+  scale_y_log10() + 
+  labs(x = "Compound Solubility", y = "AUC0Inf ratio") + 
+  theme_bw() 
+```
+
+We can test and compare with other scenarios, such as adding artificially high organ permeability (scenario 09)
+
+```{r}
+path <- system.file("extdata", "Chembl_Test_Pipeline", "metric_scenario_9.csv", package = "ESQhtpbpk")
+metric_results_09 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+``` 
+
+Calculated and compare AUC 0 Inf ratio of both scenarios:
+
+```{r echo=FALSE}
+scenario_01_vs_09 <- rbind(
+  metric_results_01 %>% 
+    filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+    group_by(molecule_pref_name) %>%
+    summarise(
+      AUC0InfAvg = mean(Value, na.rm = TRUE), 
+      AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
+      AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE),
+      Scenario = "01"
+    ),
+  metric_results_09 %>% 
+    filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+    group_by(molecule_pref_name) %>%
+    summarise(
+      AUC0InfAvg = mean(Value, na.rm = TRUE), 
+      AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
+      AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE),
+      Scenario = "09"
+    )
+)
+
+full_join(
+  x = scenario_01_vs_09 %>% pivot_wider(
+    id_cols = c("molecule_pref_name"), 
+    names_from = Scenario, 
+    values_from = c(AUC0InfAvg, AUC0InfPredAvg, AUC0InfRatio)
+  ),
+  y = InputCompounds, 
+  by = c("molecule_pref_name")
+) %>% 
+  ggplot(aes(x = AUC0InfRatio_01, y = AUC0InfRatio_09, color = logD)) + 
+    geom_point() + 
+    geom_abline(slope = 1, intercept = 0) + 
+    labs(x = "AUC0Inf Ratio Scenario 01", y = "AUC0Inf Ratio Scenario 09") + 
+    scale_x_log10() + scale_y_log10() +
+  theme_bw()  
+
+```
+```{r echo=FALSE}
+scenario_01_vs_09 <- rbind(
+  metric_results_01 %>% 
+    filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+    group_by(molecule_pref_name) %>%
+    summarise(
+      CmaxAvg = mean(Value, na.rm = TRUE), 
+      CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
+      CmaxRatio = mean(SimMetric / Value, na.rm = TRUE),
+      Scenario = "01"
+    ),
+  metric_results_09 %>% 
+    filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+    group_by(molecule_pref_name) %>%
+    summarise(
+      CmaxAvg = mean(Value, na.rm = TRUE), 
+      CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
+      CmaxRatio = mean(SimMetric / Value, na.rm = TRUE),
+      Scenario = "09"
+    )
+)
+
+full_join(
+  x = scenario_01_vs_09 %>% pivot_wider(
+    id_cols = c("molecule_pref_name"), 
+    names_from = Scenario, 
+    values_from = c(AUC0InfAvg, AUC0InfPredAvg, AUC0InfRatio)
+  ),
+  y = InputCompounds, 
+  by = c("molecule_pref_name")
+) %>%
+  ggplot(aes(x = CmaxRatio_01, y = CmaxRatio_09, color = logD)) + 
+    geom_point() + 
+    geom_abline(slope = 1, intercept = 0) + 
+    labs(x = "Observed Cmax Scenario 01", y = "Observed Cmax Scenario 09") + 
+    scale_x_log10() + scale_y_log10() +
+  theme_bw()  
+``` 
+
+This reduce the Cmax of all compounds and also the AUC of most compounds leading to overall
+better results moslty by improving the Cmax twithout degrading to much the AUC, 
+even though it is detrimental to some compounds.
+
+```{r include=FALSE}
+tmp <- metric_results_09 %>% 
+  filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    AUC0InfAvg = mean(Value, na.rm = TRUE), 
+    AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
+    AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    AUC0InfRatio_2Fold = mean(AUC0InfRatio <= 2 & AUC0InfRatio >= 1/2, na.rm = TRUE) * 100,
+    AUC0InfRatio_4Fold = mean(AUC0InfRatio <= 4 & AUC0InfRatio >= 1/4, na.rm = TRUE) * 100,
+    AUC0InfRatio_10Fold = mean(AUC0InfRatio <= 10 & AUC0InfRatio >= 1/10, na.rm = TRUE) * 100,
+  )
+```
+There are `r signif(tmp$AUC0InfRatio_2Fold,3` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
+
+```{r}
+metric_results_09 %>% 
+  filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    AUC0InfAvg = mean(Value, na.rm = TRUE), 
+    AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
+    AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    AUC0InfRatio5th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.05)),
+    AUC0InfRatio25th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.25)),
+    AUC0InfRatio50th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.50)),
+    AUC0InfRatio75th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.75)),
+    AUC0InfRatio95th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.95))
+  )
+```
+
+Similarly we can also look at other metrics such as Cmax. 
+The Cmax for all compounds tend to be overpredicted.
+
+```{r include=FALSE}
+tmp <- metric_results_09 %>% 
+  filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    CmaxAvg = mean(Value, na.rm = TRUE), 
+    CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
+    CmaxRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    CmaxRatio_2Fold = mean(CmaxRatio <= 2 & CmaxRatio >= 1/2, na.rm = TRUE) * 100,
+    CmaxRatio_4Fold = mean(CmaxRatio <= 4 & CmaxRatio >= 1/4, na.rm = TRUE) * 100,
+    CmaxRatio_10Fold = mean(CmaxRatio <= 10 & CmaxRatio >= 1/10, na.rm = TRUE) * 100,
+  )
+```
+
+There are `r signif(tmp$CmaxRatio_2Fold,3` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
+
+```{r}
+metric_results_09 %>% 
+  filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+  group_by(molecule_pref_name) %>%
+  summarise(
+    CmaxAvg = mean(Value, na.rm = TRUE), 
+    CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
+    CmaxRatio = mean(SimMetric / Value, na.rm = TRUE)
+  ) %>%
+  summarise(
+    CmaxRatio5th = 2^quantile(abs(log2(CmaxRatio)), c(0.05)),
+    CmaxRatio25th = 2^quantile(abs(log2(CmaxRatio)), c(0.25)),
+    CmaxRatio50th = 2^quantile(abs(log2(CmaxRatio)), c(0.50)),
+    CmaxRatio75th = 2^quantile(abs(log2(CmaxRatio)), c(0.75)),
+    CmaxRatio95th = 2^quantile(abs(log2(CmaxRatio)), c(0.95))
+  )
+```
+
