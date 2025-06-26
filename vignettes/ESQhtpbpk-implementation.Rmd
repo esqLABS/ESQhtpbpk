@@ -1,0 +1,158 @@
+---
+title: "Implementation details"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Implementation details}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library("ESQhtpbpk")
+```
+
+
+## Generic PBPK model structure
+
+A generic PBPK model will be automatically created for each species, partition coefficient method (PC), 
+cellular permeability method (CP) as well as each required combination of processes for a certain number 
+of compounds used. For each generic model structure the required administrations from all studies 
+using this generic model will be checked and added.
+
+Note: CP calculation method "Charge dependent Schmitt normalized to
+PK-Sim" is not supported as it is not properly implemented in the
+current PK-Sim versions (11.3 and 12.0).
+
+## Compound
+
+The `Compound` class is used to create the compound object that will be used in the studies.
+Some compound properties are already predefined and can be directly used. 
+
+Pre-specified compound properties (with their default values) are:
+
+```{r, eval = TRUE}
+compound <- Compound$new(ID = "Acetaminophen")
+compound
+```
+
+### Compound Properties
+
+Additional compound properties can be added as needed with addProperty (with corresponding paths for 
+predefined PKML files). Existing ones can be easily changed with the setPropertyValue function.
+The property `name` is an alias to easily access a property in the compound object. The `parName` 
+needs to correspond to the parameter name as defined in the PK-Sim. 
+
+```{r, eval = TRUE}
+compound$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
+
+compound$addProperty(
+  name = "Pint", 
+  parName = "Intestinal permeability (transcellular)",
+  dimension = "Velocity",
+  value = 2e-5,
+  unit = "cm/min"
+)
+
+compound
+```
+
+When adding property to compound and using a predefined PKML file, user need to also specify the 
+corresponding path in the PKML model. 
+
+### Compound Processes 
+
+When automatically creating the generic models, the user can add processes to the compound but must 
+use the addProcessProperty to do so and specify to which process type the parameter belongs to. 
+
+```{r, eval = TRUE}
+## add various processes to a compound by adding required process properties
+compound$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Plasma clearance",
+  parName = "Plasma clearance",
+  dimension = "Flow per weight",
+  value = 0.27, 
+  unit = "L/h/kg"
+)
+
+compound
+```
+
+## Formulations
+
+Formulation can be defined using the various helper functions:
+- `createDissolvedFormulation`
+- `createWeibullFormulation`  
+- `createLint80Formulation`
+- `createParticleDissolutionFormulation`
+- `createZeroOrderFormulation`
+- `createFirstOrderFormulation`
+
+```{r formulation, eval = TRUE}
+weibull_form <- createWeibullFormulation(
+  name = "Weibull",
+  lagTime = 30,
+  lagTimeUnit = "min",
+  dissolutionTime50 = 60,
+  dissolutionTime50Unit = "min"
+)
+
+weibull_form
+```
+
+## Administration protocols
+
+The `SimpleProtocol` class is used to create the simple administration protocol that will be used 
+in the studies. When a formulation is needed it can be associated with the protocol with 
+`setFormulation`method
+
+```{r, eval = TRUE}
+protocol <- SimpleProtocol$new(
+  route = "Oral",
+  dosingInterval = "24",
+  dose = 1,
+  doseUnit = "mg/kg",
+  startTime = 0,
+  startTimeUnit = "h",
+  endTime = 48,
+  endTimeUnit = "h"
+)
+
+protocol$setFormulation(formulation = weibull_form)
+protocol
+```
+
+Additionally advanced protocol can also be defined with the AdvancedProtocol class. To do so first 
+an advanced protocol needs to be defined with the `AdvancedProtocol$new` function. Then schemas for repetitions need 
+to be added with `addSchema` and single dose protocols can be added to the schema with 
+`addProtocolToSchema` and will follow the schema repetition strategy.
+
+```{r eval = TRUE}
+protocol <- AdvancedProtocol$new()
+protocol$addSchema(
+  schemaName = "Loading Dose", 
+  timeUnit = "h", 
+  timeBetweenRepetitions = 0, 
+  numberOfRepetitions = 1, 
+  startTime = 0
+)
+protocol$addSchema(
+  schemaName = "Maintenance Dose", 
+  timeUnit = "h", 
+  timeBetweenRepetitions = 12, 
+  numberOfRepetitions = 5, 
+  startTime = 12
+)
+
+ivLoading <- SimpleProtocol$new(route = "IV Infusion", dose = 10, doseUnit = "mg")
+ivMaintenance <- SimpleProtocol$new(route = "IV Bolus", dose = 1, doseUnit = "mg")
+
+protocol$addProtocolToSchema(schemaName = "Loading Dose", protocol = ivLoading)
+protocol$addProtocolToSchema(schemaName = "Maintenance Dose", protocol = ivMaintenance)
+
+protocol
+```

@@ -1,0 +1,211 @@
+---
+title: "Using custom PKML models with ESQhtpbpk"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using custom PKML models with ESQhtpbpk}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+The framework allows to use predefined pkml models for added/needed specificities.
+
+First the package need to be loaded:
+
+```{r setup}
+library(ESQhtpbpk)
+```
+
+## Creating Studies
+
+Then the user will need to define studies/scenarios that need to be simulated. These studies will recapitulate
+everything that is needed for the simulation, individual to be used, protocol and formulation for each compound
+administration and compound properties.
+
+To this end, various functions have been implemented the ease the creation of all required parts of a study.
+
+The user can create its custom function to generate a list of all `Study` object to be simulated, as this part is
+dependent on the data structure or database used.
+
+The main process is relatively similar to the one used for the automatic generation of generic models,
+but when using predefined PKML models, the user will need to take care of specifying the correct path 
+of every property to be updated based on his/her supplied PKML file.
+
+### Example
+
+This example show how to create a single study. This mechanism could be wrapped into a function to create the list of
+studies to be simulation and use database as input for parameter value assignment.
+
+The creation of studies is similar but paths to the given PKML files need to be provided.
+
+#### Compound definition
+
+First the user needs to create a compound object with the `Compound$new()` function and set a 
+specific compound ID and the actual name of the compound to be updated from the PKML file (here 
+`MyCompoundNameInPKML`)
+
+```{r comp_init, eval = TRUE}
+compound <- Compound$new(ID = "Acetaminophen", name = "MyCompoundNameInPKML")
+```
+
+The compound is initialized with the main properties that are needed for the simulation. Those can be easily adjusted
+with the `setPropertyValue` method.
+
+```{r comp_property, eval = TRUE} 
+compound$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
+compound$setPropertyValue("Solubility", 4.15, unit = "mg/ml")
+compound$setPropertyValue("Lipophilicity", 0.91)
+compound$setPropertyValue("pKa value 0", 9.46)
+compound$setPropertyValue("Compound type 0", "Acidic")
+compound$setPropertyValue("Fraction unbound", 80, unit = "%")
+```
+
+To add various processes related properties when using predefined PKML files, those can just be 
+added with `addProperty` instead of `addProcessProperty` by giving the correct path in the 
+predefined PKML model.
+
+```{r comp_process_property, eval = TRUE} 
+compound$addProperty(
+  name = "THC - Plasma clearance", 
+  path = "MyCompoundNameInPKML-Total Hepatic Clearance-Liver Plasma Clearance|Plasma clearance",
+  parName = "THC - Plasma clearance",
+  dimension = "Flow per weight",
+  value = 0.27,
+  unit = "L/h/kg"
+)
+compound$addProperty(
+  name = "THC - Lipo", 
+  path = "MyCompoundNameInPKML-Total Hepatic Clearance-Liver Plasma Clearance|Lipophilicity (experiment)",
+  parName = "THC - Lipo",
+  dimension = "Log Units",
+  value = 0.91
+)
+compound$addProperty(
+  name = "THC - Fu", 
+  path = "MyCompoundNameInPKML-Total Hepatic Clearance-Liver Plasma Clearance|Fraction unbound (experiment)",
+  parName = "THC - Fu",
+  dimension = "Fraction",
+  value = 80,
+  unit = "%"
+)
+```
+
+The defined compound can be visualized if needed :
+
+```{r visualise_compound, eval = TRUE}
+compound
+```
+
+
+The partition coefficient method and cellular permeability methods are set by default but not used 
+in the case of a predefined PKML model, as it is already defined in the model and cannot be modified.
+
+#### Administration definition
+
+Similarly administration protocol can be defined but the corresponding path in the PKML model needs 
+to be specified. For administration if multiple administrations are defined in the PKML model 
+(for example 10 oral administrations are allowed in the PKML model), then the user should supplied 
+all corresponding administration paths, only the needed ones will be used. 
+
+```{r admin_init, eval = TRUE}
+protocol <- SimpleProtocol$new(
+  route = "Oral",
+  dosingInterval = "24",
+  dose = 1,
+  doseUnit = "mg/kg",
+  startTime = 0,
+  startTimeUnit = "h",
+  endTime = 48,
+  endTimeUnit = "h", 
+  path = paste0("Events|MyAdminNameInPKML|Application_", 1:10), 
+)        
+```
+
+Formulations can also be defined the same way as for the automatic generation of generic models, 
+but the user will need to supply the correct path to the formulation in the PKML model and associate
+it to the protocol
+
+```{r formulation, eval = T}
+formulation <- createWeibullFormulation(
+  name = "Weibull",
+  lagTime = 30,
+  lagTimeUnit = "min",
+  dissolutionTime50 = 60,
+  dissolutionTime50Unit = "min",
+  path = "Events|MyAdminNameInPKML|MyFormNameInPKML",
+)
+
+protocol$setFormulation(formulation = formulation)
+```
+
+The defined protocol can be visualized if needed:
+
+```{r visualize_protocol, eval = T}
+protocol
+```
+
+The protocol can be associated to the compound
+```{r associate_protocol, eval = TRUE}
+compound$setProtocol(protocol)
+```
+
+The user should ensure that all the supplied paths are indeed consistent with the PKML model,
+and if not correct them. 
+
+```{r check_paths, eval = TRUE}
+compound$getAllPropertyPaths()
+```
+
+#### Study definition
+
+Finally the user can create the study object with the `Study$new()` function. The user will need to
+supplied the path to the PKML file to be used for the simulation as well.
+
+```{r example_study_creation_pkml, eval = FALSE} 
+study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(comp), 
+                   genericModel = "path/to/your/pkml/MyGenericPKML.pkml")
+```
+
+Supplying individual is not needed in this case as it will use the one defined in the PKML file.
+
+## Running the studies
+
+Once the user created the list of studies required, the user can run the simulation using the
+`runPredictions` function. This function will create the required models, associated them with 
+the corresponding studies and run the simulation. All simulation generic models will be saved 
+in the `outputFolder` within a time-stamped subfolder under GenericModels and all simulations 
+results can be saved under the same time-stamped subfolder under SimulationResults by setting 
+the `saveResults` parameter to `TRUE`. Additionally the user can save the PKML files for each 
+study with the `saveSimulation` parameter.  
+
+During this step the user should also defined the output paths to be simulated with the 
+`outputSelections` parameter, as well as the `simulationResolution` defined by 
+`c(start time (min), end time (min), resolution in pts/min)` to cover the longest 
+simulation needed with the wanted time resolution.
+
+Additionally the user can also defined the number of cores to be used for the simulations and 
+the number studies to be queued (which can be needed to reduce the memory usage). 
+
+### Example
+
+```{r, eval = FALSE}
+myresult <- runPredictions(
+    studies = list(study), 
+    outputFolder = "HT-PBPK",
+    numberOfCores = 5,
+    outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
+    simulationResolution = c(0, 10 * 24 * 60, 1),
+    saveResults = TRUE,
+    saveSimulation = FALSE,
+    queueSize = 200
+  )
+```
+
