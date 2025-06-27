@@ -19,8 +19,8 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The framework allows automatic detection of needed process and administrations and creates the corresponding required
-generic models.
+The framework allows automatic detection of required processes and administrations, and creates the 
+corresponding generic models.
 
 First the package need to be loaded:
 
@@ -30,30 +30,31 @@ library(ESQhtpbpk)
 
 ## Creating Studies
 
-Then the user will need to define studies/scenarios that need to be simulated. These studies will recapitulate
-everything that is needed for the simulation, individual to be used, protocol and formulation for each compound
-administration and compound properties.
+Next, the user needs to define simulation scenarios (i.e. studies) to be simulated. Each study 
+encompasses every component needed for the simulation individual to be used, protocol and 
+formulation for each compound administration and compound properties.
 
-To this end, various functions have been implemented the ease the creation of all required parts of a study.
+To simplify this task, various functions have been implemented in the framework easing the creation 
+of all required parts of a study.
 
-The user can create its custom function to generate a list of all `Study` object to be simulated, as this part is
-dependent on the data structure or database used.
+Additionally, the user can create its custom function to generate a list of all `Study` object to 
+be simulated, tailored to their specific data structure, as this part is highly dependent on it.
 
 ### Example
 
-This example show how to create a single study. This mechanism could be wrapped into a function to create the list of
-studies to be simulation and use database as input for parameter value assignment.
+The following example shows how to create a single study. This mechanism can be wrapped into a custom 
+function to create a list of studies to be simulated using specific database as input for parameter value.
 
-#### Compound definition
+#### Compound Definition
 
-First the user needs to create a compound object with the `Compound$new()` function and set a specific compound ID:
+First, the user needs to create a compound object with the `Compound$new()` function and assign a specific compound ID:
 
 ```{r comp_init, eval = TRUE}
 compound <- Compound$new(ID = "Acetaminophen")
 ```
 
-The compound is initialized with the main properties that are needed for the simulation. Those can be easily adjusted
-with the `setPropertyValue` method.
+The compound is initialized with the main properties that are needed for the simulation. 
+Those can easily be modified with the `setPropertyValue` method.
 
 ```{r comp_prop, eval = TRUE}
 compound$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
@@ -64,8 +65,8 @@ compound$setPropertyValue("Compound type 0", "Acidic")
 compound$setPropertyValue("Fraction unbound", 80, unit = "%")
 ```
 
-Additionally, various processes (as available in PK-Sim) can be added to the compound object. For example a liver plasma
-clearance process can be added with the `addProcessProperty` method by defining its plasma clearance.
+Additionally, various processes (as available in PK-Sim) can be added to the compound object using the `addProcessProperty` method. 
+For example the following code adds a liver plasma clearance process by defining its plasma clearance:
 
 ```{r comp_add_process, eval = TRUE}
 compound$addProcessProperty(
@@ -77,7 +78,7 @@ compound$addProcessProperty(
 )
 ```
 
-Other properties of the same process can be added and their values adjusted if required in a similar fashion:
+Additional properties for the same process can be added and their values adjusted if required in a similar fashion:
 
 ```{r comp_add_process_property, eval = TRUE}
 compound$addProcessProperty(
@@ -97,14 +98,14 @@ compound$addProcessProperty(
 )
 ```
 
-The partition coefficient method and cellular permeability method can be set easily with:
+The partition coefficient and cellular permeability methods can be set easily with:
 
 ```{r choose_cp_pc, eval= TRUE}
 compound$PartitionCoefficientMethod <- "PT"
 compound$CellularPermeabilityMethod <- "PK-Sim"
 ```
 
-The compound properties that have been defined can be easily visualised with:
+The compound properties that have been defined can be easily visualized with:
 
 ```{r visualise_compound, eval = TRUE}
 compound
@@ -112,9 +113,9 @@ compound
 
 #### Administration definition
 
-Now that the compound has been defined the administration protocol and formulation can be easily defined as well.
+Administration protocol and formulation can be easily defined as well.
 
-The protocol can be easily defined with either `SimpleProtocol$new()` method for a simple protocol or
+The protocol can be defined with either `SimpleProtocol$new()` method for a simple protocol or
 `AdvancedProtocol$new()` for a more complex protocol. Here we will use the `SimpleProtocol$new()` method:
 
 ```{r define_protocol, eval = TRUE}
@@ -131,8 +132,8 @@ protocol <- SimpleProtocol$new(
 )        
 ```
 
-When using an oral administration the formulation needs to be defined. Helper functions are available for each type of
-formulation and can be set as shown here for a weibull formulation:
+For oral administration the formulation needs to be defined as well. Helper functions are available 
+for each type of formulation and can be set as shown here for a Weibull formulation:
 
 ```{r define_formulation, eval = TRUE}
 formulation <- createWeibullFormulation(
@@ -144,19 +145,19 @@ formulation <- createWeibullFormulation(
 )
 ```
 
-The formulation defined needs to be associated to the protocol already defined with the `setFormulation` method.
+Then the formulation needs to be associated with the protocol defined previously using the `setFormulation` method.
 
 ```{r add_formulation_to_protocol, eval = TRUE}
 protocol$setFormulation(formulation = formulation)
 ```
 
-Similarly to compound administration protocol can be easily visualised:
+Similarly to compounds, administration protocol can be easily visualized:
 
 ```{r visualise_protocol, eval = TRUE}
 protocol
 ```
 
-Now that the protocol is defined it can be associated to the compound with the `setProtocol` method:
+Now that the protocol has been defined, it can be associated with the compound using the `setProtocol` method:
 
 ```{r add_protocol_to_compound, eval = TRUE}
 compound$setProtocol(protocol)
@@ -164,13 +165,13 @@ compound$setProtocol(protocol)
 
 #### Study definition
 
-Finally the study can be defined with the `Study$new()` method. The study needs to be given an unique ID,
+Finally, the study can be defined with the `Study$new()` method. The study needs to be given an unique ID:
 
 ```{r define_study, eval = TRUE}
 study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(compound), individual = "Human")
 ```
 
-Similarly to the compound and protocol, the study can be easily visualised with:
+Similarly to the compound and protocol, the study can be easily visualized with:
 
 ```{r visualise_study, eval = TRUE}
 study
@@ -178,9 +179,9 @@ study
 
 ## Running the studies
 
-Once the user created the list of studies required, the user can run the simulation using the `runPredictions` function.
-This function will create the required models, associated them with the corresponding studies and run the simulation.
-All simulation generic models will be saved in the `outputFolder` within a time-stamped subfolder under GenericModels
+Once the user created the list of studies required, simulations can be run the using the `runPredictions()` function.
+This function creates the required models, associated them with the corresponding studies and run the simulation.
+All simulation generic models files are will be saved in the `outputFolder` within a time-stamped subfolder under GenericModels
 and all simulations results can be saved under the same time-stamped subfolder under SimulationResults by setting the
 `saveResults` parameter to `TRUE`. Additionally the user can save the PKML files for each study with the
 `saveSimulation` parameter.

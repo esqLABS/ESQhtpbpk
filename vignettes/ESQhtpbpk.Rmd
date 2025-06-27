@@ -17,19 +17,19 @@ knitr::opts_chunk$set(
 ## Introduction 
 
 The high-throughput (HT) physiologically-based (PB) pharmacokinetics
-(PK) modeling framework is distributed as an R package that allows to predicting 
-the pharmacokinetics of various molecules in the various species. It uses the capability 
-of [OSP Suite](https://www.open-systems-pharmacology.org/) PK-Sim software, through the 
-[`{ospsuiteR}`](https://www.open-systems-pharmacology.org/OSPSuite-R/) package. 
+(PK) modeling framework is distributed as an R package that enables the prediction of 
+pharmacokinetics profiles for various molecules across different species. It leverages 
+the capability of the [OSP Suite](https://www.open-systems-pharmacology.org/) PK-Sim software
+through the use of [`{ospsuiteR}`](https://www.open-systems-pharmacology.org/OSPSuite-R/) package. 
 
 ## Main Features
 
-`{ESQhtpbpk}` package is design to facilitate the creation of HT-PBPK pipelines and their
-simulation. To this end it: 
+The `{ESQhtpbpk}` package is designed to facilitate the creation of HT-PBPK pipelines and their
+simulation. To this end, it: 
 
-- Allows to run efficiently and in parallel many compound PK prediction (through `{ospsuiteR}` package).
-- Can automatically create the various generic models required (limited to PK-Sim components).
-- Can be used with custom PKML files for added/needed specificities.
+- Allows efficient and parallel execution of many compound PK predictions (via the `{ospsuiteR}` package).
+- Can automatically create various generic models as needed (limited to PK-Sim components).
+- Can be used with custom PKML files for additional specificities.
 
 ## Running the framework
 

@@ -16,9 +16,9 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The framework allows to use predefined pkml models for added/needed specificities.
+This framework enables to use predefined PKML models for for simulations with specific requirements.
 
-First the package need to be loaded:
+First, the package need to be loaded:
 
 ```{r setup}
 library(ESQhtpbpk)
@@ -26,38 +26,40 @@ library(ESQhtpbpk)
 
 ## Creating Studies
 
-Then the user will need to define studies/scenarios that need to be simulated. These studies will recapitulate
-everything that is needed for the simulation, individual to be used, protocol and formulation for each compound
+Next, the user needs to define studies to be simulated. A study encompasses
+everything that is required for the simulation, protocol and formulation for each compound
 administration and compound properties.
 
-To this end, various functions have been implemented the ease the creation of all required parts of a study.
+To simplify this task, various functions have been implemented in the framework easing the creation 
+of all required parts of a study.
 
-The user can create its custom function to generate a list of all `Study` object to be simulated, as this part is
-dependent on the data structure or database used.
+Additionally, the user can create its custom function to generate a list of all `Study` object to 
+be simulated, tailored to their specific data structure, as this part is highly dependent on it.
 
-The main process is relatively similar to the one used for the automatic generation of generic models,
-but when using predefined PKML models, the user will need to take care of specifying the correct path 
-of every property to be updated based on his/her supplied PKML file.
+While the overall process is similar to the one used for the automatic generation of generic models,
+when using predefined PKML models, the user must take care of specifying the correct path 
+for each property to be updated based on his/her supplied PKML file.
 
 ### Example
 
-This example show how to create a single study. This mechanism could be wrapped into a function to create the list of
-studies to be simulation and use database as input for parameter value assignment.
+This example shows how to create a single study. In practice, this mechanism can be wrapped into a 
+function to create a list of all studies to be simulated, allowing integration with user databases 
+or data structure for parameter assignment.
 
-The creation of studies is similar but paths to the given PKML files need to be provided.
+When working with predefined PKML files, the user must provide the correct paths for each property.
 
-#### Compound definition
+#### Compound Definition
 
-First the user needs to create a compound object with the `Compound$new()` function and set a 
-specific compound ID and the actual name of the compound to be updated from the PKML file (here 
-`MyCompoundNameInPKML`)
+First, the user creates a compound object using the `Compound$new()` function and assign a 
+unique compound ID and gives the actual name of the compound to be updated from the predefined PKML 
+file (here `MyCompoundNameInPKML`)
 
 ```{r comp_init, eval = TRUE}
 compound <- Compound$new(ID = "Acetaminophen", name = "MyCompoundNameInPKML")
 ```
 
-The compound is initialized with the main properties that are needed for the simulation. Those can be easily adjusted
-with the `setPropertyValue` method.
+The compound is initialized with the main properties that are required for the simulation. 
+Those can be easily adjusted with the `setPropertyValue` method.
 
 ```{r comp_property, eval = TRUE} 
 compound$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
@@ -68,8 +70,8 @@ compound$setPropertyValue("Compound type 0", "Acidic")
 compound$setPropertyValue("Fraction unbound", 80, unit = "%")
 ```
 
-To add various processes related properties when using predefined PKML files, those can just be 
-added with `addProperty` instead of `addProcessProperty` by giving the correct path in the 
+To add additional processes related properties when using predefined PKML files, the user can simply
+used the `addProperty` method (instead of `addProcessProperty`) while providing the correct path in the 
 predefined PKML model.
 
 ```{r comp_process_property, eval = TRUE} 
@@ -98,22 +100,25 @@ compound$addProperty(
 )
 ```
 
-The defined compound can be visualized if needed :
+The defined compound can be visualized for verification:
 
 ```{r visualise_compound, eval = TRUE}
 compound
 ```
 
 
-The partition coefficient method and cellular permeability methods are set by default but not used 
-in the case of a predefined PKML model, as it is already defined in the model and cannot be modified.
+The partition coefficient and cellular permeability methods are set by default but not used 
+in the case of a predefined PKML model, as it is already defined in the supplied model and cannot 
+be modified.
 
-#### Administration definition
+#### Administration Definition
 
-Similarly administration protocol can be defined but the corresponding path in the PKML model needs 
-to be specified. For administration if multiple administrations are defined in the PKML model 
-(for example 10 oral administrations are allowed in the PKML model), then the user should supplied 
-all corresponding administration paths, only the needed ones will be used. 
+Administration protocol can be defined, but again, the corresponding path in the PKML model must 
+be specified. 
+
+If multiple administrations are defined in the PKML model (e.g. 10 oral 
+administrations are allowed in the PKML model), then the user should supplied 
+all relevant administration paths. Only the ones needed will be used in the simulation.
 
 ```{r admin_init, eval = TRUE}
 protocol <- SimpleProtocol$new(
@@ -129,9 +134,9 @@ protocol <- SimpleProtocol$new(
 )        
 ```
 
-Formulations can also be defined the same way as for the automatic generation of generic models, 
-but the user will need to supply the correct path to the formulation in the PKML model and associate
-it to the protocol
+Formulations can be defined the same way as for the automatic generation of generic models, 
+but the user must supply the correct path to the formulation in the PKML model and also associate
+it to the protocol. 
 
 ```{r formulation, eval = T}
 formulation <- createWeibullFormulation(
@@ -146,19 +151,19 @@ formulation <- createWeibullFormulation(
 protocol$setFormulation(formulation = formulation)
 ```
 
-The defined protocol can be visualized if needed:
+The defined protocol can be visualized:
 
 ```{r visualize_protocol, eval = T}
 protocol
 ```
 
-The protocol can be associated to the compound
+The protocol is then be associated to the compound
 ```{r associate_protocol, eval = TRUE}
 compound$setProtocol(protocol)
 ```
 
-The user should ensure that all the supplied paths are indeed consistent with the PKML model,
-and if not correct them. 
+The user should make sure that all the supplied paths are indeed consistent with the PKML model,
+and if not correct them before proceeding. 
 
 ```{r check_paths, eval = TRUE}
 compound$getAllPropertyPaths()
@@ -166,25 +171,22 @@ compound$getAllPropertyPaths()
 
 #### Study definition
 
-Finally the user can create the study object with the `Study$new()` function. The user will need to
-supplied the path to the PKML file to be used for the simulation as well.
+Finally, the user creates the study object with the `Study$new()` function. The user must supply 
+the path to the PKML file to be used for the simulation.
 
 ```{r example_study_creation_pkml, eval = FALSE} 
 study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(comp), 
                    genericModel = "path/to/your/pkml/MyGenericPKML.pkml")
 ```
 
-Supplying individual is not needed in this case as it will use the one defined in the PKML file.
+Note: An individual is not needed in this case, as it is already defined in the PKML file.
 
 ## Running the studies
 
-Once the user created the list of studies required, the user can run the simulation using the
-`runPredictions` function. This function will create the required models, associated them with 
-the corresponding studies and run the simulation. All simulation generic models will be saved 
-in the `outputFolder` within a time-stamped subfolder under GenericModels and all simulations 
-results can be saved under the same time-stamped subfolder under SimulationResults by setting 
-the `saveResults` parameter to `TRUE`. Additionally the user can save the PKML files for each 
-study with the `saveSimulation` parameter.  
+Once the user created the list of studies to be simulation, the simulations can be run using the
+`runPredictions` function. All simulations results can be saved under a `SimulationResults` 
+time-stamped subfolder by setting the `saveResults` parameter to `TRUE`. Additionally the user 
+can save the update PKML files for each study with the `saveSimulation` parameter.  
 
 During this step the user should also defined the output paths to be simulated with the 
 `outputSelections` parameter, as well as the `simulationResolution` defined by 
@@ -193,8 +195,6 @@ simulation needed with the wanted time resolution.
 
 Additionally the user can also defined the number of cores to be used for the simulations and 
 the number studies to be queued (which can be needed to reduce the memory usage). 
-
-### Example
 
 ```{r, eval = FALSE}
 myresult <- runPredictions(
