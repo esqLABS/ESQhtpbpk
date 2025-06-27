@@ -27,20 +27,32 @@ library(doParallel)
 
 Based on [this paper](https://link.springer.com/article/10.1007/s00204-024-03764-9) and more specifically [Table 1](https://link.springer.com/article/10.1007/s00204-024-03764-9/tables/1), we will use QSAR from ADMETlab as input to the HT-PBPK model. A dataset of Cmax and AUC extracted and curated from CHEMBL is available in the package as an example dataset.
 
-The platform allows to test easily multiple scenarios by adjusting inputs as needed. The output metrics have to be customized to the one required for a specific analysis here various AUC and Cmax are calculated to matched the observed dataset.
-
-```{r multiple scenarios, eval = F}
-outputFolder <- "Chembl_Test_Pipeline"
-dir.create(outputFolder, showWarnings = FALSE)
-
-scenarios <- read.csv(system.file("extdata", "Chembl_Test_Pipeline", "scenarios.csv", package = "ESQhtpbpk"), stringsAsFactors = FALSE)
-
+```{r loading_datasets}
 # Reading curated chembl dataset with AUC and Cmax values
 path <- system.file("extdata", "Chembl_preprocessed_curated.xlsx", package = "ESQhtpbpk")
 
 InputStudies <- read_excel(path, sheet = 1)
 InputProtocol <- read_excel(path, sheet = 2)
 InputCompounds <- read_excel(path, sheet = 3) # QSARs obtained from ADMETlab 3.0
+```
+
+The platform allows to test easily multiple scenarios by adjusting inputs as needed based on the chosen scenarios. 
+An example of excel file with different scenarios is available in the package.
+
+```{r load_scenarios}
+scenarios <- read.csv(
+  file = system.file("extdata", "Chembl_Test_Pipeline", "scenarios.csv", package = "ESQhtpbpk"), 
+  stringsAsFactors = FALSE
+)
+
+head(scenarios)
+```
+
+The output metrics have to be customized to the one required for a specific analysis here various AUC and Cmax are calculated to matched the observed dataset.
+
+```{r multiple scenarios, eval = F}
+outputFolder <- "Chembl_Test_Pipeline"
+dir.create(outputFolder, showWarnings = FALSE)
 
 
 # register  parallel  backend 
