@@ -1,0 +1,14 @@
+url: https://esqlabs.github.io/ESQhtpbpk/
+template:
+  bootstrap: 5
+articles:
+- title: ESQhtpbpk Workflows
+  navbar: ESQhtpbpk Workflows
+  contents:
+  - ESQhtpbpk-automatic-models
+  - ESQhtpbpk-custom-pkml
+- title: Miscellaneous
+  navbar: Miscellaneous
+  contents:
+  - ESQhtpbpk-implementation
+

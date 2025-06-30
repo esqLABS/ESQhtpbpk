@@ -1,5 +1,7 @@
 ^ESQhtpbpk\.Rproj$
 ^\.Rproj\.user$
 ^\.github$
-^doc$
+^_pkgdown\.yml$
+^docs$
 ^Meta$
+^pkgdown$
