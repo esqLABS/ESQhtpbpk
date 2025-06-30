@@ -32,8 +32,11 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0),
     devtools,
+    knitr,
+    rmarkdown,
     vdiffr
 Config/testthat/edition: 3
 Remotes: 
     ospsuite.utils=Open-Systems-Pharmacology/OSPSuite.RUtils,
     ospsuite=Open-Systems-Pharmacology/OSPSuite-R
+VignetteBuilder: knitr
