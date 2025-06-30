@@ -16,9 +16,9 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-This framework enables to use predefined PKML models for for simulations with specific requirements.
+This framework enables the use of predefined PKML models for simulations with specific requirements.
 
-First, the package need to be loaded:
+First, the package needs to be loaded:
 
 ```{r setup}
 library(ESQhtpbpk)
@@ -33,12 +33,12 @@ administration and compound properties.
 To simplify this task, various functions have been implemented in the framework easing the creation 
 of all required parts of a study.
 
-Additionally, the user can create its custom function to generate a list of all `Study` object to 
+Additionally, the user can create their custom function to generate a list of all `Study` object to 
 be simulated, tailored to their specific data structure, as this part is highly dependent on it.
 
 While the overall process is similar to the one used for the automatic generation of generic models,
 when using predefined PKML models, the user must take care of specifying the correct path 
-for each property to be updated based on his/her supplied PKML file.
+for each property to be updated based on their supplied PKML file.
 
 ### Example
 
@@ -117,7 +117,7 @@ Administration protocol can be defined, but again, the corresponding path in the
 be specified. 
 
 If multiple administrations are defined in the PKML model (e.g. 10 oral 
-administrations are allowed in the PKML model), then the user should supplied 
+administrations are allowed in the PKML model), then the user should supply 
 all relevant administration paths. Only the ones needed will be used in the simulation.
 
 ```{r admin_init, eval = TRUE}
@@ -157,7 +157,7 @@ The defined protocol can be visualized:
 protocol
 ```
 
-The protocol is then be associated to the compound
+The protocol is then associated with the compound:
 ```{r associate_protocol, eval = TRUE}
 compound$setProtocol(protocol)
 ```
@@ -175,7 +175,7 @@ Finally, the user creates the study object with the `Study$new()` function. The 
 the path to the PKML file to be used for the simulation.
 
 ```{r example_study_creation_pkml, eval = FALSE} 
-study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(comp), 
+study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(compound), 
                    genericModel = "path/to/your/pkml/MyGenericPKML.pkml")
 ```
 
@@ -183,7 +183,7 @@ Note: An individual is not needed in this case, as it is already defined in the 
 
 ## Running the studies
 
-Once the user created the list of studies to be simulation, the simulations can be run using the
+Once the user has created the list of studies to be simulated, the simulations can be run using the
 `runPredictions` function. All simulations results can be saved under a `SimulationResults` 
 time-stamped subfolder by setting the `saveResults` parameter to `TRUE`. Additionally the user 
 can save the update PKML files for each study with the `saveSimulation` parameter.  
@@ -193,7 +193,7 @@ During this step the user should also defined the output paths to be simulated w
 `c(start time (min), end time (min), resolution in pts/min)` to cover the longest 
 simulation needed with the wanted time resolution.
 
-Additionally the user can also defined the number of cores to be used for the simulations and 
+Additionally, the user can also define the number of cores to be used for the simulations and 
 the number studies to be queued (which can be needed to reduce the memory usage). 
 
 ```{r, eval = FALSE}

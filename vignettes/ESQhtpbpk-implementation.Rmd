@@ -63,7 +63,7 @@ compound$addProperty(
 compound
 ```
 
-When adding property to compound and using a predefined PKML file, user need to also specify the 
+When adding property to compound and using a predefined PKML file, the user also needs to specify the 
 corresponding path in the PKML model. 
 
 ### Compound Processes 
@@ -87,7 +87,7 @@ compound
 
 ## Formulations
 
-Formulation can be defined using the various helper functions provided:
+Formulations can be defined using the various helper functions provided:
 - `createDissolvedFormulation`
 - `createWeibullFormulation`  
 - `createLint80Formulation`
@@ -110,7 +110,7 @@ weibull_form
 ## Administration protocols
 
 The `SimpleProtocol` class is used to define simple administration protocols for the studies. 
-If a formulation is needed it can be associated with the protocol using the `setFormulation`method.
+If a formulation is needed it can be associated with the protocol using the `setFormulation` method.
 
 ```{r, eval = TRUE}
 protocol <- SimpleProtocol$new(
@@ -132,7 +132,7 @@ Additionally, for more complex dosing strategies, advanced protocols can be crea
 `AdvancedProtocol` class. To do so, first an advanced protocol needs to be initialized with the 
 `AdvancedProtocol$new` function. Then repetitions schemas need to be defined with `addSchema` method
 and associated with single dose protocol using `addProtocolToSchema` method. 
-These and will follow the schema repetition strategy defined during the `addSchema` step.
+These will follow the schema repetition strategy defined during the `addSchema` step.
 
 ```{r eval = TRUE}
 protocol <- AdvancedProtocol$new()

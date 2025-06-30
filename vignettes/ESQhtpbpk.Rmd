@@ -1,5 +1,5 @@
 ---
-title: "Get Started"
+title: "Getting Started"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to ESQhtpbpk}

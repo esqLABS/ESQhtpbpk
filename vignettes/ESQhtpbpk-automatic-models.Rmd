@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 The framework allows automatic detection of required processes and administrations, and creates the 
 corresponding generic models.
 
-First the package need to be loaded:
+First, the package need to be loaded:
 
 ```{r setup}
 library(ESQhtpbpk)
@@ -37,7 +37,7 @@ formulation for each compound administration and compound properties.
 To simplify this task, various functions have been implemented in the framework easing the creation 
 of all required parts of a study.
 
-Additionally, the user can create its custom function to generate a list of all `Study` object to 
+Additionally, the user can create their custom function to generate a list of all `Study` objects to 
 be simulated, tailored to their specific data structure, as this part is highly dependent on it.
 
 ### Example
@@ -181,12 +181,12 @@ study
 
 Once the user created the list of studies required, simulations can be run the using the `runPredictions()` function.
 This function creates the required models, associated them with the corresponding studies and run the simulation.
-All simulation generic models files are will be saved in the `outputFolder` within a time-stamped subfolder under GenericModels
+All simulation generic models files will be saved in the `outputFolder` within a time-stamped subfolder under GenericModels
 and all simulations results can be saved under the same time-stamped subfolder under SimulationResults by setting the
 `saveResults` parameter to `TRUE`. Additionally the user can save the PKML files for each study with the
 `saveSimulation` parameter.
 
-During this step the user should also defined the output paths to be simulated with the `outputSelections` parameter, as
+During this step, the user should also define the output paths to be simulated with the `outputSelections` parameter, as
 well as the `simulationResolution` defined by `c(start time (min), end time (min), resolution in pts/min)` to cover the
 longest simulation needed with the wanted time resolution.
 
