@@ -7,6 +7,10 @@ articles:
   contents:
   - ESQhtpbpk-automatic-models
   - ESQhtpbpk-custom-pkml
+- title: Examples
+  navbar: Examples
+  contents:
+  - articles/Example-with-chembl-dataset
 - title: Miscellaneous
   navbar: Miscellaneous
   contents:

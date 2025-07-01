@@ -9,9 +9,41 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+```{r, include = FALSE}
+# create custom DT for inputs 
+myTinyDT <- function(df) {
+  DT::datatable(
+    df, 
+    options = list(
+      scrollX = T, 
+      lengthChange = FALSE,
+      pageLength = 5
+    ),
+    class = "compact",
+    rownames = FALSE
+  ) %>% 
+  DT::formatStyle(
+    columns = names(df),
+    fontSize = "12px", 
+    "white-space" = "nowrap"
+  ) %>%
+  htmltools::tagList(
+    htmltools::tags$style(
+      htmltools::HTML(
+        "table.dataTable {font-size: 12px; white-space:nowrap}",
+        ".dataTables_wrapper {font-size: 12px}"
+      )
+    )
+  )
+}
+```
+
+## Load needed libraries
+
 For this example we will load a few libraries
 
-```{r setup}
+```{r setup, echo = TRUE, warning = FALSE, message = FALSE}
 library(ESQhtpbpk) # package for HTPBPK
 library(readxl) # package to read xlsx files that contains input data
 library(dplyr) # package for easy manipulation of data
@@ -25,298 +57,651 @@ library(scales)
 library(doParallel)
 ```
 
-Based on [this paper](https://link.springer.com/article/10.1007/s00204-024-03764-9) and more specifically [Table 1](https://link.springer.com/article/10.1007/s00204-024-03764-9/tables/1), we will use QSAR from ADMETlab as input to the HT-PBPK model. A dataset of Cmax and AUC extracted and curated from CHEMBL is available in the package as an example dataset.
+
+## Load input files
+
+A dataset of Cmax and AUC extracted and curated from CHEMBL is available in the package as an example dataset.
 
 ```{r loading_datasets}
 # Reading curated chembl dataset with AUC and Cmax values
-path <- system.file("extdata", "Chembl_preprocessed_curated.xlsx", package = "ESQhtpbpk")
+path <- system.file(
+  "extdata", 
+  "Chembl_preprocessed_curated.xlsx", 
+  package = "ESQhtpbpk"
+)
+```
 
+The first sheet of the excel list the studies and the observed data available for each study.
+
+```{r loading_studies}
+# Reading curated chembl dataset with AUC and Cmax values
 InputStudies <- read_excel(path, sheet = 1)
+```
+
+
+```{r echo = FALSE}
+myTinyDT(InputStudies)
+```
+
+The second sheet of the excel list the protocols information to be simulated. A protocol can spread 
+multiple lines for the same study for example in case of multiple administration with loading dose. 
+
+```{r loading_protocol}
 InputProtocol <- read_excel(path, sheet = 2)
+```  
+
+```{r echo = FALSE}
+myTinyDT(InputProtocol)
+```
+
+The third sheet of the excel list all the compound properties. Based on 
+[this paper](https://link.springer.com/article/10.1007/s00204-024-03764-9) and more specifically 
+[Table 1](https://link.springer.com/article/10.1007/s00204-024-03764-9/tables/1), we extracted 
+compound properties from [ADMETlab](https://admetlab3.scbdd.com/) QSAR as input to the HT-PBPK model. 
+
+```{r loading_compounds}
 InputCompounds <- read_excel(path, sheet = 3) # QSARs obtained from ADMETlab 3.0
 ```
 
+```{r echo = FALSE}
+myTinyDT(InputCompounds)
+```
+
+### Summary of compound properties included in the dataset
+
+This dataset was extracted from Chembl and further curated to contain only studies with a single compound administered in healthy adults for which AUC or Cmax was available and protocol was identified from the original paper.
+
+With the careful curation, the dataset ends up only containing `r length(unique(InputStudies$molecule_chembl_id))` compounds.  
+
+Here is a summary of the properties for compounds included:
+
+```{r compounds_summary, message = FALSE}
+InputCompounds %>% 
+  pivot_longer(
+    cols = c(MW, logP, logD, logS, Fu, PPB, MDCK, caco2, PAMPA, 
+             `cl-plasma`, pka_acidic, pka_basic),
+    names_to = "Property", 
+    values_to = "Value"
+  ) %>% 
+  ggplot() +
+    geom_histogram(aes(x = Value)) + 
+    facet_wrap(~ Property, scales = "free")
+``` 
+
+
+## Testing multiple scenarios
+
 The platform allows to test easily multiple scenarios by adjusting inputs as needed based on the chosen scenarios. 
-An example of excel file with different scenarios is available in the package.
+An example of excel file with different scenarios is available in the package. 
+For example, the solubility can be set to an arbitrary high value or to the value from QSAR, the 
+lipophilicity can be set to logP or logD, etc.
 
 ```{r load_scenarios}
 scenarios <- read.csv(
-  file = system.file("extdata", "Chembl_Test_Pipeline", "scenarios.csv", package = "ESQhtpbpk"), 
+  file = system.file(
+    "extdata", 
+    "Chembl_Test_Pipeline", 
+    "scenarios.csv", 
+    package = "ESQhtpbpk"
+  ), 
   stringsAsFactors = FALSE
 )
-
-head(scenarios)
 ```
 
-The output metrics have to be customized to the one required for a specific analysis here various AUC and Cmax are calculated to matched the observed dataset.
+```{r echo = FALSE}
+myTinyDT(scenarios)
+```
 
-```{r multiple scenarios, eval = F}
+The various scenarios can be easily implemented when setting up the compound by using 
+if or switch condition when setting the inputs (see below).  
+
+## Running the pipeline 
+
+First we can set the outputFolder where we will save the results.
+
+```{r setFolder, eval = F}
 outputFolder <- "Chembl_Test_Pipeline"
 dir.create(outputFolder, showWarnings = FALSE)
+```
+
+To create studies, it will depends on how our inputs are formatted, thus it can be very useful to create custom functions that are tailored to our inputs.
+
+### Compound creation for various scenarios 
+
+First let's create a custom function that will create a compound object based on our inputs and scenario tested, then it will be easy to wrap it to create all the study we need for all the scenarios we want.
+
+```{r create_study_function, eval = T}
+createCompound <- function(chembl_id, scenario) {
+  compoundIdx <- which(InputCompounds$molecule_chembl_id == chembl_id)
+
+  # Set new compound with compound name corresponding to chembl_id
+  comp <- Compound$new(ID = chembl_id)
+  
+  # if halogens are considered set halogenes numbers
+  if (scenario$Halogen == 1) {
+    # Set halogen numbers (up to 10 allowed in PK-Sim)
+    comp$setPropertyValue(
+      "Chlorine count", 
+      value = min(10, str_count(InputCompounds$smiles[compoundIdx], "Cl"))
+    )
+    comp$setPropertyValue(
+      "Bromine count", 
+      value = min(10, str_count(InputCompounds$smiles[compoundIdx], "Br"))
+    )
+    comp$setPropertyValue(
+      "Fluorine count", 
+      value = min(10, str_count(InputCompounds$smiles[compoundIdx], "F"))
+    )
+    comp$setPropertyValue(
+      "Iodine count", 
+      value = min(10, str_count(InputCompounds$smiles[compoundIdx], "I"))
+    )
+  }
+    
+  # set molecular weight
+  comp$setPropertyValue(
+    "Molecular weight", 
+    value = InputCompounds$MW[compoundIdx], 
+    unit = "g/mol"
+  )
+    
+  # Set solubility depending on scenario
+  comp$setPropertyValue(
+    "Solubility", 
+    value = switch(
+      as.character(scenario$Solubility), 
+      # set solubility from QSAR
+      # ADMETlab logS QSAR is given as log10 of mol/l, convert to g/l for PK-Sim
+      logS = 10 ^ InputCompounds$logS[compoundIdx] * InputCompounds$MW[compoundIdx], 
+      # set arbitrary high solubility
+      High = 1000
+    ),
+    unit = "g/l"
+  )
+    
+  # Set lipophilicity based on scenario
+  comp$setPropertyValue(
+    "Lipophilicity", 
+    value = switch(
+      as.character(scenario$Lipophilicity), 
+      # set  lipophilicity to logP
+      logP = InputCompounds$logP[compoundIdx],
+      # set  lipophilicity to logD
+      logD = InputCompounds$logD[compoundIdx],
+      # use logMA as lipophilicity input
+      logMA1 = 1.294 + 0.304 * InputCompounds$logP[compoundIdx],
+      # use logMA as lipophilicity input
+      logMA_Pearce = 0.0166 * 37 + 0.882 * InputCompounds$logP[compoundIdx]
+    ), 
+    unit = "Log Units"
+  )
+    
+  # Set Fu based on scenario
+  comp$setPropertyValue(
+    "Fraction unbound", 
+    value = switch(
+      as.character(scenario$Fu), 
+      # use Fu QSAR
+      Fu = InputCompounds$Fu[compoundIdx],
+      # use PPB QSAR
+      PPB = 100 - InputCompounds$PPB[compoundIdx]
+    ), 
+    unit = "%"
+  )
+
+  # Set intestinal permeability based on scenario 
+  # intestinal permeability is not predefined it needs to be added with addProperty
+  if (scenario$Pint != "PK-Sim") {
+    comp$addProperty(
+      name = "PInt",
+      parName = "Specific intestinal permeability (transcellular)",
+      dimension = "Velocity",
+      value = switch(
+        as.character(scenario$Pint), 
+        # set Pint to MDCK QSAR value
+        MDCK = 10^InputCompounds$MDCK[compoundIdx], # MDCK is in log cm/s,
+        # set Pint to Caco2 QSAR value
+        Caco2 = 10^InputCompounds$caco2[compoundIdx], # Caco2 is in log cm/s,
+        # set Pint to PAMPA QSAR value
+        PAMPA = InputCompounds$PAMPA[compoundIdx] * 1e-6 # PAMPA is in 10E-6 cm/s,
+      ),
+      unit = "cm/s"
+    )
+  }
+  
+  # Set organ permeability to arbitrarily high value if scenario requires it
+  if (scenario$Perm ==  "High") {
+    comp$addProperty(
+      name = "Perm",
+      parName = "Permeability",
+      dimension = "Velocity",
+      value = 10,
+      unit = "cm/s"
+    )
+  }
+   
+  # Add total clearance (as hepatic clearance) also add matching fu and lipophilicity
+  comp$addProcessProperty(
+    processType = "Liver Plasma Clearance",
+    propertyName = "Plasma clearance",
+    parName = "Plasma clearance",
+    dimension = "Flow per weight",
+    value = InputCompounds$`cl-plasma`[compoundIdx], 
+    unit = "ml/min/kg"
+  )
+  comp$addProcessProperty(
+    processType = "Liver Plasma Clearance",
+    propertyName = "Lipophilicity",
+    parName = "Lipophilicity (experiment)",
+    dimension = "Log Units",
+    value = suppressMessages(comp$getProperty("Lipophilicity")$value),
+    unit = suppressMessages(comp$getProperty("Lipophilicity")$unit)
+  )
+  comp$addProcessProperty(
+    processType = "Liver Plasma Clearance",
+    propertyName = "Fraction unbound",
+    parName = "Fraction unbound (experiment)",
+    dimension = "Fraction",
+    value = suppressMessages(comp$getProperty("Fraction unbound")$value),
+    unit = suppressMessages(comp$getProperty("Fraction unbound")$unit)
+  )
+    
+  # Consider pka depending on scenario (restrict to 0-14 range)
+  if (scenario$PkA == 1) {
+    comp$setPropertyValue(
+      name = "pKa value 0", 
+      value = min(max(c(0,InputCompounds$pka_acidic[compoundIdx])), 14)
+    )
+    comp$setPropertyValue("Compound type 0", "Acidic")
+      
+    comp$setPropertyValue(
+      name = "pKa value 1", 
+      value = min(max(c(0,InputCompounds$pka_basic[compoundIdx])), 14)
+    )
+    comp$setPropertyValue("Compound type 1", "Basic")
+  }
+  
+  # Include default GFR fraction of 1 based on scenario
+  if (scenario$GFR == 1) {
+    comp$addProcessProperty(
+      processType = "GFR",
+      propertyName = "GFR",
+      parName = "GFR fraction",
+      dimension = "Dimensionless",
+      value = 1
+    )
+  }
+
+  # Set liver enzyme concentration to 1 umol/l in 
+  # intracellular space if enzyme correction tested
+  if (scenario$Enzyme_correction == 1) {
+    comp$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Enzyme correction",
+      parName = "Enzyme concentration",
+      dimension = "Concentration (molar)",
+      value = 1/0.667, # 1/0.667 is the correction factor for the enzyme activity
+      unit = "umol/l"
+    )
+  }
+  
+  return(comp)
+}
+```
 
 
-# register  parallel  backend 
-cl <- makePSOCKcluster(5, outfile = file.path(outputFolder, "parallel_log.txt"))
-registerDoParallel(cl)
+### Protocol creation 
 
-# Create studies for each compound and each scenario
-for (scenario_number in seq_len(nrow(scenarios))) {
+We can also do a custom function to create our administration protocols based on the way our protocol information are set up.
+
+```{r create_protocol_function, eval = TRUE}
+createProtocol <- function(protocol_id, scenario) {
+  # extract lines corresponding to the wanted protocol
+  protocolTable <- InputProtocol[InputProtocol$ProtocolID == protocol_id,]
+      
+  # create advanced protocol (1 protocol can be defined by multiple lines
+  # in the excel with different admin, for example with loading dose)
+  prot <- AdvancedProtocol$new()
+  
+  # skip if some dose is not available (look depending on scenario selected)
+  doseVal <- switch(
+    as.character(scenario$Dose), 
+    Flat = protocolTable$`Dose`,
+    BW = protocolTable$`Dose Norm`
+  )
+  doseUnit <- switch(
+    as.character(scenario$Dose), 
+    Flat = protocolTable$`Dose Unit`,
+    BW = protocolTable$`Dose Norm Unit`
+  )
+
+  if (any(is.na(doseVal) | is.na(doseUnit))) {
+    return(NULL)
+  }
+  
+  # Add schema for each line of the protocol info    
+  for (i in seq_len(nrow(protocolTable))) {
+    # default is 1 dose, with 0 time between repetitions if not specified
+    prot$addSchema(
+      schemaName = paste0("Schema_", i),
+      startTime = protocolTable$Time[i],
+      timeBetweenRepetitions = protocolTable$Time_between_rep[i] %>% ifelse(is.na(.), 0, .),
+      numberOfRepetitions = protocolTable$Nrep[i] %>% ifelse(is.na(.), 1, .),
+      timeUnit = protocolTable$TimeUnit[i]
+    )
+    
+    # select dose type based on scenario (dose as given, or always converted to per kg)
+    admin <- SimpleProtocol$new(
+      # match route from excel to allowed route in package
+      route = c("ORAL" = "Oral", "IV INFUSION" = "IV Infusion")[protocolTable$Route[i]],
+      dose = doseVal[i], 
+      doseUnit = doseUnit[i], 
+      infusionTime = (protocolTable$Infusion_duration[i] %>% if (is.na(.)) NULL else .), 
+      infusionTimeUnit = (protocolTable$Infusion_duration_unit[i] %>% if (is.na(.)) NULL else .)
+    )
+    
+    # for oral admin assume dissolved formulation      
+    if (protocolTable$Route[i] == "Oral") {
+      formulation <- createDissolvedFormulation(name = "Dissolved")
+      admin$setFormulation(formulation = formulation)
+    }
+    
+    # add schema to protocol    
+    prot$addProtocolToSchema(admin, schemaName = paste0("Schema_", i))
+  }
+  
+  return(prot)
+}
+``` 
+
+### Studies creation
+
+Then we can easily use these function to create the list of studies for each scenario we want to test
+
+```{r create_studies, eval = TRUE}
+createStudies <- function(scenario) {
+  
+  # initialise to an empty list of studies
   Studies <- list()
 
-  for (compoundIdx in seq_len(nrow(InputCompounds))) {
-    compName <- InputCompounds$molecule_chembl_id[compoundIdx]
-    
-    # set new compound with compound name
-    comp <- Compound$new(ID = compName)
+  # we loop over all compounds (for faster execution, 
+  # as that way the compound will need to be created only once)
+  # we could also loop over the studies but then for each study 
+  # the compound would need to be created again
   
-    # if halogens are considered set halogenes numbers
-    if (scenarios$Halogen[scenario_number] == 1) {
-      # Set halogen numbers p to 10 allowed in PK-Sim
-      comp$setPropertyValue("Chlorine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "Cl")))
-      comp$setPropertyValue("Bromine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "Br")))
-      comp$setPropertyValue("Fluorine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "F")))
-      comp$setPropertyValue("Iodine count", value = min(10, str_count(InputCompounds$smiles[compoundIdx], "I")))
-    }
+  for (compoundIdx in seq_len(nrow(InputCompounds))) {
+    # create compound with inputs matching wanted scenario
+    compChemblId <- InputCompounds$molecule_chembl_id[compoundIdx]
     
-    # set molecular weight
-    comp$setPropertyValue("Molecular weight", InputCompounds$MW[compoundIdx], unit = "g/mol")
-    
-    # set solubity depending on scenario
-    switch(
-      as.character(scenarios$Solubility[scenario_number]), 
-      logS = {
-        # set solubility in g/l
-        comp$setPropertyValue("Solubility", 10^InputCompounds$logS[compoundIdx] * InputCompounds$MW[compoundIdx], unit = "g/l") # logS is in mol/l
-      }, 
-      High = {
-        # set arbitrary high solubility
-        comp$setPropertyValue("Solubility", 1000, unit = "g/l")
-      }
+    comp <- createCompound(
+      chembl_id = compChemblId, 
+      scenario = scenario
     )
     
-    # set lipophilicity based on scenario
-    switch(
-      as.character(scenarios$Lipophilicity[scenario_number]), 
-      logP = {
-        # set logP
-        comp$setPropertyValue("Lipophilicity", InputCompounds$logP[compoundIdx], unit = "Log Units")
-      },
-      logD = {
-        # use logD as lipophilicity input
-        comp$setPropertyValue("Lipophilicity", InputCompounds$logD[compoundIdx], unit = "Log Units")
-      },
-      logMA1 = {
-        # use logMA as lipophilicity input
-         comp$setPropertyValue("Lipophilicity", 1.294 + 0.304 * InputCompounds$logP[compoundIdx], unit = "Log Units")
-      },
-      logMA_Pearce = {
-        # use logMA as lipophilicity input
-        comp$setPropertyValue("Lipophilicity", 0.0166 * 37 + 0.882 * InputCompounds$logP[compoundIdx], unit = "Log Units")
-      }
+    # create studies using the compound (as in our case studies only use a single compound)
+    # our input data as 1 ine per observation hence the use of unique function
+    studyIdsForComp <- unique(
+      InputStudies$StudyID[which(InputStudies$molecule_chembl_id == compChemblId)]
     )
-    
-    # set Fu based on scenario
-    switch(
-      as.character(scenarios$Fu[scenario_number]), 
-      Fu = {
-        comp$setPropertyValue("Fraction unbound", InputCompounds$Fu[compoundIdx], unit = "%")
-      },
-      PPB = {
-        comp$setPropertyValue("Fraction unbound", 100 - InputCompounds$PPB[compoundIdx], unit = "%")
-      }
-    )
-
-    # Set intestinal permeability based on scenario
-    switch(
-      as.character(scenarios$Pint[scenario_number]), 
-      MDCK = {
-        # set Pint to MDCK value
-        comp$addProperty(
-          name = "PInt",
-          parName = "Specific intestinal permeability (transcellular)",
-          dimension = "Velocity",
-          value = 10^InputCompounds$MDCK[compoundIdx], # MDCK is in log cm/s,
-          unit = "cm/s"
-        )
-        comp$setPropertyValue("Fraction unbound", InputCompounds$Fu[compoundIdx], unit = "%")
-      },
-      Caco2 = {
-        # set Pint to Caco2 value
-        comp$addProperty(
-          name = "PInt",
-          parName = "Specific intestinal permeability (transcellular)",
-          dimension = "Velocity",
-          value = 10^InputCompounds$caco2[compoundIdx], # Caco2 is in log cm/s,
-          unit = "cm/s"
-        )
-      },
-      PAMPA = {
-        # set Pint to PAMPA value
-        comp$addProperty(
-          name = "PInt",
-          parName = "Specific intestinal permeability (transcellular)",
-          dimension = "Velocity",
-          value = InputCompounds$PAMPA[compoundIdx] * 1e-6, # PAMPA is in 10E-6 cm/s,
-          unit = "cm/s"
-        )
-      }
-    )
-    
-    # set Perm based on scenario arbitrarly high
-    if (scenarios$Perm[scenario_number] ==  "High") {
-      comp$addProperty(
-        name = "Perm",
-        parName = "Permeability",
-        dimension = "Velocity",
-        value = 10,
-        unit = "cm/s"
-      )
-    }
-   
-    # add total clearance (as hepatic clearance)
-    comp$addProcessProperty(
-      processType = "Liver Plasma Clearance",
-      propertyName = "Plasma clearance",
-      parName = "Plasma clearance",
-      dimension = "Flow per weight",
-      value = InputCompounds$`cl-plasma`[compoundIdx], 
-      unit = "ml/min/kg"
-    )
-    comp$addProcessProperty(
-      processType = "Liver Plasma Clearance",
-      propertyName = "Lipophilicity",
-      parName = "Lipophilicity (experiment)",
-      dimension = "Log Units",
-      value = suppressMessages(comp$getProperty("Lipophilicity")$value),
-      unit = suppressMessages(comp$getProperty("Lipophilicity")$unit)
-    )
-    comp$addProcessProperty(
-      processType = "Liver Plasma Clearance",
-      propertyName = "Fraction unbound",
-      parName = "Fraction unbound (experiment)",
-      dimension = "Fraction",
-      value = suppressMessages(comp$getProperty("Fraction unbound")$value),
-      unit = suppressMessages(comp$getProperty("Fraction unbound")$unit)
-    )
-    
-    if (scenarios$PkA[scenario_number] == 1) {
-      comp$setPropertyValue(
-        name = "pKa value 0", 
-        value = min(max(c(0,InputCompounds$pka_acidic[compoundIdx])), 14)
-        )
-      comp$setPropertyValue("Compound type 0", "Acidic")
-      
-      comp$setPropertyValue(
-        name = "pKa value 1", 
-        value = min(max(c(0,InputCompounds$pka_basic[compoundIdx])), 14)
-      )
-      comp$setPropertyValue("Compound type 1", "Basic")
-    }
-    
-    if (scenarios$GFR[scenario_number] == 1) {
-      comp$addProcessProperty(
-        processType = "GFR",
-        propertyName = "GFR",
-        parName = "GFR fraction",
-        dimension = "Dimensionless",
-        value = 1
-      )
-    }
-
-    if (scenarios$Enzyme_correction[scenario_number] == 1) {
-      # set enzyme correction
-      comp$addProcessProperty(
-        processType = "Liver Plasma Clearance",
-        propertyName = "Enzyme correction",
-        parName = "Enzyme concentration",
-        dimension = "Concentration (molar)",
-        value = 1/0.667, # 1/0.667 is the correction factor for the enzyme activity
-        unit = "umol/l"
-      )
-    }
-    
-    # create studies using the compound
-    for (studyId in unique(InputStudies$StudyID[which(InputStudies$molecule_chembl_id == compName)])) {
+    for (studyId in studyIdsForComp) {
       print(studyId)
       studyIdx <- which(InputStudies$StudyID == studyId)
-      studyProtocolId <- unique(InputStudies$ProtocolID[studyIdx])
-      protocolTable <- InputProtocol[InputProtocol$ProtocolID == studyProtocolId,]
       
-      # create advance protocol (1 protocol can be defie by multiple line in excel with different 
-      # admin, for example with loading dose)
-      prot <- AdvancedProtocol$new()
+      # create protocol for the study
+      prot <- createProtocol(
+        protocol_id = unique(InputStudies$ProtocolID[studyIdx]), 
+        scenario = scenario
+      )
       
-      # skip is dose norm not available
-      if (any(is.na(protocolTable$`Dose Norm`))) {
+      if (is.null(prot)) {
+        # skip if no protocol available (i.e. missing dose information 
+        # for example for BW norm dose if BW was not available)
         next()
       }
       
-      for (i in seq_len(nrow(protocolTable))) {
-        prot$addSchema(
-          schemaName = paste0("Schema_", i),
-          startTime = protocolTable$Time[i],
-          timeBetweenRepetitions = ifelse(is.na(protocolTable$Time_between_rep[i]), 0, protocolTable$Time_between_rep[i]),
-          numberOfRepetitions = ifelse(is.na(protocolTable$Nrep[i]), 1, protocolTable$Nrep[i]),
-          timeUnit = protocolTable$TimeUnit[i]
-        )
-        
-        switch(
-          as.character(scenarios$Dose[scenario_number]), 
-          Flat = {
-            # set dose as flat dose (or BW if given as BW)
-            admin <- SimpleProtocol$new(
-              route = c("ORAL" = "Oral", "IV INFUSION" = "IV Infusion")[protocolTable$Route[i]],
-              dose = protocolTable$`Dose`[i],
-              doseUnit = protocolTable$`Dose Unit`[i],
-              infusionTime = if (is.na(protocolTable$Infusion_duration[i])) {NULL} else {protocolTable$Infusion_duration[i]},
-              infusionTimeUnit = if (is.na(protocolTable$Infusion_duration_unit[i])) {
-                  NULL
-                } else { 
-                  protocolTable$Infusion_duration_unit[i] 
-                }
-            )
-          },
-          BW = {
-            admin <- SimpleProtocol$new(
-              route = c("ORAL" = "Oral", "IV INFUSION" = "IV Infusion")[protocolTable$Route[i]],
-              dose = protocolTable$`Dose Norm`[i],
-              doseUnit = protocolTable$`Dose Norm Unit`[i],
-              infusionTime = if (is.na(protocolTable$Infusion_duration[i])) {NULL} else {protocolTable$Infusion_duration[i]},
-              infusionTimeUnit = if (is.na(protocolTable$Infusion_duration_unit[i])) {
-                  NULL
-                } else { 
-                  protocolTable$Infusion_duration_unit[i] 
-                }
-            )
-          }
-        )
-        
-        if (protocolTable$Route[i] == "Oral") {
-          formulation <- createDissolvedFormulation(name = "Dissolved")
-          admin$setFormulation(formulation = formulation)
-        }
-        
-        prot$addProtocolToSchema(admin, schemaName = paste0("Schema_", i))
-      }
+      # set protocol to the compound
       comp$setProtocol(prot)
       
+      # set wanted PC and CP method
       comp$PartitionCoefficientMethod <- "PK-Sim"
       comp$CellularPermeabilityMethod <- "PK-Sim"
           
-      study <- Study$new(ID = paste(studyId, comp$PartitionCoefficientMethod, comp$CellularPermeabilityMethod, sep = "_"), 
-                         compounds = list(comp), individual = "Human")
-          
+      # create study with the compound and protocol for human individual
+      study <- Study$new(
+        ID = paste(studyId, comp$PartitionCoefficientMethod, comp$CellularPermeabilityMethod, sep = "_"), 
+        compounds = list(comp), 
+        individual = "Human"
+      )
+      
+      # add to the list of studies
       Studies <- c(Studies, study)
     }
   }
+  # add studies ID as names to the list of studies
   names(Studies) <- sapply(Studies, function(x) x$ID)
   
+  return(Studies)
+}
+``` 
+
+### Simulating the studies 
+
+Once we have the studies created, we can run the simulation. Let' s run the studies for the first 
+scenario.
+
+```{r running_studies, eval = F}
+studies <- createStudies(scenario = scenarios[1, ])
   
-  # Create folder to save the results and run the simulations
-  outputFolderScenario <- file.path(outputFolder, paste0("Chembl_Scenario_", scenarios$Scenario[scenario_number]))
+# Create folder to save the the pkml and results if wanted and run the simulations
+outputFolderScenario <- file.path(outputFolder, "Chembl_Scenario_1")
+dir.create(outputFolderScenario, showWarnings = FALSE)
+  
+# run Predictions for compound plasma in PVB
+results <- runPredictions(
+  studies,
+  outputFolder = outputFolderScenario,
+  numberOfCores = 5,
+  outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
+  simulationResolution = c(0, max(InputStudies$`t_end [h]`) * 60, 0.1),
+  saveResults = FALSE,
+  saveSimulation = FALSE,
+  queueSize = 200
+)
+
+```
+
+
+### Calculating wanted prediction metrics
+
+The output metrics have to be customized to the one required for a specific analysis here 
+we have various AUC and Cmax and we will calculate them on our HT-PBPK predictions using `{PKNCA}` 
+package to matched the observed dataset.
+
+The metric part will depends on the observed data we need, so this part will also be adjusted to
+one's need.
+
+Given that we need to calculate the metrics for multiple studies and scenarios it could be easier 
+to create a function that will do the calculations for us. 
+
+```{r calculate_metrics_function, eval = TRUE}
+calculateMetrics <- function(study, simData, obsData) {
+  # if needed convert time unit to match obs data time unit in our case all time are in hours
+  simData$data$Time <- ospsuite::toUnit(
+    quantityOrDimension = simData$metaData$Time$dimension,
+    values = simData$data$Time,
+    sourceUnit = simData$metaData$Time$unit,
+    targetUnit = "h"
+  )
+  simData$metaData$Time$unit <- "h"
+  
+  # add compound molecular weight to the metadata to ensure conversion of umol/l to g/l if needed
+  simData$metaData$MW <- list(
+    value = suppressMessages(study$Compounds[[1]]$getProperty("Molecular weight")$value), 
+    unit = suppressMessages(study$Compounds[[1]]$getProperty("Molecular weight")$unit)
+  )
+ 
+  # Initialise result vector
+  SimMetric <- c()
+  
+  # calculate metrics for each observed data (a single study can have multiple observed data)
+  for (i in seq_len(nrow(obsData))) {  
+    if (obsData[i,]$Metric %in% c("AUC", "Cmax")) {
+      # Filter time required to calculate the AUC from the correct time interval (e.g. restrict 
+      # to 0:24h for AUC024, restrict to 0 to end of sim for AUC0Inf, or to the last dose interval 
+      # for Cmax of last dose, ...)
+      simDataToUse <- simData$data %>% 
+        dplyr::filter(
+          Time <= min(obsData[i,]$`t_end [h]`, as.numeric(obsData[i,]$`Metric_t2 [h]`)), 
+          Time >= obsData[i,]$`Metric_t1 [h]`, 
+        )
+    } else {
+      # In our case the only other metric is Concentration at a specific timepoint
+      simDataToUse <- simData$data
+    } 
+      
+    if (obsData[i,]$Metric == "AUC") {
+      # calculate AUC with PKNCA (suppress no dose given warning as not required for auc)
+      resPred <- suppressWarnings(
+        PKNCA::pk.nca(
+          PKNCA::PKNCAdata(
+            data.conc = PKNCA::PKNCAconc(
+              simDataToUse, `Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)` ~ Time|IndividualId
+            ), 
+            intervals = data.frame(
+              start = obsData[i,]$`Metric_t1 [h]`, 
+              end = as.numeric(obsData[i,]$`Metric_t2 [h]`), 
+              auclast = TRUE,
+              aucinf.pred = TRUE,
+              aucinf.obs = FALSE,
+              half.life = FALSE
+            )
+          )
+        )
+      )
+      
+      # get PKNCA results
+      if (is.finite(as.numeric(obsData[i,]$`Metric_t2 [h]`))) {
+        # for AUC t1 to finite time  
+        resPred <- resPred$result %>% filter(PPTESTCD == "auclast") %>% pull(PPORRES)
+      } else {
+        # for AUC t1 to Inf 
+        resPred <- resPred$result %>% filter(PPTESTCD == "aucinf.pred") %>% pull(PPORRES)
+      }
+      
+      # convert to the observed unit
+      resPred <- ospsuite::toUnit(
+        quantityOrDimension = ospsuite::getDimensionForUnit(obsData[i,]$OspUnits),
+        values = resPred,
+        # add "*" time unit to the simulated concentration unit to unit to make compatible AUC units
+        sourceUnit = gsub(
+          pattern = "/", 
+          replacement = paste0("*", simData$metaData$Time$unit, "/"),
+          x = simData$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$unit,
+        ),
+        targetUnit = obsData[i,]$OspUnits,
+        molWeight = simData$metaData$MW$value,
+        molWeightUnit = simData$metaData$MW$unit
+      )
+      
+    } else if (obsData[i,]$Metric %in% c("Cmax", "C")) {
+      # convert to same unit as observed data
+      resPred <- ospsuite::toUnit(
+        quantityOrDimension = simData$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$dimension,
+        values = simDataToUse$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`,
+        sourceUnit = simData$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$unit,
+        targetUnit = obsData[i,]$OspUnits,
+        molWeight = simData$metaData$MW$value,
+        molWeightUnit = simData$metaData$MW$unit
+      )
+      
+      if (obsData[i,]$Metric  == "Cmax") {
+        resPred <- max(resPred)
+      } else {
+        # interpolate to get value at time
+        resPred <- approx(
+          x =  simData$data$Time, 
+          y =  resPred, 
+          xout = obsData[i,]$`Metric_t1 [h]`, 
+          rule = 2
+        )
+        resPred <- resPred$y 
+      }
+    }
+    SimMetric <- c(SimMetric, resPred)
+  }
+  
+  return(cbind(obsData, SimMetric  = SimMetric))
+}
+```
+
+Now that we created the function calculate the metrics on our simulated data, 
+we can run it for each study results in parallel and save as a csv file. 
+
+```{r calculate_metrics, eval = FALSE}
+# create and register parallel backend for calculating the metric needed 
+# to compare to the observed data faster
+cl <- makePSOCKcluster(5)
+registerDoParallel(cl)
+
+# get predicted values from the HT-PBPK run first as it cannot be access from parallel workers
+simData <- lapply(results, function(studyResult) {
+  ospsuite::getOutputValues(studyResult, individualIds = results$allIndividualIds)
+})
+
+# Calculate observed metrics on the predicted curves in parallel
+metric_results <- foreach::foreach(
+  studyID = unique(InputStudies$StudyID), 
+  .combine = rbind, 
+  .packages = c("dplyr", "PKNCA", "ospsuite"),
+  .export = c("InputStudies", "calculateMetrics", "simData", "studies"),
+  .errorhandling = "pass",
+  .verbose = T
+) %dopar% {
+  simID <- paste(studyID, "PK-Sim Standard", "PK-Sim Standard", sep = "_")
+
+  calculateMetrics(
+    study = studies[[simID]], 
+    simData = simData[[simID]], 
+    obsData = InputStudies %>% filter(StudyID == studyID)
+  )
+}  
+  
+write.csv(
+  metric_results, 
+  file = file.path(outputFolder, paste0("metrics_scenario_1.csv")), 
+  row.names = FALSE
+)
+
+# stop cluster once done
+stopCluster(cl)
+``` 
+
+### Testing multiple scenarios
+
+As you can see it would be easy to run it for multiple scenario to test various QSARs or hypotheses.
+
+```{r, eval = FALSE}
+# create and register parallel backend for calculating the metric needed 
+# to compare to the observed data faster
+cl <- makePSOCKcluster(5)
+registerDoParallel(cl)
+
+# Create studies for each compound and each scenario we want (here we are testing default scenario
+# and with increase organ permeability)
+
+for (scenario_row in 1:15) {
+  scenarioNb <- scenarios$Scenario[scenario_row]
+
+  # create studies for the scenario
+  studies <- createStudies(scenario = scenarios[scenario_row, ])
+  
+  # Create folder to save the the pkml and results if wanted and run the simulations
+  outputFolderScenario <- file.path(outputFolder, paste0("Chembl_Scenario_", scenarioNb))
   dir.create(outputFolderScenario, showWarnings = FALSE)
+  
+  # run Predictions for compound plasma in PVB
   results <- runPredictions(
-    Studies,
+    studies,
     outputFolder = outputFolderScenario,
     numberOfCores = 5,
     outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
@@ -326,144 +711,55 @@ for (scenario_number in seq_len(nrow(scenarios))) {
     queueSize = 200
   )
   
-  predData <- list()
-  #  get predicted data 
-  for (studyID in unique(InputStudies$StudyID)) {
+  # get predicted values from the HT-PBPK run first as it cannot be access from parallel workers
+  simData <- lapply(results, function(studyResult) {
+    ospsuite::getOutputValues(studyResult, individualIds = results$allIndividualIds)
+  })
 
-    # extract sim data 
-    simID <- paste(studyID, "PK-Sim Standard", "PK-Sim Standard", sep = "_")
-    predDataTmp <- ospsuite::getOutputValues(results[[simID]], individualIds = results$allIndividualIds)
-    
-    # convert time unit to match obs data
-    predDataTmp$data$Time <- ospsuite::toUnit(
-        quantityOrDimension = predDataTmp$metaData$Time$dimension,
-        values = predDataTmp$data$Time,
-        sourceUnit = predDataTmp$metaData$Time$unit,
-        targetUnit = "h"
-      )
-    predDataTmp$metaData$Time$unit <- "h"
-    predDataTmp$metaData$MW <- list(
-      value = suppressMessages(Studies[[simID]]$Compounds[[1]]$getProperty("Molecular weight")$value), 
-      unit = suppressMessages(Studies[[simID]]$Compounds[[1]]$getProperty("Molecular weight")$unit)
-    )
-                                                            
-    
-    predData <- c(predData, list(predDataTmp))
-    names(predData)[length(predData)] <- studyID
-  }
-  
-  print("Calculating metrics")
-  # Calculate observed metrics on the predicted curves
+  # Calculate observed metrics on the predicted curves in parallel
   metric_results <- foreach::foreach(
-    i = seq_len(nrow(InputStudies)), 
+    studyID = unique(InputStudies$StudyID), 
     .combine = rbind, 
     .packages = c("dplyr", "PKNCA", "ospsuite"),
-    .export = c("predData", "InputStudies"),
+    .export = c("InputStudies", "calculateMetrics", "simData", "studies"),
     .errorhandling = "pass",
     .verbose = T
   ) %dopar% {
-    studyID <- InputStudies$StudyID[i]
-    obsData <- InputStudies[i,]
-
-    print(i)
-    if (obsData$Metric %in% c("AUC", "Cmax")) {
-      simData <- predData[[studyID]]$data %>% 
-        dplyr::filter(
-          Time <= min(obsData$`t_end [h]`, as.numeric(obsData$`Metric_t2 [h]`)), 
-          Time >= obsData$`Metric_t1 [h]`, 
-      )
-    } else {
-      simData <- predData[[studyID]]$data
-    } 
-      
-    if (obsData$Metric == "AUC") {
-      resPred <- PKNCA::pk.nca(
-        PKNCA::PKNCAdata(
-          data.conc = PKNCA::PKNCAconc(
-            simData, `Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`~Time|IndividualId
-          ), 
-          data.dose = PKNCA::PKNCAdose(
-            data.frame(IndividualId = 0, dose = 1), dose~1|IndividualId
-          ), 
-          intervals = data.frame(
-            start = obsData$`Metric_t1 [h]`, 
-            end = as.numeric(obsData$`Metric_t2 [h]`), 
-            auclast = TRUE,
-            aucinf.pred = TRUE,
-            aucinf.obs = TRUE,
-            half.life = FALSE
-          )
-        )
-      )
-        
-      if (is.finite(as.numeric(obsData$`Metric_t2 [h]`))) {
-        resPred <- resPred$result %>% filter(PPTESTCD == "aucinf.pred") %>% pull(PPORRES)
-      }else {
-        resPred <- resPred$result %>% filter(PPTESTCD == "auclast") %>% pull(PPORRES)
-      }
-      
-      resPred <- ospsuite::toUnit(
-        quantityOrDimension = "AUC (mass)",
-        values = resPred,
-        sourceUnit = gsub(
-          pattern = "/", 
-          replacement = paste0("*", predData[[studyID]]$metaData$Time$unit, "/"),
-          x = predData[[studyID]]$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$unit,
-        ),
-        targetUnit = obsData$OspUnits,
-        molWeight = predData[[studyID]]$metaData$MW$value,
-        molWeightUnit = predData[[studyID]]$metaData$MW$unit
-      )
-      
-    } else if (obsData$Metric %in% c("Cmax", "C")) {
-      resPred <- ospsuite::toUnit(
-        quantityOrDimension = predData[[studyID]]$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$dimension,
-        values = simData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`,
-        sourceUnit = predData[[studyID]]$metaData$`Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)`$unit,
-        targetUnit = obsData$OspUnits,
-        molWeight = predData[[studyID]]$metaData$MW$value,
-        molWeightUnit = predData[[studyID]]$metaData$MW$unit
-      )
-      
-      if (obsData$Metric  == "Cmax") {
-        resPred <- max(resPred)
-      } else {
-        # interpolate to get value at time
-        resPred <- approx(
-          x =  predData[[studyID]]$data$Time, 
-          y =  resPred, 
-          xout = obsData$`Metric_t1 [h]`, 
-          rule = 2
-        )
-        resPred <- resPred$y 
-      }
-    }
-    return( cbind(obsData, SimMetric  = resPred))
-  }
+    simID <- paste(studyID, "PK-Sim Standard", "PK-Sim Standard", sep = "_")
+  
+    calculateMetrics(
+      study = studies[[simID]], 
+      simData = simData[[simID]], 
+      obsData = InputStudies %>% filter(StudyID == studyID)
+    )
+  }  
   
   write.csv(
     metric_results, 
-    file = file.path(outputFolder, paste0("metrics_", "scenario_", scenarios$Scenario[scenario_number], ".csv")), 
+    file = file.path(outputFolder, paste0("metrics_scenario", scenarioNb, ".csv")), 
     row.names = FALSE
   )
-} 
+}
 
+# stop cluster once done
 stopCluster(cl)
 ```
+
+## Looking at the results
 
 The results have already been calculated and are available in the package. 
 You can load them using the following code. Here for the default scenario 1:
 
 ```{r load_results}
-path <- system.file("extdata", "Chembl_Test_Pipeline", "metric_scenario_1.csv", package = "ESQhtpbpk")
-metric_results_01 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+path <- system.file("extdata", "Chembl_Test_Pipeline", "metrics_scenario1.csv", package = "ESQhtpbpk")
+metric_results_1 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
 ``` 
 
 The predicted can be check with observed data. 
 
 The AUC 0-Inf for all compounds is centered around 1 the observed value: 
 ```{r echo=FALSE}
-metric_results_01 %>% 
+metric_results_1 %>% 
   filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
   group_by(molecule_pref_name) %>%
   summarise(
@@ -493,7 +789,7 @@ tmp <- metric_results_01 %>%
     AUC0InfRatio_10Fold = mean(AUC0InfRatio <= 10 & AUC0InfRatio >= 1/10, na.rm = TRUE) * 100,
   )
 ```
-There are `r signif(tmp$AUC0InfRatio_2Fold,3` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
+There are `r signif(tmp$AUC0InfRatio_2Fold,3)` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
 
 ```{r}
 metric_results_01 %>% 
@@ -566,7 +862,7 @@ tmp <- metric_results_01 %>%
   )
 ```
 
-There are `r signif(tmp$CmaxRatio_2Fold,3` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
+There are `r signif(tmp$CmaxRatio_2Fold,3)` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
 
 ```{r}
 metric_results_01 %>% 
@@ -705,7 +1001,7 @@ full_join(
 We can test and compare with other scenarios, such as adding artificially high organ permeability (scenario 09)
 
 ```{r}
-path <- system.file("extdata", "Chembl_Test_Pipeline", "metric_scenario_9.csv", package = "ESQhtpbpk")
+path <- system.file("extdata", "Chembl_Test_Pipeline", "metrics_scenario_9.csv", package = "ESQhtpbpk")
 metric_results_09 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
 ``` 
 
@@ -750,6 +1046,7 @@ full_join(
   theme_bw()  
 
 ```
+
 ```{r echo=FALSE}
 scenario_01_vs_09 <- rbind(
   metric_results_01 %>% 
@@ -776,7 +1073,7 @@ full_join(
   x = scenario_01_vs_09 %>% pivot_wider(
     id_cols = c("molecule_pref_name"), 
     names_from = Scenario, 
-    values_from = c(AUC0InfAvg, AUC0InfPredAvg, AUC0InfRatio)
+    values_from = c(CmaxAvg, CmaxPredAvg, CmaxRatio)
   ),
   y = InputCompounds, 
   by = c("molecule_pref_name")
@@ -808,7 +1105,7 @@ tmp <- metric_results_09 %>%
     AUC0InfRatio_10Fold = mean(AUC0InfRatio <= 10 & AUC0InfRatio >= 1/10, na.rm = TRUE) * 100,
   )
 ```
-There are `r signif(tmp$AUC0InfRatio_2Fold,3` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
+There are `r signif(tmp$AUC0InfRatio_2Fold,3)` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
 
 ```{r}
 metric_results_09 %>% 
@@ -847,7 +1144,7 @@ tmp <- metric_results_09 %>%
   )
 ```
 
-There are `r signif(tmp$CmaxRatio_2Fold,3` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
+There are `r signif(tmp$CmaxRatio_2Fold,3)` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
 
 ```{r}
 metric_results_09 %>% 
