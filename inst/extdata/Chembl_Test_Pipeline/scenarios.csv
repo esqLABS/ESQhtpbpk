@@ -14,28 +14,6 @@ Halogen,Solubility,Lipophilicity,Fu,Pint,Perm,Plasma_Clearance,PkA,GFR,Dose,Enzy
 0,logS,logD,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,1,13
 0,logS,logMA1,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,14
 0,logS,logMA_Pearce,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,15
-1,logS,logD,Fu,MDCK,High,cl-plasma,0,0,Flat,0,16
-0,High,logD,Fu,MDCK,High,cl-plasma,0,0,Flat,0,17
-0,logS,logP,Fu,MDCK,High,cl-plasma,0,0,Flat,0,18
-0,logS,logMA1,Fu,MDCK,High,cl-plasma,0,0,Flat,0,19
-0,logS,logMA_Pearce,Fu,MDCK,High,cl-plasma,0,0,Flat,0,20
-0,logS,logD,PPB,MDCK,High,cl-plasma,0,0,Flat,0,21
-0,logS,logD,Fu,Caco2,High,cl-plasma,0,0,Flat,0,22
-0,logS,logD,Fu,PAMPA,High,cl-plasma,0,0,Flat,0,23
-0,logS,logD,Fu,PK-Sim,High,cl-plasma,0,0,Flat,0,24
-0,logS,logD,Fu,MDCK,High,cl-plasma,1,0,Flat,0,25
-0,logS,logD,Fu,MDCK,High,cl-plasma,0,1,Flat,0,26
-0,logS,logD,Fu,MDCK,High,cl-plasma,0,0,BW,0,27
-0,logS,logD,Fu,MDCK,High,cl-plasma,0,0,Flat,1,28
-1,High,logD,Fu,MDCK,High,cl-plasma,0,0,Flat,0,29
-0,High,logP,Fu,MDCK,High,cl-plasma,0,0,Flat,0,30
-0,High,logMA1,Fu,MDCK,High,cl-plasma,0,0,Flat,0,31
-0,High,logMA_Pearce,Fu,MDCK,High,cl-plasma,0,0,Flat,0,32
-0,High,logD,PPB,MDCK,High,cl-plasma,0,0,Flat,0,33
-0,High,logD,Fu,Caco2,High,cl-plasma,0,0,Flat,0,34
-0,High,logD,Fu,PAMPA,High,cl-plasma,0,0,Flat,0,35
-0,High,logD,Fu,PK-Sim,High,cl-plasma,0,0,Flat,0,36
-0,High,logD,Fu,MDCK,High,cl-plasma,1,0,Flat,0,37
-0,High,logD,Fu,MDCK,High,cl-plasma,0,1,Flat,0,38
-0,High,logD,Fu,MDCK,High,cl-plasma,0,0,BW,0,39
-0,High,logD,Fu,MDCK,High,cl-plasma,0,0,Flat,1,40
+0,logS,logP,Fu,PK-Sim, PK-Sim,cl-plasma,0,0,Flat,0,16
+0,logS,logMA1,Fu,PK-Sim, PK-Sim,cl-plasma,0,0,Flat,0,17
+0,logS,logMA_Pearce,Fu,PK-Sim, PK-Sim,cl-plasma,0,0,Flat,0,18
