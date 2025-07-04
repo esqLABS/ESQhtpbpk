@@ -53,6 +53,7 @@ library(stringr) # package for string manipulation
 library(ggplot2)
 library(ggrepel)
 library(scales)
+library(plotly)
 # packages for parallel computing
 library(doParallel)
 ```
@@ -689,7 +690,7 @@ registerDoParallel(cl)
 # Create studies for each compound and each scenario we want (here we are testing default scenario
 # and with increase organ permeability)
 
-for (scenario_row in 1:15) {
+for (scenario_row in seq_len(nrow(scenarios))) {
   scenarioNb <- scenarios$Scenario[scenario_row]
 
   # create studies for the scenario
@@ -747,6 +748,8 @@ stopCluster(cl)
 
 ## Looking at the results
 
+### AUC0Inf for scenario 1
+
 The results have already been calculated and are available in the package. 
 You can load them using the following code. Here for the default scenario 1:
 
@@ -757,8 +760,10 @@ metric_results_1 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE
 
 The predicted can be check with observed data. 
 
-The AUC 0-Inf for all compounds is centered around 1 the observed value: 
-```{r echo=FALSE}
+The AUC 0-Inf for all compounds is centered slightly above 1, meaning with the default HT-PBPK and 
+ADMETlab QSAR it tends to slightly overestimate the AUC compared to the observed value: 
+
+```{r echo=FALSE, class.source = 'fold-hide'}
 metric_results_1 %>% 
   filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
   group_by(molecule_pref_name) %>%
@@ -775,7 +780,7 @@ metric_results_1 %>%
 ```
 
 ```{r include=FALSE}
-tmp <- metric_results_01 %>% 
+tmp <- metric_results_1 %>% 
   filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
   group_by(molecule_pref_name) %>%
   summarise(
@@ -789,10 +794,13 @@ tmp <- metric_results_01 %>%
     AUC0InfRatio_10Fold = mean(AUC0InfRatio <= 10 & AUC0InfRatio >= 1/10, na.rm = TRUE) * 100,
   )
 ```
+
 There are `r signif(tmp$AUC0InfRatio_2Fold,3)` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
 
-```{r}
-metric_results_01 %>% 
+We can also look at the AUC0Inf fold ratio for the different percentiles:
+
+```{r class.source = 'fold-hide'}
+tmp <- metric_results_1 %>% 
   filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
   group_by(molecule_pref_name) %>%
   summarise(
@@ -807,31 +815,39 @@ metric_results_01 %>%
     AUC0InfRatio75th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.75)),
     AUC0InfRatio95th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.95))
   )
+
+tmp
 ```
+So We have 50% of the compound for which the AUC0Inf fold ratio is within `r tmp$AUC0InfRatio50th` folds.
 
 If we look more in detail at the AUC 0-Inf 
 (one dot is one studies and one compound i.e. one color can have multiple studies associated), 
 we can see that most of the studies/compounds are within 10-fold of the observed value, with one 
 compound being particularly underpredicted.
 
-```{r}
-metric_results_01 %>% filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
-  ggplot(aes(x = Value, y = SimMetric, color = molecule_pref_name, shape = Meal)) + 
+```{r class.source = 'fold-hide'}
+p <- metric_results_1 %>% filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
+  ggplot(aes(x = Value, y = SimMetric, color = molecule_pref_name)) + 
   geom_point(show.legend = F) + 
   geom_abline(slope = 1, intercept = 0) + 
   labs(x = "Observed AUC0Inf", y = "Predicted AUC0Inf") + 
   scale_x_log10() + scale_y_log10() +
   geom_abline(slope = 1, intercept = log10(2), col = "grey50", linetype = "dashed") + 
   geom_abline(slope = 1, intercept = -log10(2), col = "grey50", linetype = "dashed") + 
-  geom_abline(slope = 1, intercept = 1, col = "grey80", linetype = "dashed") + 
-  geom_abline(slope = 1, intercept = -1, col = "grey80", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = log10(10), col = "grey80", linetype = "dashed") + 
+  geom_abline(slope = 1, intercept = -log(10), col = "grey80", linetype = "dashed") + 
   theme_bw()
+
+ggplotly(p)
 ```
+
+### Cmax for scenario 1
+
 Similarly we can also look at other metrics such as Cmax. 
 The Cmax for all compounds tend to be overpredicted.
 
-```{r echo=FALSE}
-metric_results_01 %>% 
+```{r echo=FALSE, class.source = 'fold-hide'}
+metric_results_1 %>% 
   filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
   group_by(molecule_pref_name) %>%
   summarise(
@@ -846,8 +862,8 @@ metric_results_01 %>%
     theme(aspect.ratio = 5)
 ```
 
-```{r include=FALSE}
-tmp <- metric_results_01 %>% 
+```{r include=FALSE, class.source = 'fold-hide'}
+tmp <- metric_results_1 %>% 
   filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
   group_by(molecule_pref_name) %>%
   summarise(
@@ -864,8 +880,10 @@ tmp <- metric_results_01 %>%
 
 There are `r signif(tmp$CmaxRatio_2Fold,3)` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
 
-```{r}
-metric_results_01 %>% 
+We can also look at the AUC0Inf fold ratio for the different percentiles:
+
+```{r class.source='fold-hide'}
+metric_results_1 %>% 
   filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
   group_by(molecule_pref_name) %>%
   summarise(
@@ -881,19 +899,22 @@ metric_results_01 %>%
     CmaxRatio95th = 2^quantile(abs(log2(CmaxRatio)), c(0.95))
   )
 ```
+So We have 50% of the compound for which the AUC0Inf fold ratio is within `r tmp$CmaxRatio50th` folds.
 
 The comparison of Cmax can be slightly more difficult as the sample time points could affect the observed estimated value, 
-and the full observed pk profiles are not available.
+and the full observed pk profiles are not available in the extracted Chembl data. So it could be expected that
+the simulated Cmax with was sampled every 10 minutes could be different than the observed one, for which we 
+we don't necessarily now how often the data were sampled or even how the Cmax  was derived (from maximal value 
+observed or interpolated from NCA or 1-2-3 compartmental analysis, ...).
 
 If we look more in detail at the Cmax 
 (one dot is one studies and one compound i.e. one color can have multiple studies associated), 
-we can see that most of the studies/compounds are within 10-fold of the observed value, with one 
+we can see that most of the studies/compounds are overpredicted but within 10-fold of the observed value, with one 
 compound being particularly underpredicted.
 
-
-```{r}
-metric_results_01 %>% filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
-  ggplot(aes(x = Value, y = SimMetric, color = molecule_pref_name, shape = Meal)) + 
+```{r, class.source = 'fold-hide'}
+p <- metric_results_1 %>% filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
+  ggplot(aes(x = Value, y = SimMetric, color = molecule_pref_name)) + 
   geom_point(show.legend = F) + 
   geom_abline(slope = 1, intercept = 0) + 
   labs(x = "Observed Cmax", y = "Predicted Cmax") + 
@@ -903,10 +924,15 @@ metric_results_01 %>% filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>%
   geom_abline(slope = 1, intercept = 1, col = "grey80", linetype = "dashed") + 
   geom_abline(slope = 1, intercept = -1, col = "grey80", linetype = "dashed") + 
   theme_bw()
+
+ggplotly(p)
+
 ```
+### AUC vs Cmax for scenario 1
+
 Looking at AUC and Cmax ratio together:  
-```{r}
-metric_results_01 %>% 
+```{r, class.source = "fold-hide"}
+p <- metric_results_1 %>% 
   filter((Metric == "Cmax" & `Metric_t1 [h]` == 0 ) | (Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf)) %>% 
   tidyr::pivot_wider(
     id_cols = c(StudyID, ProtocolID, molecule_pref_name, canonical_smiles, Meal), 
@@ -916,7 +942,7 @@ metric_results_01 %>%
   ) %>%
   mutate(AUC0Inf_Ratio = SimMetric_AUC / Value_AUC, 
          Cmax_Ratio = SimMetric_Cmax / Value_Cmax) %>%
-  ggplot(aes(x = AUC0Inf_Ratio, y = Cmax_Ratio, color = molecule_pref_name, shape = Meal)) + 
+  ggplot(aes(x = AUC0Inf_Ratio, y = Cmax_Ratio, color = molecule_pref_name)) + 
   geom_point(show.legend = F) + 
   geom_abline(slope = 1, intercept = 0) + 
   labs(x = "AUC0Inf ratio", y = "Cmax ratio") + 
@@ -930,26 +956,34 @@ metric_results_01 %>%
   geom_hline(yintercept = 10, col = "grey80", linetype = "dashed") + 
   geom_hline(yintercept = 0.1, col = "grey80", linetype = "dashed") + 
   theme_bw()
+
+ggplotly(p)
+
 ```
+
+
+### Characteristic of compound compared to their predictability
 
 We can additional try to understand for which compounds the AUC and Cmax are less well predicted, 
 to better understand the potential applicability domain of the pipeline even though
 it will be mostly constrained by applicability domain of the used QSAR inputs as well as the PBPK 
 model. 
 
-Compounds with high lipophilicty or low lipophilicity values tends to be the 
-most problematic and not well predicted. Similarly compounds that have a very low solubility are 
-also poorly predicted
+#### Lipophilicity effect
+
+Compounds with high or low lipophilicty values tends to be the 
+most problematic ones and not well predicted. 
  
-```{r}
-full_join(
-  x = metric_results_01 %>% 
+```{r, class.source = 'fold-hide'}
+
+p <- full_join(
+  x = metric_results_1 %>% 
     filter(Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf) %>% 
     mutate(AUC0Inf_Ratio = SimMetric / Value),
   y = InputCompounds, 
   by = c("molecule_pref_name", "canonical_smiles")
 ) %>% 
-  ggplot(aes(x = logD, y = AUC0Inf_Ratio)) + 
+  ggplot(aes(x = logD, y = AUC0Inf_Ratio, color = molecule_pref_name)) + 
   geom_point() + 
   geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") + 
   geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") + 
@@ -958,17 +992,27 @@ full_join(
   scale_y_log10() + 
   labs(x = "Compound logD", y = "AUC0Inf ratio") + 
   theme_bw() 
+
+ggplotly(p)
 ```
 
-```{r}
-full_join(
-  x = metric_results_01 %>% 
+We observed a trend that high lypophilic compounds have an underpredicted AUC0Inf, while low lipophilicity 
+compounds are more overpredicted. 
+
+#### Fraction unbound effect
+
+Similarly compounds that have a very low fraction unbound are 
+also poorly predicted.
+
+```{r, class.source = 'fold-hide'}
+p <- full_join(
+  x = metric_results_1 %>% 
     filter(Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf) %>% 
     mutate(AUC0Inf_Ratio = SimMetric / Value),
   y = InputCompounds, 
   by = c("molecule_pref_name", "canonical_smiles")
 ) %>% 
-  ggplot(aes(x = Fu, y = AUC0Inf_Ratio)) + 
+  ggplot(aes(x = Fu, y = AUC0Inf_Ratio, color = molecule_pref_name)) + 
   geom_point() + 
   geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") + 
   geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") + 
@@ -977,190 +1021,110 @@ full_join(
   scale_y_log10() + 
   labs(x = "Compound Fraction unbound", y = "AUC0Inf ratio") + 
   theme_bw() 
+
+ggplotly(p)
+
 ```
 
-```{r}
-full_join(
-  x = metric_results_01 %>% 
+#### Solubility effect
+
+Similarly compounds that have a very low solubility are 
+also poorly predicted.
+
+```{r class.source = 'fold-hide'}
+p <- full_join(
+  x = metric_results_1 %>% 
     filter(Metric == "AUC" & `Metric_t1 [h]` == 0 & `Metric_t2 [h]` == Inf) %>% 
     mutate(AUC0Inf_Ratio = SimMetric / Value),
   y = InputCompounds, 
   by = c("molecule_pref_name", "canonical_smiles")
 ) %>% 
-  ggplot(aes(x = logS, y = AUC0Inf_Ratio)) + 
+  ggplot(aes(x = logS, y = AUC0Inf_Ratio, color = molecule_pref_name)) + 
   geom_point() + 
   geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") + 
   geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") + 
   geom_hline(yintercept = 10, col = "grey80", linetype = "dashed") + 
   geom_hline(yintercept = 0.1, col = "grey80", linetype = "dashed") + 
   scale_y_log10() + 
-  labs(x = "Compound Solubility", y = "AUC0Inf ratio") + 
+  labs(x = "Compound Solubility (logS)", y = "AUC0Inf ratio") + 
   theme_bw() 
+
+ggplotly(p)
 ```
 
-We can test and compare with other scenarios, such as adding artificially high organ permeability (scenario 09)
+### Compare with other scenario
 
-```{r}
-path <- system.file("extdata", "Chembl_Test_Pipeline", "metrics_scenario_9.csv", package = "ESQhtpbpk")
-metric_results_09 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+We can compare with other scenarios that use different QSARs as input make different assumptions (
+for example adding artificially high organ permeability (scenario 09))
+
+```{r, load_various_scenarios}
+for (i in 2:15) {
+  path <- system.file("extdata", "Chembl_Test_Pipeline", paste0("metrics_scenario", i, ".csv"), package = "ESQhtpbpk")
+  assign(x = paste0("metric_results_", i), value = read.csv(path, stringsAsFactors = FALSE, check.names = FALSE))
+}
 ``` 
 
-Calculated and compare AUC 0 Inf ratio of both scenarios:
+Calculated and compare AUC 0 Inf ratio and Cmax of the different scenarios:
 
-```{r echo=FALSE}
-scenario_01_vs_09 <- rbind(
-  metric_results_01 %>% 
-    filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
-    group_by(molecule_pref_name) %>%
-    summarise(
-      AUC0InfAvg = mean(Value, na.rm = TRUE), 
-      AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
-      AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE),
-      Scenario = "01"
-    ),
-  metric_results_09 %>% 
-    filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
-    group_by(molecule_pref_name) %>%
-    summarise(
-      AUC0InfAvg = mean(Value, na.rm = TRUE), 
-      AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
-      AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE),
-      Scenario = "09"
-    )
-)
+```{r class.source = "fold-hide"}
+scenario_1to15 <- metric_results_1 %>% mutate(Scenario = "Scenario 1")
 
-full_join(
-  x = scenario_01_vs_09 %>% pivot_wider(
-    id_cols = c("molecule_pref_name"), 
-    names_from = Scenario, 
-    values_from = c(AUC0InfAvg, AUC0InfPredAvg, AUC0InfRatio)
-  ),
-  y = InputCompounds, 
-  by = c("molecule_pref_name")
-) %>% 
-  ggplot(aes(x = AUC0InfRatio_01, y = AUC0InfRatio_09, color = logD)) + 
-    geom_point() + 
-    geom_abline(slope = 1, intercept = 0) + 
-    labs(x = "AUC0Inf Ratio Scenario 01", y = "AUC0Inf Ratio Scenario 09") + 
-    scale_x_log10() + scale_y_log10() +
-  theme_bw()  
-
+for (i in 2:15) {
+  scenario_1to15 <- rbind(
+    scenario_1to15, 
+    eval(parse(text = paste0("metric_results_", i))) %>% 
+      mutate(Scenario = paste("Scenario", i))
+  )
+}
 ```
 
-```{r echo=FALSE}
-scenario_01_vs_09 <- rbind(
-  metric_results_01 %>% 
-    filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
-    group_by(molecule_pref_name) %>%
-    summarise(
-      CmaxAvg = mean(Value, na.rm = TRUE), 
-      CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
-      CmaxRatio = mean(SimMetric / Value, na.rm = TRUE),
-      Scenario = "01"
-    ),
-  metric_results_09 %>% 
-    filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
-    group_by(molecule_pref_name) %>%
-    summarise(
-      CmaxAvg = mean(Value, na.rm = TRUE), 
-      CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
-      CmaxRatio = mean(SimMetric / Value, na.rm = TRUE),
-      Scenario = "09"
-    )
-)
-
-full_join(
-  x = scenario_01_vs_09 %>% pivot_wider(
-    id_cols = c("molecule_pref_name"), 
-    names_from = Scenario, 
-    values_from = c(CmaxAvg, CmaxPredAvg, CmaxRatio)
-  ),
-  y = InputCompounds, 
-  by = c("molecule_pref_name")
-) %>%
-  ggplot(aes(x = CmaxRatio_01, y = CmaxRatio_09, color = logD)) + 
-    geom_point() + 
-    geom_abline(slope = 1, intercept = 0) + 
-    labs(x = "Observed Cmax Scenario 01", y = "Observed Cmax Scenario 09") + 
-    scale_x_log10() + scale_y_log10() +
-  theme_bw()  
-``` 
-
-This reduce the Cmax of all compounds and also the AUC of most compounds leading to overall
-better results moslty by improving the Cmax twithout degrading to much the AUC, 
-even though it is detrimental to some compounds.
-
-```{r include=FALSE}
-tmp <- metric_results_09 %>% 
-  filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
-  group_by(molecule_pref_name) %>%
+```{r class.source = "fold-hide"}
+tmp <- scenario_1to15 %>% filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>%
+  group_by(molecule_pref_name, Scenario) %>%
   summarise(
     AUC0InfAvg = mean(Value, na.rm = TRUE), 
     AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
     AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE)
-  ) %>%
-  summarise(
-    AUC0InfRatio_2Fold = mean(AUC0InfRatio <= 2 & AUC0InfRatio >= 1/2, na.rm = TRUE) * 100,
-    AUC0InfRatio_4Fold = mean(AUC0InfRatio <= 4 & AUC0InfRatio >= 1/4, na.rm = TRUE) * 100,
-    AUC0InfRatio_10Fold = mean(AUC0InfRatio <= 10 & AUC0InfRatio >= 1/10, na.rm = TRUE) * 100,
   )
-```
-There are `r signif(tmp$AUC0InfRatio_2Fold,3)` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
+tmp$Scenario <- factor(tmp$Scenario, levels = paste("Scenario", 1:15), ordered = TRUE)
 
-```{r}
-metric_results_09 %>% 
-  filter(Metric == "AUC", `Metric_t1 [h]` == 0, `Metric_t2 [h]` == Inf) %>% 
-  group_by(molecule_pref_name) %>%
-  summarise(
-    AUC0InfAvg = mean(Value, na.rm = TRUE), 
-    AUC0InfPredAvg = mean(SimMetric, na.rm = TRUE),
-    AUC0InfRatio = mean(SimMetric / Value, na.rm = TRUE)
-  ) %>%
-  summarise(
-    AUC0InfRatio5th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.05)),
-    AUC0InfRatio25th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.25)),
-    AUC0InfRatio50th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.50)),
-    AUC0InfRatio75th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.75)),
-    AUC0InfRatio95th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.95))
-  )
+p <- ggplot(tmp, aes(y = AUC0InfRatio, x = Scenario)) + 
+  geom_boxplot() +
+  scale_y_log10() + 
+  theme_bw() + 
+  geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") +
+  geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") +
+  geom_hline(yintercept = 10, col = "grey20", linetype = "dashed") +
+  geom_hline(yintercept = 0.1, col = "grey20", linetype = "dashed") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p
 ```
 
-Similarly we can also look at other metrics such as Cmax. 
-The Cmax for all compounds tend to be overpredicted.
 
-```{r include=FALSE}
-tmp <- metric_results_09 %>% 
-  filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
-  group_by(molecule_pref_name) %>%
+```{r class.source = "fold-hide"}
+tmp <- scenario_1to15 %>% filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>%
+  group_by(molecule_pref_name, Scenario) %>%
   summarise(
     CmaxAvg = mean(Value, na.rm = TRUE), 
     CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
     CmaxRatio = mean(SimMetric / Value, na.rm = TRUE)
-  ) %>%
-  summarise(
-    CmaxRatio_2Fold = mean(CmaxRatio <= 2 & CmaxRatio >= 1/2, na.rm = TRUE) * 100,
-    CmaxRatio_4Fold = mean(CmaxRatio <= 4 & CmaxRatio >= 1/4, na.rm = TRUE) * 100,
-    CmaxRatio_10Fold = mean(CmaxRatio <= 10 & CmaxRatio >= 1/10, na.rm = TRUE) * 100,
   )
+tmp$Scenario <- factor(tmp$Scenario, levels = paste("Scenario", 1:15), ordered = TRUE)
+
+p <- ggplot(tmp, aes(y = CmaxRatio, x = Scenario)) + 
+  geom_boxplot() +
+  scale_y_log10() + 
+  theme_bw() + 
+  geom_hline(yintercept = 2, col = "grey50", linetype = "dashed") +
+  geom_hline(yintercept = 0.5, col = "grey50", linetype = "dashed") +
+  geom_hline(yintercept = 10, col = "grey20", linetype = "dashed") +
+  geom_hline(yintercept = 0.1, col = "grey20", linetype = "dashed") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  coord_cartesian(ylim = c(0.001, 1000))
+p
 ```
 
-There are `r signif(tmp$CmaxRatio_2Fold,3)` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
+Scenario 9 (assuming high organ permeability) and 15 (using logMA as calculated by Pearce for Lipophilicity) 
+seems to give more reasonable AUC0Inf and Cmax. Even for Scenario 15 still tends to be overpredicted in most cases
 
-```{r}
-metric_results_09 %>% 
-  filter(Metric == "Cmax", `Metric_t1 [h]` == 0) %>% 
-  group_by(molecule_pref_name) %>%
-  summarise(
-    CmaxAvg = mean(Value, na.rm = TRUE), 
-    CmaxPredAvg = mean(SimMetric, na.rm = TRUE),
-    CmaxRatio = mean(SimMetric / Value, na.rm = TRUE)
-  ) %>%
-  summarise(
-    CmaxRatio5th = 2^quantile(abs(log2(CmaxRatio)), c(0.05)),
-    CmaxRatio25th = 2^quantile(abs(log2(CmaxRatio)), c(0.25)),
-    CmaxRatio50th = 2^quantile(abs(log2(CmaxRatio)), c(0.50)),
-    CmaxRatio75th = 2^quantile(abs(log2(CmaxRatio)), c(0.75)),
-    CmaxRatio95th = 2^quantile(abs(log2(CmaxRatio)), c(0.95))
-  )
-```
-
+We will those more in detail.
