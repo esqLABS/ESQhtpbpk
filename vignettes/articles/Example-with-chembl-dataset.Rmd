@@ -69,7 +69,7 @@ library(doParallel)
 
 ## Load input files
 
-A dataset of Cmax and AUC extracted and curated from CHEMBL is available in the package as an example dataset.
+A dataset of Cmax and AUC values, extracted and curated from CHEMBL, is available in the package as an example dataset.
 
 ```{r loading_datasets}
 # Reading curated chembl dataset with AUC and Cmax values
@@ -80,7 +80,7 @@ path <- system.file(
 )
 ```
 
-The first sheet of the excel list the studies and the observed data available for each study.
+The first sheet of the excel file lists the studies and the observed data available for each study.
 
 ```{r loading_studies}
 # Reading curated chembl dataset with AUC and Cmax values
@@ -91,8 +91,7 @@ InputStudies <- read_excel(path, sheet = 1)
 myTinyDT(InputStudies)
 ```
 
-The second sheet of the excel list the protocols information to be simulated. A protocol can spread 
-multiple lines for the same study for example in case of multiple administration with loading dose. 
+The second sheet of the excel file lists the protocol information to be simulated. A protocol can span multiple lines for the same study, for example, in the case of multiple administrations with a loading dose.
 
 ```{r loading_protocol}
 InputProtocol <- read_excel(path, sheet = 2)
@@ -102,8 +101,8 @@ InputProtocol <- read_excel(path, sheet = 2)
 myTinyDT(InputProtocol)
 ```
 
-The third sheet of the excel list all the compound properties. Based on 
-[this paper](https://link.springer.com/article/10.1007/s00204-024-03764-9) and more specifically 
+The third sheet of the excel file list all the compound properties. Based on 
+[this paper](https://link.springer.com/article/10.1007/s00204-024-03764-9) and specifically 
 [Table 1](https://link.springer.com/article/10.1007/s00204-024-03764-9/tables/1), we extracted 
 compound properties from [ADMETlab](https://admetlab3.scbdd.com/) QSAR as input to the HT-PBPK model. 
 
@@ -115,13 +114,14 @@ InputCompounds <- read_excel(path, sheet = 3) # QSARs obtained from ADMETlab 3.0
 myTinyDT(InputCompounds)
 ```
 
+
 ### Summary of compound properties included in the dataset
 
-This dataset was extracted from Chembl and further curated to contain only studies with a single compound administered in healthy adults for which AUC or Cmax was available and protocol was identified from the original paper.
+This dataset was extracted from Chembl and further curated to include only studies with a single compound administered to healthy adults, where AUC or Cmax data were available, and the protocol was identified from the original publication.
 
-With the careful curation, the dataset ends up only containing `r length(unique(InputStudies$molecule_chembl_id))` compounds.  
+With the careful curation, the dataset contains `r length(unique(InputStudies$molecule_chembl_id))` compounds.  
 
-Here is a summary of the properties for compounds included:
+Here is a summary of the properties for included compounds:
 
 ```{r compounds_summary, message = FALSE}
 InputCompounds %>% 
@@ -139,10 +139,7 @@ InputCompounds %>%
 
 ## Testing multiple scenarios
 
-The platform allows to test easily multiple scenarios by adjusting inputs as needed based on the chosen scenarios. 
-An example of excel file with different scenarios is available in the package. 
-For example, the solubility can be set to an arbitrary high value or to the value from QSAR, the 
-lipophilicity can be set to logP or logD, etc.
+The platform allows easy testing of multiple scenarios by adjusting inputs as needed based on the selected conditions. An example Excel file with different scenarios is available in the package. For example, solubility can be set to an arbitrarily high value or to the value from QSAR. Lipophilicity can be set to logP or logD, etc.
 
 ```{r load_scenarios}
 scenarios <- read.csv(
@@ -161,22 +158,24 @@ myTinyDT(scenarios)
 ```
 
 The various scenarios can be easily implemented when setting up the compound by using 
-if or switch condition when setting the inputs (see below).  
+if or switch conditions when setting the inputs (see below).  
+
 
 ## Running the pipeline 
 
-First we can set the outputFolder where we will save the results.
+First, we set the output folder where the results will be saved.
 
 ```{r setFolder, eval = F}
 outputFolder <- "Chembl_Test_Pipeline"
 dir.create(outputFolder, showWarnings = FALSE)
 ```
 
-To create studies, it will depends on how our inputs are formatted, thus it can be very useful to create custom functions that are tailored to our inputs.
+To create studies, it depends on how the inputs are formatted. It can be very useful to create custom functions tailored to these inputs.
+
 
 ### Compound creation for various scenarios 
 
-First let's create a custom function that will create a compound object based on our inputs and scenario tested, then it will be easy to wrap it to create all the study we need for all the scenarios we want.
+First, let's create a custom function that will create a compound object based on our inputs and the scenario tested. It will then be easy to wrap this to create all the studies needed for all the scenarios we want.
 
 ```{r create_study_function, eval = T}
 createCompound <- function(chembl_id, scenario) {
@@ -360,7 +359,7 @@ createCompound <- function(chembl_id, scenario) {
 
 ### Protocol creation 
 
-We can also do a custom function to create our administration protocols based on the way our protocol information are set up.
+We can also create a custom function to define our administration protocols based on how our protocol information is set up.
 
 ```{r create_protocol_function, eval = TRUE}
 createProtocol <- function(protocol_id, scenario) {
@@ -424,7 +423,7 @@ createProtocol <- function(protocol_id, scenario) {
 
 ### Studies creation
 
-Then we can easily use these function to create the list of studies for each scenario we want to test
+Then, we can easily use these function to create the list of studies for each scenario we want to test.
 
 ```{r create_studies, eval = TRUE}
 createStudies <- function(scenario) {
@@ -492,10 +491,10 @@ createStudies <- function(scenario) {
 }
 ``` 
 
+
 ### Simulating the studies 
 
-Once we have the studies created, we can run the simulation. Let' s run the studies for the first 
-scenario.
+Once we have created the studies, we can run the simulation. Let' s run the studies for the first scenario.
 
 ```{r running_studies, eval = F}
 studies <- createStudies(scenario = scenarios[1, ])
@@ -519,17 +518,14 @@ results <- runPredictions(
 ```
 
 
-### Calculating wanted prediction metrics
+### Calculating prediction metrics
 
-The output metrics have to be customized to the one required for a specific analysis here 
-we have various AUC and Cmax and we will calculate them on our HT-PBPK predictions using `{PKNCA}` 
-package to matched the observed dataset.
+The output metrics must be customized to those required for the specific analysis. Here, we calculate various AUC and Cmax metrics based on our HT-PBPK predictions using the `{PKNCA}` package, matched to the observed dataset.
 
-The metric part will depends on the observed data we need, so this part will also be adjusted to
-one's need.
+The metrics depend on the observed data we need, so this part will also be adjusted to
+one's specific needs.
 
-Given that we need to calculate the metrics for multiple studies and scenarios it could be easier 
-to create a function that will do the calculations for us. 
+Since we need to calculate the metrics for multiple studies and scenarios, it can be helpful to create a function that performs the calculations. 
 
 ```{r calculate_metrics_function, eval = TRUE}
 calculateMetrics <- function(study, simData, obsData) {
@@ -678,8 +674,9 @@ calculateMetrics <- function(study, simData, obsData) {
 }
 ```
 
+
 Now that we created the function calculate the metrics on our simulated data, 
-we can run it for each study results in parallel and save as a csv file. 
+we can run it for each study result in parallel and save as a csv file. 
 
 ```{r calculate_metrics, eval = FALSE}
 # create and register parallel backend for calculating the metric needed 
@@ -720,9 +717,10 @@ write.csv(
 stopCluster(cl)
 ``` 
 
+
 ### Testing multiple scenarios
 
-As you can see it would be easy to run it for multiple scenario to test various QSARs or hypotheses.
+As demonstrated, it is straightforward to run the pipeline for multiple scenarios to test various QSARs or hypotheses.
 
 ```{r, eval = FALSE}
 # create and register parallel backend for calculating the metric needed 
@@ -789,24 +787,23 @@ for (scenario_row in seq_len(nrow(scenarios))) {
 stopCluster(cl)
 ```
 
+
 ## Looking at the results
 
 ### Scenario 1
 
 #### AUC0Inf 
 
-The results have already been calculated and are available in the package. 
-You can load them using the following code. Here for the default scenario 1:
+The results have already been calculated and are available in the package. You can load them using the following code for the default Scenario 1:
 
 ```{r load_results}
 path <- system.file("extdata", "Chembl_Test_Pipeline", "metrics_scenario1.csv", package = "ESQhtpbpk")
 metric_results_1 <- read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
 ``` 
 
-The predicted can be check with observed data. 
+The predictions can be checked against the observed data. 
 
-The AUC 0-Inf for all compounds is centered slightly above 1, meaning with the default HT-PBPK and 
-ADMETlab QSAR it tends to slightly overestimate the AUC compared to the observed value: 
+The AUC0Inf for all compounds is centered slightly above 1, meaning that, with the default HT-PBPK and ADMETlab QSAR, it tends to slightly overestimate the AUC compared to the observed value:
 
 <div class="toggle-code-block">
 ```{r}
@@ -842,6 +839,7 @@ tmp <- metric_results_1 %>%
   )
 ```
 
+
 There are `r signif(tmp$AUC0InfRatio_2Fold,3)` % of compounds with a predicted AUC0Inf within 2-fold of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold.
 
 We can also look at the AUC0Inf fold ratio for the different percentiles:
@@ -872,12 +870,9 @@ myTinyDT(tmp)
 
 So We have 50% of the compound for which the AUC0Inf fold ratio is within `r signif(tmp$AUC0InfRatio50th, 3)` folds.
 
-If we look more in detail at the AUC 0-Inf 
-(one dot is one studies and one compound i.e. one color can have multiple studies associated), 
-we can see that most of the studies/compounds are within 10-fold of the observed value, with one 
-compound being particularly underpredicted.
+If we look more in detail at the AUC0Inf (one dot is one studies and one compound i.e. one color can have multiple studies associated), we can see that most of the studies/compounds are within 10-fold of the observed value, with one compound particularly underpredicted.
 
-The dashed lines indicating identity (black), 2-fold (dark grey) and 10-fold (light grey) ratio.
+The dashed lines indicate the identity (black), 2-fold (dark grey) and 10-fold (light grey) ratios.
 
 <div class="toggle-code-block">
 ```{r}
@@ -898,10 +893,10 @@ ggplotly(p)
 ```
 </div>
 
+
 #### Cmax
 
-Similarly we can also look at other metrics such as Cmax. 
-The Cmax for all compounds tend to be overpredicted.
+Similarly we can also look at other metrics such as Cmax. The Cmax for all compounds tends to be overpredicted.
 
 <div class="toggle-code-block">
 ```{r}
@@ -967,16 +962,10 @@ myTinyDT(tmp)
 
 So we have 50% of the compound for which the AUC0Inf fold ratio is within `r signif(tmp$CmaxRatio50th,3)` folds.
 
-The comparison of Cmax can be slightly more difficult as the sample time points could affect the observed estimated value, 
-and the full observed pk profiles are not available in the extracted Chembl data. So it could be expected that
-the simulated Cmax with was sampled every 10 minutes could be different than the observed one, for which we 
-we don't necessarily now how often the data were sampled or even how the Cmax  was derived (from maximal value 
-observed or interpolated from NCA or 1-2-3 compartmental analysis, ...).
+Comparing Cmax can be more challenging, as the sampling time points may influence the observed estimated values, and the full observed PK profiles are not available in the extracted Chembl data. It can be expected that the simulated Cmax, sampled every 10 minutes, could differ from the observed one, for which the sampling frequency and method of Cmax determination (direct observation or NCA/compartmental analysis) are not always known.
 
-If we look more in detail at the Cmax 
-(one dot is one studies and one compound i.e. one color can have multiple studies associated), 
-we can see that most of the studies/compounds are overpredicted but within 10-fold of the observed value, with one 
-compound being particularly underpredicted.
+If we look more closely at the Cmax (one dot is one studies and one compound i.e. one color can have multiple studies associated), most studies/compounds are overpredicted but within 10-fold of the observed value, with one 
+compound particularly underpredicted.
 
 The dashed lines indicating identity (black), 2-fold (dark grey) and 10-fold (light grey) ratio.
 
@@ -1000,9 +989,10 @@ ggplotly(p)
 ```
 </div>
 
+
 #### AUC vs Cmax
 
-Looking at AUC and Cmax ratio together:  
+Looking at AUC and Cmax ratios together shows that in most cases, the AUC0Inf ratio and the Cmax ratio are correlated, meaning we tend to over- or underpredict both at the same time.
 
 <div class="toggle-code-block">
 ```{r}
@@ -1038,21 +1028,15 @@ ggplotly(p)
 
 The dashed lines indicate the 2-fold (dark grey) and 10-fold (light grey) ratio for both AUC0Inf and Cmax. 
 
-We see that in most cases the AUC0Inf ratio and Cmax ratio are correlated, meaning that we 
-tends to over/under predict both at the same time.
 
-#### Characteristic of compound compared to their predictability
+#### Characteristics of compounds compared to their predictability
 
-We can additional try to understand for which compounds the AUC and Cmax are less well predicted, 
-to better understand the potential applicability domain of the pipeline even though
-it will be mostly constrained by applicability domain of the used QSAR inputs as well as the PBPK 
-model. 
+We can further investigate which compounds exhibit less accurate AUC and Cmax predictions to better understand the potential applicability domain of the pipeline. However, this domain is mainly constrained by the applicability of the QSAR inputs used, as well as the assumptions and limitations of the PBPK model.
+
 
 ##### Lipophilicity effect
 
-Compounds with high or low lipophilicty values tends to be the 
-most problematic ones and not well predicted. This is regurlarly seen when doing HT-PBPK assessment
-as the lipophilicity is a key parameter for the distribution and absorption of compounds, the reason can be two-fold: QSAR for extreme lipophilicity compounds can be less accurate and absorption and distribution estimated with PBPK models can also be less accurate. 
+Compounds with high or low lipophilicty values tend to be the most challenging to predict accurately. This is regularly observed in HT-PBPK assessments, as the lipophilicity is a key parameter for the distribution and absorption of compounds. The reasons can be two-fold: QSAR predictions for compounds with extreme lipophilicity may be less accurate, and PBPK models may estimate absorption and distribution less reliably in such cases.
 
 <div class="toggle-code-block">
 ```{r}
@@ -1080,12 +1064,10 @@ ggplotly(p)
 We observed a trend that high lypophilic compounds have an underpredicted AUC0Inf, while low 
 lipophilicity compounds are more overpredicted. 
 
+
 ##### Fraction unbound effect
 
-Similarly compounds that have a very low fraction unbound are 
-also poorly predicted. Fraction unbound also tends to be correlated with lipophilicity. 
-
-Fraction unbound also has a significant effect on the distribution of compound and a small change could have significant impact on the predicted AUC/Cmax.
+Similarly, compounds that have a very low fraction unbound are also poorly predicted. Fraction unbound tends to correlate with lipophilicity and has a significant impact on compound distribution. Even small changes in this parameter can greatly affect predicted AUC and Cmax.
 
 <div class="toggle-code-block">
 ```{r}
@@ -1111,10 +1093,10 @@ ggplotly(p)
 ```
 </div> 
 
+
 ##### Solubility effect
 
-Similarly compounds that have a very low solubility are 
-also poorly predicted.
+Compounds with very low solubility are also challenging to predict accurately.
 
 <div class="toggle-code-block">
 ```{r}
@@ -1139,13 +1121,13 @@ ggplotly(p)
 ```
 </div> 
 
+
 ### Compare with other scenarios
 
-We can compare with other scenarios that use different QSARs values as input or 
-make different assumptions (for example adding artificially high organ permeability or solubility)
+We can compare the results with other scenarios that use different QSAR values as input or make different assumptions (e.g., adding artificially high organ permeability or solubility).
 
-The different scenario results are already calculated and available in with the package. We will 
-load them and combine them to be able to compare them.
+The different scenario results are already calculated and available in the package. We will 
+load and combine them for comparison.
 
 ```{r load_various_scenarios}
 for (i in 2:18) {
@@ -1221,10 +1203,11 @@ p
 ```
 </div> 
 
-Scenario 9 (assuming high organ permeability) and 15 (using logMA as calculated by
-[Pearce](https://pmc.ncbi.nlm.nih.gov/articles/PMC6186149/) from logP) seems to give more reasonable AUC0Inf and Cmax. Eventhough for Scenario 15 Cmax still tends to be overpredicted in most cases.
 
-We will those more in detail.
+Scenario 9 (assuming high organ permeability) and Scenario 15 (using logMA as calculated by
+[Pearce](https://pmc.ncbi.nlm.nih.gov/articles/PMC6186149/) from logP) seem to provide more reasonable AUC0Inf and Cmax predictions. Even though for Scenario 15, Cmax still tends to be overpredicted in most cases.
+
+Let's have a closer look at those.
 
 ### Scenario 9
 
@@ -1232,9 +1215,9 @@ Scenario 9 assumes a high tissue permeability
 
 #### AUC0Inf 
 
-The predicted AUC0Inf can be check with observed data. 
+The predicted AUC0Inf can be checked against the observed data. 
 
-The AUC 0-Inf for all compounds is centered slightly below 1, meaning with the high tissue permeability assumption we tends to slightly underestimate the AUC compared to the observed value:
+The AUC0Inf for all compounds is centered slightly below 1, meaning with the high tissue permeability assumption, we tends to slightly underestimate the AUC compared to the observed value:
 
 <div class="toggle-code-block">
 ```{r}
@@ -1270,6 +1253,7 @@ tmp <- metric_results_9 %>%
   )
 ```
 
+
 There are `r signif(tmp$AUC0InfRatio_2Fold,3)` % of compounds with a predicted AUC0Inf within 2-fold
 of the observed value, `r signif(tmp$AUC0InfRatio_4Fold, 3)`% within 4-fold and 
 `r signif(tmp$AUC0InfRatio_10Fold,3)` % within 10-fold. 
@@ -1278,7 +1262,7 @@ With this assumption it increases the number of compounds for which the AUC0Inf 
 4-fold and 10-fold of the observed value compared to the default scenario, at least for the tested 
 set of compounds.
 
-If we look more in detail at the AUC 0-Inf (one dot is one studies and one compound i.e. 
+If we look more in detail at the AUC0Inf (one dot is one studies and one compound i.e. 
 one color can have multiple studies associated), we can see that most of the studies/compounds 
 are within 10-fold of the observed value, with one compound being particularly under-predicted.
 
@@ -1338,15 +1322,15 @@ ggplotly(p)
 ```
 </div>
 
-With this assumption the AUC0Inf was decreased for a few compounds that were over-predicted, 
-sometimes even too much, that they became under-predicted. But for most compounds the AUC0Inf stayed 
+With this assumption the AUC0Inf was decreased for a few compounds that were overpredicted, 
+sometimes to such extent, that they became underpredicted. However, for most compounds the AUC0Inf stayed 
 very similar to the previous scenario with less 2 fold difference between the two
 scenarios.
 
+
 #### Cmax
 
-Similarly we can also look at other metrics such as Cmax. 
-The Cmax for all compounds is well center around the observed Cmax this this assumption.
+The Cmax for all compounds is now better centered around the observed Cmax.
 
 <div class="toggle-code-block">
 ```{r}
@@ -1384,13 +1368,8 @@ tmp <- metric_results_9 %>%
 
 There are `r signif(tmp$CmaxRatio_2Fold,3)` % of compounds with a predicted Cmax within 2-fold of the observed value, `r signif(tmp$CmaxRatio_4Fold, 3)`% within 4-fold and `r signif(tmp$CmaxRatio_10Fold,3)` % within 10-fold.
 
-With this assumption it increase the number of compounds for which the Cmax is within 2-fold, 4-fold ]
-and 10-fold of the observed value compared to the default scenario, at least for the tested set of compounds.
+With this assumption, the number of compounds for which Cmax is within 2-fold, 4-fold, and 10-fold of the observed value increases compared to the default scenario.
 
-If we look more in detail at the Cmax 
-(one dot is one studies and one compound i.e. one color can have multiple studies associated), 
-we can see that most of the studies/compounds are overpredicted but within 10-fold of the observed value, with one 
-compound being particularly underpredicted.
 
 The dashed lines indicating identity (black), 2-fold (dark grey) and 10-fold (light grey) ratio.
 
@@ -1484,7 +1463,7 @@ Scenario 15 uses transforms logP to LogMA as calculated by [Pearce](https://pmc.
 
 The predicted AUC0Inf can be check with observed data. 
 
-The AUC 0-Inf for all compounds is centered around 1, meaning with this input for lipophilicity the 
+The AUC0Inf for all compounds is centered around 1, meaning with this input for lipophilicity the 
 simulated AUC0Inf around the observed value:
 
 <div class="toggle-code-block">
@@ -1527,7 +1506,7 @@ With this assumption it increase (but only very slightly) the number of compound
 AUC0Inf is within 2-fold, 4-fold and 10-fold of the observed value compared to the default scenario, 
 at least for the tested set of compounds.
 
-If we look more in detail at the AUC 0-Inf (one dot is one studies and one compound i.e. one color 
+If we look more in detail at the AUC0Inf (one dot is one studies and one compound i.e. one color 
 can have multiple studies associated), we can see that most of the studies/compounds are within 
 10-fold of the observed value, with one compound being particularly underpredicted.
 
@@ -1725,11 +1704,6 @@ detrimental for high lipophilicity compound that were already poorly predicted.
 
 ## Conclusion
 
-The ESQhtpbpk package allows to easily simulate the pharmacokinetics of compounds. The prediction results
-will depends on the accuracy of the input data (for example QSAR values used) as well as the PBPK and the 
-assumptions on the model made. Predictions tends to be less reliable for extreme lipophilicity compounds, 
-low fraction unbound and low solubility compounds. However given the variability of the aggregated metrics 
-AUC0Inf and Cmax, as the sample time points, the comparaison with the predicted values might not always
-be fair and having PK observed profiles, would allow harmonisation of the calculation of those type of 
-metrics between observed and simulated. 
+The ESQhtpbpk package allows easy simulation of compound pharmacokinetics. The prediction results depend on the accuracy of the input data (e.g., QSAR values used) as well as the PBPK model and its assumptions. Predictions tend to be less reliable for compounds with extreme lipophilicity, low fraction unbound, and low solubility.
+However, given the variability of the aggregated metrics AUC0Inf and Cmax, as well as differences in sampling time points, comparisons with predicted values may not always be appropriate. Availability of full observed PK profiles would allow better harmonization of these metrics between observed and simulated data.
 
