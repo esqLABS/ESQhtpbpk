@@ -87,7 +87,6 @@ The first sheet of the excel list the studies and the observed data available fo
 InputStudies <- read_excel(path, sheet = 1)
 ```
 
-
 ```{r echo = FALSE}
 myTinyDT(InputStudies)
 ```
@@ -864,10 +863,12 @@ tmp <- metric_results_1 %>%
     AUC0InfRatio75th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.75)),
     AUC0InfRatio95th = 2^quantile(abs(log2(AUC0InfRatio)), c(0.95))
   )
-
-myTinyDT(tmp)
 ```
 </div>
+
+```{r, echo = FALSE}
+myTinyDT(tmp)
+```
 
 So We have 50% of the compound for which the AUC0Inf fold ratio is within `r signif(tmp$AUC0InfRatio50th, 3)` folds.
 
@@ -957,10 +958,12 @@ tmp <- metric_results_1 %>%
     CmaxRatio75th = 2^quantile(abs(log2(CmaxRatio)), c(0.75)),
     CmaxRatio95th = 2^quantile(abs(log2(CmaxRatio)), c(0.95))
   )
-
-myTinyDT(tmp)
 ```
 </div>
+
+```{r, echo = FALSE}
+myTinyDT(tmp)
+```
 
 So we have 50% of the compound for which the AUC0Inf fold ratio is within `r signif(tmp$CmaxRatio50th,3)` folds.
 
