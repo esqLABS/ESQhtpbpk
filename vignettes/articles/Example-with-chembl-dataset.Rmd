@@ -42,7 +42,8 @@ myTinyDT <- function(df) {
 
 For this example we will load a few libraries
 
-```{r setup, echo = TRUE, warning = FALSE, message = FALSE}
+```{r setup_needed, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+# needed package for building the article
 library(ESQhtpbpk) # package for HTPBPK
 library(readxl) # package to read xlsx files that contains input data
 library(dplyr) # package for easy manipulation of data
@@ -50,13 +51,21 @@ library(tidyr) # package for easy manipulation of data
 library(stringr) # package for string manipulation
 # packages for plotting
 library(ggplot2)
-library(ggrepel)
-library(scales)
+library(plotly)
+```
+
+```{r setup_shown, eval = FALSE, echo = TRUE, warning = FALSE, message = FALSE}
+library(ESQhtpbpk) # package for HTPBPK
+library(readxl) # package to read xlsx files that contains input data
+library(dplyr) # package for easy manipulation of data
+library(tidyr) # package for easy manipulation of data
+library(stringr) # package for string manipulation
+# packages for plotting
+library(ggplot2)
 library(plotly)
 # packages for parallel computing
 library(doParallel)
 ```
-
 
 ## Load input files
 
