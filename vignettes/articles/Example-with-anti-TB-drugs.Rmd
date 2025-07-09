@@ -119,7 +119,7 @@ myTinyDT(InputProtocol)
 ```
 
 In a few cases a dissolution profile was known and used as formulations, in most cases it was assumed 
-to be dissolved. Formulation parapemeters are given in the fourth sheet of the excel file. 
+to be dissolved. Formulation parameters are given in the fourth sheet of the excel file. 
 
 ```{r loading_compounds}
 InputFormulations <- read_excel(path, sheet = 4) # QSARs obtained from ADMETlab 3.0
@@ -140,73 +140,70 @@ myTinyDT(InputObservedDataset)
 
 ## Preparing the studies for the pipeline
 
-```{r}
+```{r eval = F}
 Studies <- list()
-# Create TB studies for each compound
-for (compoundIdx in seq_len(nrow(TBCompounds))) {
-  compName <- TBCompounds$Compound[compoundIdx]
-  comp <- Compound$new(ID = compName)
 
-  comp$setPropertyValue("Chlorine count", value = TBCompounds$Cl[compoundIdx])
-  comp$setPropertyValue("Bromine count", TBCompounds$Br[compoundIdx])
-  comp$setPropertyValue("Fluorine count", TBCompounds$`F`[compoundIdx])
-  comp$setPropertyValue("Iodine count", TBCompounds$I[compoundIdx])
-  comp$setPropertyValue("Molecular weight", TBCompounds$`MW (g/mol)`[compoundIdx], unit = "g/mol")
-  comp$setPropertyValue("Solubility", 10^TBCompounds$`logS - ADMETLab (mol/l)`[compoundIdx] * TBCompounds$`MW (g/mol)`[compoundIdx], unit = "g/l")
-  # comp$setPropertyValue("Lipophilicity", TBCompounds$`logP - ADMETLab (mol/l)`[compoundIdx])
-  comp$setPropertyValue("Lipophilicity", TBCompounds$`logD - ADMETLab (mol/l)`[compoundIdx])
-  # comp$setPropertyValue("pKa value 0", TBCompounds$`pka_basic - ADMETLab`[compoundIdx])
-  # comp$setPropertyValue("Compound type 0", "Basic")
-  # comp$setPropertyValue("pKa value 1", TBCompounds$`pka_acidic - ADMETLab`[compoundIdx])
-  # comp$setPropertyValue("Compound type 1", "Acidic")
-  comp$setPropertyValue("Fraction unbound", TBCompounds$`Fu - ADMETLab`[compoundIdx], unit = "%")
-  # comp$addProperty(
-  #   name = "PInt",
-  #   parName = "Specific intestinal permeability (transcellular)",
-  #   dimension = "Velocity",
-  #   value = 10^TBCompounds$`logMDCK - ADMETLab (cm/s)`[compoundIdx],
-  #   unit = "cm/s"
-  # )
-  # comp$addProperty(
-  #   name = "PInt",
-  #   parName = "Specific intestinal permeability (transcellular)",
-  #   dimension = "Velocity",
-  #   value = 60 * 266 * (ospsuite::toBaseUnit(quantityOrDimension = "Molecular weight", TBCompounds$`MW (g/mol)`[compoundIdx] - TBCompounds$`F`[compoundIdx] * 0.000000017 - TBCompounds$Cl[compoundIdx] * 0.000000022 -  TBCompounds$Br[compoundIdx] * 0.000000062 - TBCompounds$I[compoundIdx] * 0.000000098, unit = "g/mol") * 1e9)^(-4.5)*10^TBCompounds$`logP - ADMETLab (mol/l)`[compoundIdx] * 60 * 1e-1
-  # )
+# Create studies for each anti-TB compound
+for (compoundIdx in seq_len(nrow(InputCompounds))) {
+  
+  # Create compound
+  compoundName <- InputCompounds$Compound[compoundIdx]
+  compound <- Compound$new(ID = compoundName)
+
+  compound$setPropertyValue("Chlorine count", value = InputCompounds$Cl[compoundIdx])
+  compound$setPropertyValue("Bromine count", InputCompounds$Br[compoundIdx])
+  compound$setPropertyValue("Fluorine count", InputCompounds$`F`[compoundIdx])
+  compound$setPropertyValue("Iodine count", InputCompounds$I[compoundIdx])
+  compound$setPropertyValue("Molecular weight", InputCompounds$`MW (g/mol)`[compoundIdx], unit = "g/mol")
+  compound$setPropertyValue("Solubility", 10^InputCompounds$`logS - ADMETLab (mol/l)`[compoundIdx] * InputCompounds$`MW (g/mol)`[compoundIdx], unit = "g/l")
+  compound$setPropertyValue("Lipophilicity", InputCompounds$`logD - ADMETLab (mol/l)`[compoundIdx])
+  compound$setPropertyValue("Fraction unbound", InputCompounds$`Fu - ADMETLab`[compoundIdx], unit = "%")
+  
+  compound$addProperty(
+    name = "PInt",
+    parName = "Specific intestinal permeability (transcellular)",
+    dimension = "Velocity",
+    value = 10^InputCompounds$`logMDCK - ADMETLab (cm/s)`[compoundIdx],
+    unit = "cm/s"
+  )
+  
+  # test scenario with high tissue permeability as seen to improve in the chembl example
+  
+  
   # add general clearance (as hepatic clearance)
-  comp$addProcessProperty(
+  compound$addProcessProperty(
     processType = "Liver Plasma Clearance",
     propertyName = "Plasma clearance",
     parName = "Plasma clearance",
     dimension = "Flow per weight",
-    value = TBCompounds$`cl-plasma - ADMETLab (ml/min/kg)`[compoundIdx], unit = "ml/min/kg"
+    value = InputCompounds$`cl-plasma - ADMETLab (ml/min/kg)`[compoundIdx], unit = "ml/min/kg"
   )
-  comp$addProcessProperty(
+  compound$addProcessProperty(
     processType = "Liver Plasma Clearance",
     propertyName = "Lipophilicity",
     parName = "Lipophilicity (experiment)",
     dimension = "Log Units",
     # value = TBCompounds$`logP - ADMETLab (mol/l)`[compoundIdx]
-    value = TBCompounds$`logD - ADMETLab (mol/l)`[compoundIdx]
+    value = InputCompounds$`logD - ADMETLab (mol/l)`[compoundIdx]
   )
-  comp$addProcessProperty(
+  compound$addProcessProperty(
     processType = "Liver Plasma Clearance",
     propertyName = "Fraction unbound",
     parName = "Fraction unbound (experiment)",
     dimension = "Fraction",
-    value = TBCompounds$`Fu - ADMETLab`[compoundIdx],
+    value = InputCompounds$`Fu - ADMETLab`[compoundIdx],
     unit = "%"
   )
 
-  # set default gfr of 1
-  comp$addProcessProperty(
-    processType = "GFR",
-    propertyName = "GFR",
-    parName = "GFR fraction",
-    dimension = "Fraction",
-    value = 0,
-    unit = ""
-  )
+  # # set default gfr of 0
+  # comp$addProcessProperty(
+  #   processType = "GFR",
+  #   propertyName = "GFR",
+  #   parName = "GFR fraction",
+  #   dimension = "Fraction",
+  #   value = 0,
+  #   unit = ""
+  # )
 
   for (studyIdx in which(TBStudies$Compound == compName)) {
     studyId <- TBStudies$StudyID[studyIdx]
