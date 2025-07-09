@@ -3,5 +3,6 @@
 ^\.github$
 ^_pkgdown\.yml$
 ^docs$
+^vignettes/articles$
 ^Meta$
 ^pkgdown$

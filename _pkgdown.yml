@@ -1,12 +1,19 @@
 url: https://esqlabs.github.io/ESQhtpbpk/
 template:
   bootstrap: 5
+  assets:
+    - pkgdown/extra.css
+    - pkgdown/extra.js
 articles:
 - title: ESQhtpbpk Workflows
   navbar: ESQhtpbpk Workflows
   contents:
   - ESQhtpbpk-automatic-models
   - ESQhtpbpk-custom-pkml
+- title: Examples
+  navbar: Examples
+  contents:
+  - articles/Example-with-chembl-dataset
 - title: Miscellaneous
   navbar: Miscellaneous
   contents:

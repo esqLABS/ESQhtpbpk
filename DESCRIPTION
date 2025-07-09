@@ -32,7 +32,12 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0),
     devtools,
+    doParallel,
+    DT,
+    ggplot2,
     knitr,
+    plotly,
+    readxl,
     rmarkdown,
     vdiffr
 Config/testthat/edition: 3

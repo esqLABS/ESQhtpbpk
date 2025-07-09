@@ -1,0 +1,19 @@
+Halogen,Solubility,Lipophilicity,Fu,Pint,Perm,Plasma_Clearance,PkA,GFR,Dose,Enzyme_correction,Scenario
+0,logS,logD,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,1
+1,logS,logD,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,2
+0,High,logD,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,3
+0,logS,logP,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,4
+0,logS,logD,PPB,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,5
+0,logS,logD,Fu,Caco2, PK-Sim,cl-plasma,0,0,Flat,0,6
+0,logS,logD,Fu,PAMPA, PK-Sim,cl-plasma,0,0,Flat,0,7
+0,logS,logD,Fu,PK-Sim, PK-Sim,cl-plasma,0,0,Flat,0,8
+0,logS,logD,Fu,MDCK,High,cl-plasma,0,0,Flat,0,9
+0,logS,logD,Fu,MDCK, PK-Sim,cl-plasma,1,0,Flat,0,10
+0,logS,logD,Fu,MDCK, PK-Sim,cl-plasma,0,1,Flat,0,11
+0,logS,logD,Fu,MDCK, PK-Sim,cl-plasma,0,0,BW,0,12
+0,logS,logD,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,1,13
+0,logS,logMA1,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,14
+0,logS,logMA_Pearce,Fu,MDCK, PK-Sim,cl-plasma,0,0,Flat,0,15
+0,logS,logP,Fu,PK-Sim, PK-Sim,cl-plasma,0,0,Flat,0,16
+0,logS,logMA1,Fu,PK-Sim, PK-Sim,cl-plasma,0,0,Flat,0,17
+0,logS,logMA_Pearce,Fu,PK-Sim, PK-Sim,cl-plasma,0,0,Flat,0,18

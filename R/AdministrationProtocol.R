@@ -1007,7 +1007,7 @@ AdvancedProtocol <- R6::R6Class(
               )
             }
           }
-          protocol$FormulationKey <- paste0("Formulation", identicalIdx)
+          protocol$FormulationKey <- paste0("Formulation", identicalIdx[1])
         } else {
           # update protocol with correct formulation key
           protocol$FormulationKey <- paste0("Formulation", length(existingForm) + 1)
