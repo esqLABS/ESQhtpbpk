@@ -101,7 +101,7 @@ InputProtocol <- read_excel(path, sheet = 2)
 myTinyDT(InputProtocol)
 ```
 
-The third sheet of the excel file list all the compound properties. Based on 
+The third sheet of the excel file lists all the compound properties. Based on 
 [this paper](https://link.springer.com/article/10.1007/s00204-024-03764-9) and specifically 
 [Table 1](https://link.springer.com/article/10.1007/s00204-024-03764-9/tables/1), we extracted 
 compound properties from [ADMETlab](https://admetlab3.scbdd.com/) QSAR as input to the HT-PBPK model. 
@@ -522,7 +522,7 @@ results <- runPredictions(
 
 The output metrics must be customized to those required for the specific analysis. Here, we calculate various AUC and Cmax metrics based on our HT-PBPK predictions using the `{PKNCA}` package, matched to the observed dataset.
 
-The metrics depend on the observed data we need, so this part will also be adjusted to
+The metrics depend on the observed data we have, so this part will also be adjusted to
 one's specific needs.
 
 Since we need to calculate the metrics for multiple studies and scenarios, it can be helpful to create a function that performs the calculations. 
@@ -1067,7 +1067,7 @@ lipophilicity compounds are more overpredicted.
 
 ##### Fraction unbound effect
 
-Similarly, compounds that have a very low fraction unbound are also poorly predicted. Fraction unbound tends to correlate with lipophilicity and has a significant impact on compound distribution. Even small changes in this parameter can greatly affect predicted AUC and Cmax.
+Similarly, compounds that have a very low fraction unbound are also poorly predicted. Fraction unbound tends to correlate with lipophilicity and has a significant impact on compound distribution. Even small changes in this parameter can greatly affect predicted AUC and Cmax, mainly for low fraction unbound compounds.
 
 <div class="toggle-code-block">
 ```{r}
@@ -1204,7 +1204,7 @@ p
 </div> 
 
 
-Scenario 9 (assuming high organ permeability) and Scenario 15 (using logMA as calculated by
+Scenario 9 (assuming high tissue permeability) and Scenario 15 (using logMA as calculated by
 [Pearce](https://pmc.ncbi.nlm.nih.gov/articles/PMC6186149/) from logP) seem to provide more reasonable AUC0Inf and Cmax predictions. Even though for Scenario 15, Cmax still tends to be overpredicted in most cases.
 
 Let's have a closer look at those.
