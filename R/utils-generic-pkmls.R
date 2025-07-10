@@ -174,7 +174,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
               dplyr::mutate(
                 formulationKeySim = ifelse(
                   is.na(formulationKey),
-                  NA,
+                  NA_character_,
                   paste(type, na.omit(formulationType), dplyr::row_number())
                 )
               )
@@ -569,7 +569,7 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     genericProtocol |>
       dplyr::filter(
         type == studyProt$Route,
-        identical(formulationName, ifelse(is.null(studyProt$Formulation), NA, studyProt$Formulation$Name))
+        identical(formulationName, ifelse(is.null(studyProt$Formulation), NA_character_, studyProt$Formulation$Name))
       ) |>
       dplyr::pull(path)
   )
