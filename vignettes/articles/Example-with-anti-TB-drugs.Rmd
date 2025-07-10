@@ -140,168 +140,196 @@ myTinyDT(InputObservedDataset)
 
 ## Preparing the studies for the pipeline
 
-```{r eval = F}
-Studies <- list()
+Based on the Chembl example we will also test the default setting and with high tissue permeability
+```{r, eval = TRUE}
+createStudies <- function(scenario, PC, CP){
+  Studies <- list()
 
-# Create studies for each anti-TB compound
-for (compoundIdx in seq_len(nrow(InputCompounds))) {
+  # Create studies for each anti-TB compound
+  # loop for each compounds to create them oonly once
+  for (compoundIdx in seq_len(nrow(InputCompounds))) {
+    # Create compound
+    compoundName <- InputCompounds$Compound[compoundIdx]
+    compound <- Compound$new(ID = compoundName)
   
-  # Create compound
-  compoundName <- InputCompounds$Compound[compoundIdx]
-  compound <- Compound$new(ID = compoundName)
-
-  compound$setPropertyValue("Chlorine count", value = InputCompounds$Cl[compoundIdx])
-  compound$setPropertyValue("Bromine count", InputCompounds$Br[compoundIdx])
-  compound$setPropertyValue("Fluorine count", InputCompounds$`F`[compoundIdx])
-  compound$setPropertyValue("Iodine count", InputCompounds$I[compoundIdx])
-  compound$setPropertyValue("Molecular weight", InputCompounds$`MW (g/mol)`[compoundIdx], unit = "g/mol")
-  compound$setPropertyValue("Solubility", 10^InputCompounds$`logS - ADMETLab (mol/l)`[compoundIdx] * InputCompounds$`MW (g/mol)`[compoundIdx], unit = "g/l")
-  compound$setPropertyValue("Lipophilicity", InputCompounds$`logD - ADMETLab (mol/l)`[compoundIdx])
-  compound$setPropertyValue("Fraction unbound", InputCompounds$`Fu - ADMETLab`[compoundIdx], unit = "%")
-  
-  compound$addProperty(
-    name = "PInt",
-    parName = "Specific intestinal permeability (transcellular)",
-    dimension = "Velocity",
-    value = 10^InputCompounds$`logMDCK - ADMETLab (cm/s)`[compoundIdx],
-    unit = "cm/s"
-  )
-  
-  # test scenario with high tissue permeability as seen to improve in the chembl example
-  
-  
-  # add general clearance (as hepatic clearance)
-  compound$addProcessProperty(
-    processType = "Liver Plasma Clearance",
-    propertyName = "Plasma clearance",
-    parName = "Plasma clearance",
-    dimension = "Flow per weight",
-    value = InputCompounds$`cl-plasma - ADMETLab (ml/min/kg)`[compoundIdx], unit = "ml/min/kg"
-  )
-  compound$addProcessProperty(
-    processType = "Liver Plasma Clearance",
-    propertyName = "Lipophilicity",
-    parName = "Lipophilicity (experiment)",
-    dimension = "Log Units",
-    # value = TBCompounds$`logP - ADMETLab (mol/l)`[compoundIdx]
-    value = InputCompounds$`logD - ADMETLab (mol/l)`[compoundIdx]
-  )
-  compound$addProcessProperty(
-    processType = "Liver Plasma Clearance",
-    propertyName = "Fraction unbound",
-    parName = "Fraction unbound (experiment)",
-    dimension = "Fraction",
-    value = InputCompounds$`Fu - ADMETLab`[compoundIdx],
-    unit = "%"
-  )
-
-  # # set default gfr of 0
-  # comp$addProcessProperty(
-  #   processType = "GFR",
-  #   propertyName = "GFR",
-  #   parName = "GFR fraction",
-  #   dimension = "Fraction",
-  #   value = 0,
-  #   unit = ""
-  # )
-
-  for (studyIdx in which(TBStudies$Compound == compName)) {
-    studyId <- TBStudies$StudyID[studyIdx]
-    studyProtocolId <- TBStudies$ProtocolID[studyIdx]
-    protocolTable <- TBProtocol[TBProtocol$ProtocolID == studyProtocolId, ]
-
-    prot <- AdvancedProtocol$new()
-    for (i in seq_len(nrow(protocolTable))) {
-      prot$addSchema(
-        schemaName = paste0("Schema_", i),
-        startTime = protocolTable$`StartTime (h)`[i],
-        timeBetweenRepetitions = ifelse(is.na(protocolTable$`TimeBetweenRep (h)`[i]), 0, protocolTable$`TimeBetweenRep (h)`[i]),
-        numberOfRepetitions = ifelse(is.na(protocolTable$NbRep[i]), 1, protocolTable$NbRep[i]),
-        timeUnit = "h"
+    compound$setPropertyValue("Chlorine count", value = InputCompounds$Cl[compoundIdx])
+    compound$setPropertyValue("Bromine count", InputCompounds$Br[compoundIdx])
+    compound$setPropertyValue("Fluorine count", InputCompounds$`F`[compoundIdx])
+    compound$setPropertyValue("Iodine count", InputCompounds$I[compoundIdx])
+    compound$setPropertyValue("Molecular weight", InputCompounds$`MW (g/mol)`[compoundIdx], unit = "g/mol")
+    compound$setPropertyValue(
+      "Solubility", 
+      10^InputCompounds$`logS - ADMETLab (mol/l)`[compoundIdx] * InputCompounds$`MW (g/mol)`[compoundIdx], 
+      unit = "g/l"
+    )
+    compound$setPropertyValue("Lipophilicity", InputCompounds$`logD - ADMETLab (mol/l)`[compoundIdx])
+    compound$setPropertyValue("Fraction unbound", InputCompounds$`Fu - ADMETLab`[compoundIdx], unit = "%")
+    
+    compound$addProperty(
+      name = "PInt",
+      parName = "Specific intestinal permeability (transcellular)",
+      dimension = "Velocity",
+      value = 10^InputCompounds$`logMDCK - ADMETLab (cm/s)`[compoundIdx],
+      unit = "cm/s"
+    )
+    
+    # test scenario with high tissue permeability as seen to improve in the chembl example
+    if (scenario$Perm == "High") {
+      compound$addProperty(
+        name = "Perm",
+        parName = "Permeability",
+        dimension = "Velocity",
+        value = 10,
+        unit = "cm/s"
       )
-
-      admin <- SimpleProtocol$new(
-        route = protocolTable$Route[i],
-        dose = protocolTable$Dose[i],
-        doseUnit = protocolTable$DoseUnit[i],
-        infusionTime = if (is.na(protocolTable$`InfusionTime (min)`[i])) {NULL} else {protocolTable$`InfusionTime (min)`[i]},
-        infusionTimeUnit = "min",
-        waterVolPerBW = if (is.na(protocolTable$`Water Volume/BW (ml/kg)`[i])) {NULL} else {protocolTable$`Water Volume/BW (ml/kg)`[i]},
-        waterVolPerBWUnit = "ml/kg"
-      )
-
-      if (protocolTable$Route[i] == "Oral") {
-        if (protocolTable$FormulationID[i] == "Solution" || is.na(protocolTable$FormulationID[i])) {
-          formulation <- createDissolvedFormulation(name = "Dissolved")
-        } else {
-          form <- TBFormulation[TBFormulation$FormulationID == protocolTable$FormulationID[i], ]
-
-          if (form$`FormulationType` == "Weibull") {
-            formulation <- createWeibullFormulation(
-              name = "Weibull",
-              lagTime = form$`lagTime (min)`,
-              lagTimeUnit = "min",
-              dissolutionTime50 = form$`disso50 (min)`,
-              dissolutionTime50Unit = "min",
-              shape = form$`shape`
-            )
+    } 
+          
+    # add general clearance (as hepatic clearance)
+    compound$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Plasma clearance",
+      parName = "Plasma clearance",
+      dimension = "Flow per weight",
+      value = InputCompounds$`cl-plasma - ADMETLab (ml/min/kg)`[compoundIdx], 
+      unit = "ml/min/kg"
+    )
+    compound$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Lipophilicity",
+      parName = "Lipophilicity (experiment)",
+      dimension = "Log Units",
+      value = InputCompounds$`logD - ADMETLab (mol/l)`[compoundIdx]
+    )
+    compound$addProcessProperty(
+      processType = "Liver Plasma Clearance",
+      propertyName = "Fraction unbound",
+      parName = "Fraction unbound (experiment)",
+      dimension = "Fraction",
+      value = InputCompounds$`Fu - ADMETLab`[compoundIdx],
+      unit = "%"
+    )
+  
+    # loop for all studies with that compound
+    for (studyIdx in which(InputStudies$Compound == compoundName)) {
+      studyId <- InputStudies$StudyID[studyIdx]
+      studyProtocolId <- InputStudies$ProtocolID[studyIdx]
+      protocolTable <- InputProtocol[InputProtocol$ProtocolID == studyProtocolId, ]
+  
+      # create study protocol
+      prot <- AdvancedProtocol$new()
+      for (i in seq_len(nrow(protocolTable))) {
+        prot$addSchema(
+          schemaName = paste0("Schema_", i),
+          startTime = protocolTable$`StartTime (h)`[i],
+          timeBetweenRepetitions = ifelse(is.na(protocolTable$`TimeBetweenRep (h)`[i]), 0, protocolTable$`TimeBetweenRep (h)`[i]),
+          numberOfRepetitions = ifelse(is.na(protocolTable$NbRep[i]), 1, protocolTable$NbRep[i]),
+          timeUnit = "h"
+        )
+  
+        admin <- SimpleProtocol$new(
+          route = protocolTable$Route[i],
+          dose = protocolTable$Dose[i],
+          doseUnit = protocolTable$DoseUnit[i],
+          infusionTime = if (is.na(protocolTable$`InfusionTime (min)`[i])) {
+            NULL
+          } else {
+            protocolTable$`InfusionTime (min)`[i]
+          },
+          infusionTimeUnit = "min",
+          waterVolPerBW = if (is.na(protocolTable$`Water Volume/BW (ml/kg)`[i])) {
+            NULL
+          } else {
+            protocolTable$`Water Volume/BW (ml/kg)`[i]
+          },
+          waterVolPerBWUnit = "ml/kg"
+        )
+  
+        # For oral protocol add formulation if known
+        if (protocolTable$Route[i] == "Oral") {
+          if (protocolTable$FormulationID[i] == "Solution" || is.na(protocolTable$FormulationID[i])) {
+            formulation <- createDissolvedFormulation(name = "Dissolved")
+          } else {
+            form <- InputFormulations[InputFormulations$FormulationID == protocolTable$FormulationID[i], ]
+  
+            if (form$`FormulationType` == "Weibull") {
+              formulation <- createWeibullFormulation(
+                name = "Weibull",
+                lagTime = form$`lagTime (min)`,
+                lagTimeUnit = "min",
+                dissolutionTime50 = form$`disso50 (min)`,
+                dissolutionTime50Unit = "min",
+                shape = form$`shape`
+              )
+            }
           }
+  
+          admin$setFormulation(formulation = formulation)
         }
-
-        admin$setFormulation(formulation = formulation)
+  
+        prot$addProtocolToSchema(admin, schemaName = paste0("Schema_", i))
       }
+      compound$setProtocol(prot)
 
-      prot$addProtocolToSchema(admin, schemaName = paste0("Schema_", i))
+      # PC/CP specified in function
+      compound$PartitionCoefficientMethod <- PC
+      compound$CellularPermeabilityMethod <- CP
+
+      study <- Study$new(ID = paste0(studyId), compounds = list(compound), individual = "Human")
+      Studies <- c(Studies, study)
     }
-    comp$setProtocol(prot)
+  }
+  
+  return(Studies)
+} 
+```
 
-    for (PC in c("PK-Sim", "RR", "PT", "Schmitt", "Berezhkovskiy")) {
-      comp$PartitionCoefficientMethod <- PC
+# Running the pipeline for the default scenario
 
-      for (CP in c("PK-Sim", "Schmitt")) {
-        comp$CellularPermeabilityMethod <- CP
+```{r, eval = FALSE} 
+scenario <- data.frame(Scenario = paste0("Scenario_", 1:2), Perm = c("Default", "High"))
 
-        study <- Study$new(ID = paste0(studyId, "_", PC, "_", CP), compounds = list(comp), individual = "Human")
+PCs <- c("PK-Sim", "RR", "PT", "Schmitt", "Berezhkovskiy")
+CPs <- c("PK-Sim", "Schmitt")
+  
+# initialise results list
+results <- vector("list", length = 10)
+names(results) <- expand.grid(PCs, CPs) %>% transmute(paste0(Var1, "_", Var2)) %>% pull()
+  
+outFolder <- file.path("TB_example", "Scenario_1")
+dir.create(outFolder, recursive = TRUE)
+      
+# Test all PC and CP methods available in PK-Sim
+for (PC in PCs) {
+ for (CP in CPs) {
+    Studies <- createStudies(scenario = scenario[1,], PC = PC, CP = CP)
 
-        Studies <- c(Studies, study)
-      }
-    }
+    # Run the predictions
+    results[[paste0(PC, "_", CP)]] <- runPredictions(
+      studies = Studies, 
+      outputFolder = file.path(outFolder, paste0(PC, "_", CP)),
+      numberOfCores = 5,
+      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
+      simulationResolution = c(0, max(InputStudies$`EndTime (days)`) * 24 * 60, 1),
+      saveResults = TRUE,
+      saveSimulation = FALSE,
+      queueSize = 200
+    )
   }
 }
 
-results <- vector("list", length = 10)
-dir.create("TB2_PK-SimPInt")
-for (i in 1:10) {
-  results[[i]] <- runPredictions(
-    Studies[seq(i, 1230, by = 10)], outputFolder = "TB2_PK-SimPInt",
-    numberOfCores = 5,
-    outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
-    simulationResolution = c(0, max(TBStudies$`EndTime (days)`) * 24 * 60, 1),
-    saveResults = TRUE,
-    saveSimulation = FALSE,
-    queueSize = 200
-  )
-}
+``` 
 
-saveRDS(Studies, file = file.path("TB2", "Studies.rds"), compress = TRUE)
+## Calculate wanted metrics 
 
-.loadData <- function(inVivoData, studyId, importerConfiguration) {
-  data <- dplyr::filter(inVivoData, StudyID == studyId)
+First we will load the observed data using ospsuite compatible function. 
+We can create a function to load the observed data in an ospsuite way and calculate the metric we want to compare to the observed data.
 
-  # Write data into temp excel file
-  filePath <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".xlsx")
-  writexl::write_xlsx(data, path = filePath, col_names = TRUE)
-
-  # Load data sets
-  dataSets <- ospsuite::loadDataSetsFromExcel(
-    xlsFilePath = filePath, importerConfigurationOrPath = importerConfiguration,
-    importAllSheets = TRUE
-  )
-  # dataSets[[1]]$name <- studyID
-  return(dataSets)
-}
-
-importerConfiguration <- ospsuite::createImporterConfigurationForFile("TBStudyInputsForHTPBPK.xlsx", sheet = "ObservedData")
+```{r, load_obs_data}
+# create importer configuration and adjust column settings
+importerConfiguration <- ospsuite::createImporterConfigurationForFile(
+  filePath = path, 
+  sheet = "ObservedData"
+)
 importerConfiguration$sheets <- "ObservedData"
 importerConfiguration$timeColumn <- "Time"
 importerConfiguration$isTimeUnitFromColumn <- TRUE
@@ -312,8 +340,214 @@ importerConfiguration$errorColumn <- NULL
 importerConfiguration$addGroupingColumn("StudyID")
 importerConfiguration$namingPattern <- "{StudyID}"
 
+dataSets <- ospsuite::loadDataSetsFromExcel(
+  xlsFilePath = path, importerConfigurationOrPath = importerConfiguration,
+  importAllSheets = FALSE
+)
+```
+
+We can create a function to calculate the metric we want to compare to the observed data.
+
+```{r calculate_metrics, eval = T}
+calculateMetrics <- function(results, obsData, studyID, outputPath, methodName) {
+  # add molecular weight for unit conversion
+  obsData[[studyID]]$molWeight <- InputCompounds$`MW (g/mol)`[InputCompounds$Compound == InputStudies$Compound[InputStudies$StudyID == studyID]]
+  
+  # Create a DataCombined holding simulation results and observed data
+  # data for residuals calculation
+  dataCombined <- ospsuite::DataCombined$new()
+  dataCombined$addDataSets(obsData[[studyID]], groups = methodName)
+  dataCombined$addSimulationResults(results[[studyID]], quantitiesOrPaths = outputPath, groups = methodName)
+  
+  dataCombined <- ospsuite::convertUnits(
+    dataCombined, 
+    xUnit = ospsuite::ospUnits$Time$min, 
+    yUnit = ospsuite::ospUnits$`Concentration [molar]`$`µmol/l`
+  )
+  
+  dataCombined <- dataCombined %>% 
+    pivot_wider(id_cols = xValues, names_from = dataType, values_from = yValues) %>%
+    filter(!is.na(observed)) %>% 
+    mutate(
+      residualsLog = abs(log(observed) - log(simulated)),
+      residualsLin = abs(observed - simulated)
+    )
+
+  # Calculate Cmax from observed and simulated data
+  cMaxObs <- max(dataCombined$observed)
+  simData <- ospsuite::getOutputValues(
+    simulationResults = results[[studyID]],
+    quantitiesOrPaths = outputPath,
+    addMetaData = TRUE)
+
+  # ensure cMaxSim is in the same unit
+  cMaxSim <- ospsuite::toUnit(
+    quantityOrDimension = outputPath,
+    values = max(simData$data[[outputPath]]), 
+    sourceUnit = simData$metaData[[outputPath]]$unit, 
+    targetUnit = ospsuite::ospUnits$`Concentration [molar]`$`µmol/l`, 
+    molWeight = obsData[[studyID]]$molWeight, 
+    molWeightUnit = "g/mol"
+  )
+  
+  cMaxSim_obsTime <- max(dataCombined$simulated)
+
+  # Calculate AUC_tLast using pracma on the same simulated time as observed time to have a fair comparison
+  obsAUC <- pracma::trapz(dataCombined$xValues, dataCombined$observed)
+  simAUC <- pracma::trapz(dataCombined$xValues, dataCombined$simulated)
+
+  # Calculate fold point wise difference
+  folds <- ospsuite.utils::foldSafe(
+    x = pmax(dataCombined$observed, dataCombined$simulated), 
+    y = pmin(dataCombined$observed, dataCombined$simulated)
+  )
+
+  # make summary of metrics
+  output <- data.frame(
+    foldC_first = folds[1],
+    foldC_last = folds[length(folds)],
+    obsCmax = cMaxObs,
+    simCmax = cMaxSim,
+    simCmax_obsTime = cMaxSim_obsTime,
+    cMaxFold = cMaxSim / cMaxObs,
+    cMaxFold_obsTime = cMaxSim_obsTime / cMaxObs,
+    residualsLog = paste(dataCombined$residualsLog, collapse = ";"),
+    residualsLogMean = mean(dataCombined$residualsLog),
+    residualsLogMedian = median(dataCombined$residualsLog),
+    residualsLin = paste(dataCombined$residualsLin, collapse = ";"),
+    gmfe = exp(mean(abs(dataCombined$residualsLog))),
+    rmse = sqrt(mean(dataCombined$residualsLin^2)),
+    rMedianSE = sqrt(median(dataCombined$residualsLog^2)),
+    folds = paste(folds, collapse = ";"),
+    foldMean = mean(folds),
+    foldMedian = median(folds),
+    shareFold2 = sum(folds < 2) / length(folds) * 100,
+    shareFold4 = sum(folds < 4) / length(folds) * 100,
+    shareFold10 = sum(folds < 10) / length(folds) * 100,
+    observedAUC = obsAUC,
+    simulatedAUC = simAUC,
+    AUCfold = simAUC / obsAUC
+  )
+  
+  return(output)
+}
+```
+
+Now let's calculate the metric for all the partition coefficients and cellular permeability tested.
+
+```{r, eval = FALSE}
+metric_results <- c()
+for (i in seq_along(InputStudies$StudyID)) {
+  studyID <- InputStudies$StudyID[i]
+
+  for (j in seq_along(results)) {
+    groupMethod <- names(results)[j]
+    
+    res <- calculateMetrics(
+      results = results[[groupMethod]], 
+      studyID = studyID, 
+      obsData = dataSets, 
+      outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", 
+      methodName = groupMethod
+    )
+    
+    metric_results <- rbind(metric_results, c(res, studyID = studyID, method = groupMethod, scenario = "Scenario_1"))
+  }
+}
+
+write.csv(metric_results, file = file.path(outFolder, "metrics_results.csv"), row.names = FALSE)
+```
+
+The results have already been evaluated and the file is available in the package and can be loaded as follows:
+
+```{r}
+metric_results <- read.csv(system.file("extdata", "TB_example", "Scenario_1", "metric_results.csv", package = "ESQhtpbpk"))
+```
+
+## Looking at the results
+
+We can also plot the time profiles of the simulated and observed data for each study and save it to a pdf if we want to.
+
+The pdf for this run has already been generated and can be downloaded [here]("inst/doc/Example_TB/Plots.pdf").
+
+
+```{r, eval = FALSE}
+pdf("Plots.pdf", width = 6, height = 5)
+for (i in seq_along(TBStudies$StudyID)) {
+  studyID <- TBStudies$StudyID[i]
+  print(studyID)
+  dc <- ospsuite::DataCombined$new()
+  obsData <- .loadData(inVivoData = TBDatasets, studyId = studyID, importerConfiguration = importerConfiguration)
+  MW <- TBCompounds$`MW (g/mol)`[TBCompounds$Compound == TBStudies$Compound[TBStudies$StudyID == studyID]]
+  obsData[[1]]$molWeight <- MW
+
+  dc$addDataSets(obsData)
+
+  studyIds <- apply(expand.grid(studyID , c("PK-Sim", "RR", "PT", "Schmitt", "Berezhkovskiy"), c("PK-Sim", "Schmitt")), 1, paste, collapse = "_")
+  # print(studyIds)
+  for (studyRes in studyIds) {
+    if (!is.null(results2[[studyRes]])) {
+      dc$addSimulationResults(results2[[studyRes]], names = studyRes)
+    }
+  }
+
+  dat <- ospsuite::convertUnits(dc)
+  studyLim <- dat %>% filter(dataType == "observed") %>% select(xValues) %>% range()
+
+  p <- ggplot(dat, aes(x = xValues, y = yValues, color = name)) + geom_line(data = dat %>% filter(dataType == "simulated"))
+  p <- p + geom_point(data = dat %>% filter(dataType == "observed"))
+  p <- p + theme_minimal()
+  p <- p + coord_cartesian(xlim = studyLim)
+  p <- p + labs(title = studyID, y = unique(dat$yUnit), x = paste0(unique(dat$xDimension), " (", unique(dat$xUnit), ")"))
+  print(p)
+
+  # print(ospsuite::plotIndividualTimeProfile(dataCombined = dc, defaultPlotConfiguration = config))
+  # tmp <- readline("Press [enter] to continue")
+  # if (tmp == "q") {
+  #   stop()
+  # }
+}
+dev.off()
+
+
+
+```{r}
+      # modif MW for conversion if needed
+      ospsuite::setParameterValuesByPath(parameterPaths = "Compound1|Molecular weight", values = MW, units = "g/mol", simulation = results2[[studyRes]]$simulation)
+      dc <- ospsuite::DataCombined$new()
+      dc$addDataSets(obsData, groups = groupMethod[j] )
+      dc$addSimulationResults(results2[[studyRes]], groups = groupMethod[j])
+      metres <- .calculateMetrics(results = results2[[studyRes]], dataSets = obsData, outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", methodName = groupMethod[j])
+      metres$metrics$studyID <- studyID
+      metres$metrics$method <- groupMethod[j]
+
+      metric_results <- rbind(metric_results, metres$metrics)
+
+    }
+  }
+
+  # dat <- ospsuite::convertUnits(dc)
+  # .calculateMetrics(results = results2[[1]], dataSets = obsData, outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", methodName = groupMethod[1])
+  #
+}
+
+metric_results$Compound <- TBStudies$Compound[match(metric_results$studyID, TBStudies$StudyID)]
+
+View(metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(mean))
+View(metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(median))
+View(metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 0.5) %>% select(-studyID) %>% group_by(method) %>% summarize(shareAUC2fold = sum(AUC2fold) / n() * 100))
+View(metric_results %>% mutate(Cmax2fold = cMaxFold <= 2 & cMaxFold >= 0.5) %>% group_by(method) %>% summarize(shareCmax2fold = sum(Cmax2fold) / n() * 100))
+
+View(metric_results %>% mutate(AUC4fold = AUCfold <= 4 & AUCfold >= 1/4) %>% select(-studyID) %>% group_by(method) %>% summarize(shareAUC4fold = sum(AUC4fold) / n() * 100))
+View(metric_results %>% mutate(Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4)  %>% select(-studyID) %>% group_by(method) %>% summarize(shareCmax4fold = sum(Cmax4fold) / n() * 100))
+
+
+write.csv(metric_results, file = "TB2_PK-SimPInt/metrics.csv", row.names = FALSE)
+```
+
+``` {r, eval = FALSE}
 # reload previous results
-outputFolder <- "TB2_PK-SimPInt"
+outputFolder <- file.path("vignettes", "articles", "TB_example", "Scenario_1")
 results <- vector("list", length = length(list.dirs(outputFolder, recursive = FALSE)))
 for (i in seq_along(results)) {
   dir <- list.dirs(outputFolder, recursive = FALSE)[i]
@@ -329,6 +563,10 @@ for (i in seq_along(results)) {
   }
 }
 
+names(results) <- expand.grid(CPs, PCs) %>% transmute(paste0(Var2, "_", Var1)) %>% pull()
+```
+
+```{r}
 results2 <- unlist(results, recursive = F)
 
 pdf("TB2_PK-SimPInt/Plots.pdf", width = 6, height = 5)
@@ -367,91 +605,6 @@ for (i in seq_along(TBStudies$StudyID)) {
   # }
 }
 dev.off()
-
-# calculate metrics
-.calculateMetrics <- function(results, dataSets, outputPath, methodName) {
-  # Create a DataCombined holding simulation results and median (imputed) observed
-  # data for residuals calculation
-  dataCombined <- ospsuite::DataCombined$new()
-  dataCombined$addDataSets(dataSets, group = methodName)
-  dataCombined$addSimulationResults(results, quantitiesOrPaths = outputPath, groups = methodName)
-  # Add observed data
-  # dataCombined <- ospsuite::convertUnits(dataCombined)
-
-
-  # Calculate lin and log residuals
-  residualsLogDf <- ospsuite::calculateResiduals(
-    dataCombined = dataCombined,
-    xUnit = ospsuite::ospUnits$Time$min,
-    yUnit = ospsuite::ospUnits$`Concentration [molar]`$`µmol/l`,
-    scaling = "log"
-  )
-
-  residualsLinDf <- ospsuite::calculateResiduals(
-    dataCombined = dataCombined,
-    xUnit = ospsuite::ospUnits$Time$min,
-    yUnit = ospsuite::ospUnits$`Concentration [molar]`$`µmol/l`,
-    scaling = "lin"
-  )
-
-  cMaxObs <- max(residualsLinDf$yValuesObserved)
-  cMaxSim <- max(ospsuite::getOutputValues(simulationResults = results,
-                                           quantitiesOrPaths = outputPath,
-                                           addMetaData = FALSE)$data[[outputPath]])
-
-  cMaxSim_obsTime <- max(residualsLinDf$yValuesSimulated)
-
-  # Get first observed/simulated values (C_first)
-  obsFirstTime <- residualsLogDf$xValues[[1]]
-  obsFirstConc <- residualsLogDf$yValuesObserved[[1]]
-  simFirstConc <- residualsLogDf$yValuesSimulated[[1]]
-  # Get last obsreved/simulated values (C_last)
-  obsLastTime <- residualsLogDf$xValues[[length(residualsLogDf$xValues)]]
-  obsLastConc <- residualsLogDf$yValuesObserved[[length(residualsLogDf$xValues)]]
-  simLastConc <- residualsLogDf$yValuesSimulated[[length(residualsLogDf$xValues)]]
-
-  # Calculate AUC_tLast)
-  obsAUC <- pracma::trapz(residualsLogDf$xValues, residualsLogDf$yValuesObserved)
-  simAUC <- pracma::trapz(residualsLogDf$xValues, residualsLogDf$yValuesSimulated)
-
-  # Calculate fold point wise difference
-  folds <- ospsuite.utils::foldSafe(pmax(residualsLogDf$yValuesObserved, residualsLogDf$yValuesSimulated), pmin(residualsLogDf$yValuesObserved, residualsLogDf$yValuesSimulated))
-
-  output <- data.frame(
-    obsFirstTime = obsFirstTime,
-    obsFirstConc = obsFirstConc,
-    simFirstConc = simFirstConc,
-    obsLastTime = obsLastTime,
-    obsLastConc = obsLastConc,
-    simLastConc = simLastConc,
-    foldC_first = simFirstConc / obsFirstConc,
-    foldC_last = simLastConc / obsLastConc,
-    obsCmax = cMaxObs,
-    simCmax = cMaxSim,
-    simCmax_obsTime = cMaxSim_obsTime,
-    cMaxFold = cMaxSim / cMaxObs,
-    cMaxFold_obsTime = cMaxSim_obsTime / cMaxObs,
-    residualsLog = paste(residualsLogDf$residualValues, collapse = ";"),
-    residualsLogMean = mean(residualsLogDf$residualValues),
-    residualsLogMedian = median(residualsLogDf$residualValues),
-    residualsLin = paste(residualsLinDf$residualValues, collapse = ";"),
-    gmfe = exp(mean(abs(residualsLogDf$residualValues))),
-    rmse = sqrt(mean(residualsLinDf$residualValues^2)),
-    rMedianSE = sqrt(median(residualsLogDf$residualValues^2)),
-    folds = paste(folds, collapse = ";"),
-    foldMean = mean(folds),
-    foldMedian = median(folds),
-    shareFold1_5 = sum(folds < 1.5) / length(folds) * 100,
-    shareFold2 = sum(folds < 2) / length(folds) * 100,
-    shareFold3 = sum(folds < 3) / length(folds) * 100,
-    shareFold5 = sum(folds < 5) / length(folds) * 100,
-    shareFold10 = sum(folds < 10) / length(folds) * 100,
-    observedAUC = obsAUC,
-    simulatedAUC = simAUC,
-    AUCfold = simAUC / obsAUC
-  )
-  return(list(metrics = output, dataCombined = dataCombined))
-}
 
 metric_results <- c()
 for (i in seq_along(TBStudies$StudyID)) {
