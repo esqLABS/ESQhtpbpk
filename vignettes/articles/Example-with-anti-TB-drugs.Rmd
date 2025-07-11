@@ -562,30 +562,34 @@ for (studyID in InputStudies$StudyID) {
 dev.off()
 ```
 
-Let's look at the overall metrics results across studies and compare the different PC/CP methods
+Let's look at the overall metrics results across studies and compare the different PC/CP methods. 
+For the anti-TB drug overall the AUC ratio tend to be slightly underpredicted while the Cmax ratio is slightly overpredicted.
+However the PC/CP methods only have a minor impact on the results probably because the pKa values have not
+been taken into account. 
 
 ```{r}
-p <- ggplot
-overallMean <- metric_results %>% boxplot()
-  group_by(method) %>% 
-  summarise_if(.predicate = is.numeric, .funs = mean) %>% 
-  select(method, AUCfold, cMaxFold_obsTime, gmfe, rmse)
+p <- ggplot(metric_results) + 
+  geom_boxplot(aes(y = AUCfold, x = method)) + 
+  scale_y_log10() + 
+  geom_hline(yintercept = 0.5, linetype = "dashed") + 
+  geom_hline(yintercept = 2, linetype = "dashed") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p
 ```
 
 ```{r}
-myTinyDT(overallMean)
+p <- ggplot(metric_results) + 
+  geom_boxplot(aes(y = cMaxFold, x = method)) + 
+  scale_y_log10() + 
+  geom_hline(yintercept = 0.5, linetype = "dashed") + 
+  geom_hline(yintercept = 2, linetype = "dashed") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p
 ```
 
-```{r}
-overallMedian <- metric_results %>% 
-  group_by(method) %>% 
-  summarise_if(.predicate = is.numeric, .funs = median) %>% 
-  select(method, AUCfold, cMaxFold_obsTime, gmfe, rmse)
-```
 
-```{r}
-myTinyDT(overallMedian)
-```
 
 ```{r}
 metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(median)
