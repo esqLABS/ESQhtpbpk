@@ -589,18 +589,53 @@ p <- ggplot(metric_results) +
 p
 ```
 
-
+Let's look at how many studies have an AUC or Cmax within 2 fold of the observed values. 
+With all methods we have around 40% of the studies with an AUC within 2 fold and around 50-60% of the studies with a AUC within 4 fold.
+Similarly we have 40% of the studies with an Cmax within 2 fold and around 75% of the studies with a Cmax within 4 fold.
 
 ```{r}
-metric_results %>% select(-studyID) %>% group_by(method) %>% summarise_all(median)
-View(metric_results %>% mutate(AUC2fold = AUCfold <= 2 & AUCfold >= 0.5) %>% select(-studyID) %>% group_by(method) %>% summarize(shareAUC2fold = sum(AUC2fold) / n() * 100))
-View(metric_results %>% mutate(Cmax2fold = cMaxFold <= 2 & cMaxFold >= 0.5) %>% group_by(method) %>% summarize(shareCmax2fold = sum(Cmax2fold) / n() * 100))
+tmp <- metric_results %>% 
+  mutate(
+    AUC2fold = AUCfold <= 2 & AUCfold >= 0.5, 
+    Cmax2fold = cMaxFold <= 2 & cMaxFold >= 0.5,
+    AUC4fold = AUCfold <= 4 & AUCfold >= 1/4, 
+    Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4,
+  ) %>% 
+  select(method, AUC2fold, Cmax2fold, AUC4fold, Cmax4fold) %>% 
+  group_by(method) %>% 
+  summarize_all(.funs = ~ sum(.x) / n() * 100)
 
-View(metric_results %>% mutate(AUC4fold = AUCfold <= 4 & AUCfold >= 1/4) %>% select(-studyID) %>% group_by(method) %>% summarize(shareAUC4fold = sum(AUC4fold) / n() * 100))
-View(metric_results %>% mutate(Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4)  %>% select(-studyID) %>% group_by(method) %>% summarize(shareCmax4fold = sum(Cmax4fold) / n() * 100))
-
+tmp
+```
+```{r}
+myTinyDT(tmp)
 ```
 
+However some compound might have more studies than other, for a fairer comparison we will look after first average per compound.
+When first averaging per compound we see similar results, mean AUC is within 2 fold for ~42% of the compounds, and within 4-folds 
+for half of them, while cMax is within 2-fold for 1/3 to 42% of the compounds and within 4 fold for around 2/3 to 75 % of the compounds.
+
+```{r}
+tmp <- metric_results %>% 
+  group_by(Compound, method) %>% 
+  select(AUCfold, cMaxFold) %>%
+  summarise_all(mean, ) %>% 
+  group_by(method) %>%
+  select(-Compound) %>% 
+  mutate(
+    AUC2fold = AUCfold <= 2 & AUCfold >= 0.5, 
+    Cmax2fold = cMaxFold <= 2 & cMaxFold >= 0.5,
+    AUC4fold = AUCfold <= 4 & AUCfold >= 1/4, 
+    Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4,
+  ) %>% 
+  summarize_all(.funs = ~ sum(.x) / n() * 100)
+
+tmp
+```
+
+```{r}
+myTinyDT(tmp)
+```
 
 ```{r}
 # get percents of studies within 2 and 5x
