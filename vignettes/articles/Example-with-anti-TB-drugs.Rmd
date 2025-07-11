@@ -359,12 +359,14 @@ calculateMetrics <- function(results, obsData, studyID, outputPath, methodName) 
   dataCombined$addDataSets(obsData[[studyID]], groups = methodName)
   dataCombined$addSimulationResults(results[[studyID]], quantitiesOrPaths = outputPath, groups = methodName)
   
+  # convert units to min and umol/l
   dataCombined <- ospsuite::convertUnits(
     dataCombined, 
     xUnit = ospsuite::ospUnits$Time$min, 
     yUnit = ospsuite::ospUnits$`Concentration [molar]`$`µmol/l`
   )
   
+  # calculate lin and log residuals
   dataCombined <- dataCombined %>% 
     pivot_wider(id_cols = xValues, names_from = dataType, values_from = yValues) %>%
     filter(!is.na(observed)) %>% 
@@ -436,24 +438,32 @@ calculateMetrics <- function(results, obsData, studyID, outputPath, methodName) 
 Now let's calculate the metric for all the partition coefficients and cellular permeability tested.
 
 ```{r, eval = FALSE}
-metric_results <- c()
-for (i in seq_along(InputStudies$StudyID)) {
-  studyID <- InputStudies$StudyID[i]
-
-  for (j in seq_along(results)) {
-    groupMethod <- names(results)[j]
-    
-    res <- calculateMetrics(
-      results = results[[groupMethod]], 
-      studyID = studyID, 
-      obsData = dataSets, 
-      outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", 
-      methodName = groupMethod
+metric_results <- lapply(
+  names(results), 
+  function(groupMethod) {
+    res <- lapply(
+      names(results[[groupMethod]]),
+      function(studyID) {
+        # calculate metrics for each groupMethod (i.e. PC/CP combination)
+        res <- calculateMetrics(
+          results = results[[groupMethod]], 
+          studyID = studyID, 
+          obsData = dataSets, 
+          outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", 
+          methodName = groupMethod
+        )
+        
+        res$studyID <- studyID
+        res$method <- groupMethod
+        res$scenario <- "Scenario_1"
+        return(res)
+      }
     )
     
-    metric_results <- rbind(metric_results, c(res, studyID = studyID, method = groupMethod, scenario = "Scenario_1"))
+    res <-  t(res) %>% bind_rows()
+    return(res)
   }
-}
+) %>% bind_rows()
 
 write.csv(metric_results, file = file.path(outFolder, "metrics_results.csv"), row.names = FALSE)
 ```
@@ -508,7 +518,7 @@ for (i in seq_along(TBStudies$StudyID)) {
   # }
 }
 dev.off()
-
+```
 
 
 ```{r}
