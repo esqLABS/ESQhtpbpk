@@ -626,15 +626,15 @@ SimpleProtocol <- R6::R6Class(
         type = self$Route,
         time = adminTimes[adminTimes < endTime],
         parameters = list(self),
-        formulationType = self$Formulation$Type %||% NA,
-        formulationName = self$Formulation$Name %||% NA,
+        formulationType = self$Formulation$Type %||% NA_character_,
+        formulationName = self$Formulation$Name %||% NA_character_,
         # Formulation need to be encapsulated in a list of length 1 as it is a R6 object
         formulation = if (is.null(self$Formulation)) {
           NA
         } else {
           list(self$Formulation)
         },
-        formulationKey = self$FormulationKey %||% NA,
+        formulationKey = self$FormulationKey %||% NA_character_,
         allowedPath = list(self$Path),
         path = list(NULL)
       )
@@ -1074,7 +1074,7 @@ AdvancedProtocol <- R6::R6Class(
         dplyr::mutate(
           formulationKey = ifelse(
             is.null(formulation) || identical(formulation, NA),
-            NA,
+            NA_character_,
             paste0(
               "Formulation",
               which(
