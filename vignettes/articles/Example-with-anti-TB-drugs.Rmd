@@ -308,6 +308,34 @@ for (PC in PCs) {
 
 ``` 
 
+
+``` {r, eval = TRUE, echo = FALSE}
+# loading few result for plotting
+outputFolder <- system.file("exdata", "TB_example", "Scenario_1")
+
+# PCs <- c("PK-Sim", "RR", "PT", "Schmitt", "Berezhkovskiy")
+# CPs <- c("PK-Sim", "Schmitt")
+
+results <- vector("list", length = length(list.dirs(outputFolder, recursive = FALSE)))
+subdirs <- list.dirs(outputFolder, recursive = FALSE)
+names(results) <- gsub(pattern = paste0(outputFolder, "/"), replacement = "", subdirs)
+for (i in seq_along(results)) {
+  dir <- grep(x = list.dirs(subdirs[i]), pattern = "SimulationResults", value = TRUE)
+  sim <- ospsuite::loadSimulation(
+    file.path(gsub(x = dir, pattern = "SimulationResults", replacement = "GenericModels"), "Model1.pkml")
+  )
+
+  files <- list.files(file.path(dir), pattern = "*.csv")
+  results[[i]] <- vector("list", length = length(files))
+  names(results[[i]]) <- gsub(x = files, pattern = ".csv$", replacement = "")
+
+  for (j in seq_along(files)) {
+    file <- files[j]
+    results[[i]][[j]] <- ospsuite::importResultsFromCSV(sim, filePaths = file.path(dir, file))
+  }
+}
+```
+
 ## Calculate wanted metrics 
 
 First we will load the observed data using ospsuite compatible function. 
@@ -473,7 +501,7 @@ write.csv(metric_results, file = file.path(outFolder, "metrics_results.csv"), ro
 The results have already been evaluated and the file is available in the package and can be loaded as follows:
 
 ```{r}
-metric_results <- read.csv(system.file("extdata", "TB_example", "Scenario_1", "metric_results.csv", package = "ESQhtpbpk"))
+metric_results <- read.csv(system.file("extdata", "TB_example", "Scenario_1", "metrics_results.csv", package = "ESQhtpbpk"))
 ```
 
 ## Looking at the results
@@ -529,7 +557,29 @@ Let's look at a few plots:
 p <- plotPK(
   results = results, 
   obsData = dataSets, 
-  studyID = "Study1", 
+  studyID = "Study5", 
+  outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)"
+)
+
+print(p)
+```
+```{r}
+p <- plotPK(
+  results = results, 
+  obsData = dataSets, 
+  studyID = "Study21", 
+  outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)"
+)
+
+print(p)
+```
+
+
+```{r}
+p <- plotPK(
+  results = results, 
+  obsData = dataSets, 
+  studyID = "Study33", 
   outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)"
 )
 
@@ -541,13 +591,13 @@ We can easily make a pdf with all studies. This has already been generated and c
 ```{r, eval = FALSE}
 pdf(file.path(outFolder, "Plots.pdf"), width = 6, height = 5)
 for (studyID in InputStudies$StudyID) {
-  plotPK(
+  p <- plotPK(
     results = results, 
     obsData = dataSets, 
-    studyID = "Study1", 
-    outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)", 
-    interactive = FALSE
+    studyID = studyID, 
+    outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)"
   )
+  print(p)
 }
 dev.off()
 ```
@@ -737,23 +787,3 @@ p <- metric_results %>%
 p
 ``` 
 
-``` {r, eval = FALSE}
-# reload previous results
-outputFolder <- file.path("vignettes", "articles", "TB_example", "Scenario_1")
-results <- vector("list", length = length(list.dirs(outputFolder, recursive = FALSE)))
-for (i in seq_along(results)) {
-  dir <- list.dirs(outputFolder, recursive = FALSE)[i]
-  sim <- ospsuite::loadSimulation(file.path(dir, "GenericModels", "Model1.pkml"))
-
-  files <- list.files(file.path(dir, "SimulationResults"), pattern = "*.csv")
-  results[[i]] <- vector("list", length = length(files))
-  names(results[[i]]) <- gsub(x = files, pattern = ".csv$", replacement = "")
-
-  for (j in seq_along(files)) {
-    file <- files[j]
-    results[[i]][[j]] <- ospsuite::importResultsFromCSV(sim, filePaths = file.path(dir, "SimulationResults", file))
-  }
-}
-
-names(results) <- expand.grid(CPs, PCs) %>% transmute(paste0(Var2, "_", Var1)) %>% pull()
-```
