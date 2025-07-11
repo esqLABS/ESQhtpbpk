@@ -586,7 +586,7 @@ p <- plotPK(
 print(p)
 ```
 
-We can easily make a pdf with all studies. This has already been generated and can be downloaded [here](Scenario1/Plots.pdf).
+We can easily make a pdf with all studies. This has already been generated and can be downloaded [here](extdata/Scenario1/Plots.pdf).
 
 ```{r, eval = FALSE}
 pdf(file.path(outFolder, "Plots.pdf"), width = 6, height = 5)
