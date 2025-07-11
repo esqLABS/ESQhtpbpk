@@ -311,10 +311,7 @@ for (PC in PCs) {
 
 ``` {r, eval = TRUE, echo = FALSE}
 # loading few result for plotting
-outputFolder <- system.file("exdata", "TB_example", "Scenario_1")
-
-# PCs <- c("PK-Sim", "RR", "PT", "Schmitt", "Berezhkovskiy")
-# CPs <- c("PK-Sim", "Schmitt")
+outputFolder <- system.file("extdata", "TB_example", "Scenario_1", package = "ESQhtpbpk")
 
 results <- vector("list", length = length(list.dirs(outputFolder, recursive = FALSE)))
 subdirs <- list.dirs(outputFolder, recursive = FALSE)
@@ -551,7 +548,7 @@ plotPK <- function(results, obsData, studyID, outputPath) {
 }
 ```
 
-Let's look at a few plots:
+Let's look at a few plots. We can see that few predictions works well while other don't. 
 
 ```{r}
 p <- plotPK(
@@ -561,8 +558,9 @@ p <- plotPK(
   outputPath = "Organism|PeripheralVenousBlood|Compound1|Plasma (Peripheral Venous Blood)"
 )
 
-print(p)
+p
 ```
+
 ```{r}
 p <- plotPK(
   results = results, 
@@ -639,7 +637,7 @@ With all methods we have around 40% of the studies with an AUC within 2 fold and
 Similarly we have 40% of the studies with an Cmax within 2 fold and around 75% of the studies with a Cmax within 4 fold.
 
 <div class="toggle-code-block">
-```{r, echo = FALSE}
+```{r}
 tmp <- metric_results %>% 
   mutate(
     AUC2fold = AUCfold <= 2 & AUCfold >= 0.5, 
@@ -650,12 +648,10 @@ tmp <- metric_results %>%
   select(method, AUC2fold, Cmax2fold, AUC4fold, Cmax4fold) %>% 
   group_by(method) %>% 
   summarize_all(.funs = ~ sum(.x) / n() * 100)
-
-tmp
 ```
 </div>
 
-```{r, include = FALSE}
+```{r, echo = FALSE}
 myTinyDT(tmp)
 ```
 
@@ -664,7 +660,7 @@ When first averaging per compound we see similar results, mean AUC is within 2 f
 for half of them, while cMax is within 2-fold for 1/3 to 42% of the compounds and within 4 fold for around 2/3 to 75 % of the compounds.
 
 <div class="toggle-code-block">
-```{r, echo = FALSE}
+```{r}
 tmp <- metric_results %>% 
   group_by(Compound, method) %>% 
   select(AUCfold, cMaxFold) %>%
@@ -678,12 +674,10 @@ tmp <- metric_results %>%
     Cmax4fold = cMaxFold <= 4 & cMaxFold >= 1/4,
   ) %>% 
   summarize_all(.funs = ~ sum(.x) / n() * 100)
-
-tmp
 ```
 </div> 
 
-```{r, include = FALSE}
+```{r, echo = FALSE}
 myTinyDT(tmp)
 ```
 
@@ -691,7 +685,7 @@ If we look at the result for Poulin and Thiel partition coefficient method and P
 we see some correlation between AUC ratio and Cmax ratio. 
 
 <div class="toggle-code-block">
-```{r, echo = FALSE}
+```{r}
 p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + 
   geom_point(aes(y = AUCfold, x = cMaxFold, color = Compound), alpha = 0.5, size = 3) + 
   scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + 
