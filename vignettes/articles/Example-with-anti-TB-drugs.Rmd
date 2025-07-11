@@ -586,7 +586,7 @@ p <- plotPK(
 print(p)
 ```
 
-We can easily make a pdf with all studies. This has already been generated and can be downloaded [here]("inst/doc/Example_TB/Plots.pdf").
+We can easily make a pdf with all studies. This has already been generated and can be downloaded [here](Scenario1/Plots.pdf).
 
 ```{r, eval = FALSE}
 pdf(file.path(outFolder, "Plots.pdf"), width = 6, height = 5)
@@ -607,6 +607,7 @@ For the anti-TB drug overall the AUC ratio tend to be slightly underpredicted wh
 However the PC/CP methods only have a minor impact on the results probably because the pKa values have not
 been taken into account. 
 
+<div class="toggle-code-block">
 ```{r}
 p <- ggplot(metric_results) + 
   geom_boxplot(aes(y = AUCfold, x = method)) + 
@@ -617,7 +618,9 @@ p <- ggplot(metric_results) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p
 ```
+</div>
 
+<div class="toggle-code-block">
 ```{r}
 p <- ggplot(metric_results) + 
   geom_boxplot(aes(y = cMaxFold, x = method)) + 
@@ -628,12 +631,15 @@ p <- ggplot(metric_results) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p
 ```
+</div>
+
 
 Let's look at how many studies have an AUC or Cmax within 2 fold of the observed values. 
 With all methods we have around 40% of the studies with an AUC within 2 fold and around 50-60% of the studies with a AUC within 4 fold.
 Similarly we have 40% of the studies with an Cmax within 2 fold and around 75% of the studies with a Cmax within 4 fold.
 
-```{r}
+<div class="toggle-code-block">
+```{r, echo = FALSE}
 tmp <- metric_results %>% 
   mutate(
     AUC2fold = AUCfold <= 2 & AUCfold >= 0.5, 
@@ -647,7 +653,9 @@ tmp <- metric_results %>%
 
 tmp
 ```
-```{r}
+</div>
+
+```{r, include = FALSE}
 myTinyDT(tmp)
 ```
 
@@ -655,7 +663,8 @@ However some compound might have more studies than other, for a fairer compariso
 When first averaging per compound we see similar results, mean AUC is within 2 fold for ~42% of the compounds, and within 4-folds 
 for half of them, while cMax is within 2-fold for 1/3 to 42% of the compounds and within 4 fold for around 2/3 to 75 % of the compounds.
 
-```{r}
+<div class="toggle-code-block">
+```{r, echo = FALSE}
 tmp <- metric_results %>% 
   group_by(Compound, method) %>% 
   select(AUCfold, cMaxFold) %>%
@@ -672,15 +681,17 @@ tmp <- metric_results %>%
 
 tmp
 ```
+</div> 
 
-```{r}
+```{r, include = FALSE}
 myTinyDT(tmp)
 ```
 
 If we look at the result for Poulin and Thiel partition coefficient method and PK-Sim cellular permeability method in more details, 
 we see some correlation between AUC ratio and Cmax ratio. 
 
-```{r}
+<div class="toggle-code-block">
+```{r, echo = FALSE}
 p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + 
   geom_point(aes(y = AUCfold, x = cMaxFold, color = Compound), alpha = 0.5, size = 3) + 
   scale_y_log10(breaks = c(0.01, 0.05, 0.10, 0.2, 0.5, 1, 2, 5, 10, 20)) + 
@@ -693,12 +704,14 @@ p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) +
 
 ggplotly(p)
 ```
+</div>
 
 We can also notice that most studies with the same compounds cluster together,
 indicating that the over/under prediction is compound not due to a particular study design 
 (except one for bedaquiline that has a very long follow up compared to the other study 
 over emphasizing the underprediction of the AUC).
 
+<div class="toggle-code-block">
 ```{r }
 p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + 
   geom_boxplot(aes(y = AUCfold, x = Compound, fill = Compound)) + 
@@ -707,9 +720,11 @@ p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) +
   geom_hline(yintercept = 0.5, linetype = "dashed") + 
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggplotly(p)
+p
 ``` 
+</div> 
 
+<div class="toggle-code-block">
 ```{r}
 p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) + 
   geom_boxplot(aes(y = cMaxFold, x = Compound, fill = Compound)) + 
@@ -718,8 +733,9 @@ p <- ggplot(metric_results %>% filter(method == "PT_PK-Sim")) +
   geom_hline(yintercept = 0.5, linetype = "dashed") + 
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggplotly(p)
+p
 ```
+</div>
 
 If we look at the inputs to understand what drives the over/under prediction we can see that compounds
 with high lipophilicity or low fraction unbound, as well as low solubility are less well predicted.
@@ -733,7 +749,7 @@ metric_results$MW <- InputCompounds$`MW (g/mol)`[match(metric_results$Compound, 
 metric_results$Fu <- InputCompounds$`Fu - ADMETLab`[match(metric_results$Compound, InputCompounds$Compound)]
 metric_results$Cl <- InputCompounds$`cl-plasma - ADMETLab (ml/min/kg)`[match(metric_results$Compound, InputCompounds$Compound)]
 ```
-
+<div class="toggle-code-block">
 ```{r}
 p <- metric_results %>% 
   filter(method == "PT_PK-Sim") %>% 
@@ -760,7 +776,9 @@ p <- metric_results %>%
 
 p
 ```
+</div>
 
+<div class="toggle-code-block">
 ```{r}
 p <- metric_results %>% 
   filter(method == "PT_PK-Sim") %>% 
@@ -786,4 +804,5 @@ p <- metric_results %>%
   labs(x = "logS (mol/l)", y = "Plasma Clearance (ml/min/kg)", fill = bquote(log[2]*"("*AUC[fold]*")"))
 p
 ``` 
+</div>
 
