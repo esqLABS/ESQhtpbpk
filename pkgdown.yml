@@ -6,8 +6,9 @@ articles:
   ESQhtpbpk-custom-pkml: ESQhtpbpk-custom-pkml.html
   ESQhtpbpk-implementation: ESQhtpbpk-implementation.html
   ESQhtpbpk: ESQhtpbpk.html
+  articles/Example-with-anti-TB-drugs: Example-with-anti-TB-drugs.html
   articles/Example-with-chembl-dataset: Example-with-chembl-dataset.html
-last_built: 2025-07-11T08:23Z
+last_built: 2025-08-26T16:57Z
 urls:
   reference: https://esqlabs.github.io/ESQhtpbpk/reference
   article: https://esqlabs.github.io/ESQhtpbpk/articles
