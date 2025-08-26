@@ -35,10 +35,12 @@ Suggests:
     doParallel,
     DT,
     ggplot2,
+    ggrepel,
     knitr,
     plotly,
     readxl,
     rmarkdown,
+    scales,
     vdiffr
 Config/testthat/edition: 3
 Remotes: 
