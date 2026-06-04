@@ -1098,11 +1098,12 @@ AdvancedProtocol <- R6::R6Class(
 
       # loop across admin to set admin number in time order if allowed path were not set
       if (all(is.null(unlist(wantedAdmin$allowedPath)))) {
+        nDigits <- nchar(as.character(nrow(wantedAdmin)))
         for (i in seq_len(nrow(wantedAdmin))) {
           form <- wantedAdmin[i, ]$formulationName
           mainPath <- paste0(path, paste0("|", na.omit(form), recycle0 = TRUE))
 
-          wantedAdmin$path[[i]] <- paste(mainPath, paste0("Application_", i), sep = "|")
+          wantedAdmin$path[[i]] <- paste(mainPath, paste0("Application_", formatC(i, width = nDigits, flag = "0")), sep = "|")
         }
       } else {
         if (any(is.null(unlist(wantedAdmin$allowedPath)))) {
