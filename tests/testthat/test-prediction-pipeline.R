@@ -128,7 +128,7 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
     )
     pc <- ospsuite::DefaultPlotConfiguration$new()
     pc$yAxisScale <- "lin"
-    plot <- ospsuite::plotIndividualTimeProfile(dc, defaultPlotConfiguration = pc)
+    plot <- ospsuite::plotTimeProfile(dc, defaultPlotConfiguration = pc)
     return(print(plot))
   }
 
