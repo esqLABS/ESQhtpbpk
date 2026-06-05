@@ -126,13 +126,12 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
       quantitiesOrPaths = results$Study1$allQuantityPaths,
       individualIds = results$Study1$allIndividualIds
     )
-    pc <- ospsuite::DefaultPlotConfiguration$new()
-    pc$yAxisScale <- "lin"
-    plot <- ospsuite::plotTimeProfile(dc, defaultPlotConfiguration = pc)
+    plot <- ospsuite::plotTimeProfile(dc, yScale = "lin")
+    plot <- plot + ggplot2::theme(legend.position = "bottom")
     return(print(plot))
   }
 
-  vdiffr::expect_doppelganger("Study1-Comp1", createPlot)
+  vdiffr::expect_doppelganger("study1-comp1", createPlot)
 })
 
 
