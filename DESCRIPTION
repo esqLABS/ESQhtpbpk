@@ -11,7 +11,6 @@ Description: A package for more user-friendly definition of HT-PBPK pipelines, b
 License: GPL-2
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.1.0)
 Imports: 
@@ -48,3 +47,4 @@ Remotes:
     ospsuite=Open-Systems-Pharmacology/OSPSuite-R
 URL: https://esqlabs.github.io/ESQhtpbpk/
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0
