@@ -8,63 +8,64 @@
 Description of an administration protocol
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{UUID}}{Unique identifier (read-only)}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{UUID}}{Unique identifier (read-only)}
 
-\item{\code{Route}}{Route of administration}
+    \item{\code{Route}}{Route of administration}
 
-\item{\code{DoseInterval}}{Dosing interval}
+    \item{\code{DoseInterval}}{Dosing interval}
 
-\item{\code{Dose}}{Dose}
+    \item{\code{Dose}}{Dose}
 
-\item{\code{DoseUnit}}{Dose unit}
+    \item{\code{DoseUnit}}{Dose unit}
 
-\item{\code{StartTime}}{Starting time of administration}
+    \item{\code{StartTime}}{Starting time of administration}
 
-\item{\code{StartTimeUnit}}{Time unit of administration starting time}
+    \item{\code{StartTimeUnit}}{Time unit of administration starting time}
 
-\item{\code{EndTime}}{End time of administration}
+    \item{\code{EndTime}}{End time of administration}
 
-\item{\code{EndTimeUnit}}{Time unit of administration end time}
+    \item{\code{EndTimeUnit}}{Time unit of administration end time}
 
-\item{\code{InfusionTime}}{Duration of infusion}
+    \item{\code{InfusionTime}}{Duration of infusion}
 
-\item{\code{InfusionTimeUnit}}{Time unit of infusion duration}
+    \item{\code{InfusionTimeUnit}}{Time unit of infusion duration}
 
-\item{\code{WaterVolPerBW}}{Water volume per body weight}
+    \item{\code{WaterVolPerBW}}{Water volume per body weight}
 
-\item{\code{WaterVolPerBWUnit}}{Unit or water volume per body weight}
+    \item{\code{WaterVolPerBWUnit}}{Unit or water volume per body weight}
 
-\item{\code{Path}}{Prefix path for the administration (if multiple admin give a vector of all available paths)}
+    \item{\code{Path}}{Prefix path for the administration (if multiple admin give a vector of all available paths)}
 
-\item{\code{Name}}{Protocol name for the administration}
+    \item{\code{Name}}{Protocol name for the administration}
 
-\item{\code{Formulation}}{Formulation to use with protocol}
+    \item{\code{Formulation}}{Formulation to use with protocol}
 
-\item{\code{FormulationKey}}{FormulationKey mapping of the protocol}
-}
-\if{html}{\out{</div>}}
+    \item{\code{FormulationKey}}{FormulationKey mapping of the protocol}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-SimpleProtocol-new}{\code{SimpleProtocol$new()}}
-\item \href{#method-SimpleProtocol-setFormulation}{\code{SimpleProtocol$setFormulation()}}
-\item \href{#method-SimpleProtocol-extractProtocol}{\code{SimpleProtocol$extractProtocol()}}
-\item \href{#method-SimpleProtocol-getAllParameterPaths}{\code{SimpleProtocol$getAllParameterPaths()}}
-\item \href{#method-SimpleProtocol-toSnapshot}{\code{SimpleProtocol$toSnapshot()}}
-\item \href{#method-SimpleProtocol-print}{\code{SimpleProtocol$print()}}
-\item \href{#method-SimpleProtocol-clone}{\code{SimpleProtocol$clone()}}
-}
+  \itemize{
+    \item \href{#method-SimpleProtocol-initialize}{\code{SimpleProtocol$new()}}
+    \item \href{#method-SimpleProtocol-setFormulation}{\code{SimpleProtocol$setFormulation()}}
+    \item \href{#method-SimpleProtocol-extractProtocol}{\code{SimpleProtocol$extractProtocol()}}
+    \item \href{#method-SimpleProtocol-getAllParameterPaths}{\code{SimpleProtocol$getAllParameterPaths()}}
+    \item \href{#method-SimpleProtocol-toSnapshot}{\code{SimpleProtocol$toSnapshot()}}
+    \item \href{#method-SimpleProtocol-print}{\code{SimpleProtocol$print()}}
+    \item \href{#method-SimpleProtocol-clone}{\code{SimpleProtocol$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-SimpleProtocol-new"></a>}}
-\if{latex}{\out{\hypertarget{method-SimpleProtocol-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a new instance of the class
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$new(
+\if{html}{\out{<a id="method-SimpleProtocol-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-SimpleProtocol-initialize}{}}}
+\subsection{\code{SimpleProtocol$new()}}{
+  Initialize a new instance of the class
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{SimpleProtocol$new(
   name = "Protocol",
   path = NULL,
   route = "IV Bolus",
@@ -79,135 +80,135 @@ Initialize a new instance of the class
   infusionTimeUnit = NULL,
   waterVolPerBW = NULL,
   waterVolPerBWUnit = NULL
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Protocol name for the path of administration in the simulations}
+      \item{\code{path}}{Prefix for the path of administration in the simulations. (Defaults to Events|{protocolName})}
+      \item{\code{route}}{Route of administration}
+      \item{\code{dosingInterval}}{Dosing interval}
+      \item{\code{dose}}{Dose}
+      \item{\code{doseUnit}}{Unit of dose}
+      \item{\code{startTime}}{Starting time of administration}
+      \item{\code{startTimeUnit}}{Time unit of administration starting time}
+      \item{\code{endTime}}{End time of administration}
+      \item{\code{endTimeUnit}}{Time unit of administration end time}
+      \item{\code{infusionTime}}{Infusion duration (for IV infusion)}
+      \item{\code{infusionTimeUnit}}{Time unit of infusion duration (for IV infusion )}
+      \item{\code{waterVolPerBW}}{Water volume per body weight (for oral administration)}
+      \item{\code{waterVolPerBWUnit}}{Unit of water volume per body weight (for oral administration)}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A new \code{SimpleProtocol} object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{Protocol name for the path of administration in the simulations}
-
-\item{\code{path}}{Prefix for the path of administration in the simulations. (Defaults to Events|{protocolName})}
-
-\item{\code{route}}{Route of administration}
-
-\item{\code{dosingInterval}}{Dosing interval}
-
-\item{\code{dose}}{Dose}
-
-\item{\code{doseUnit}}{Unit of dose}
-
-\item{\code{startTime}}{Starting time of administration}
-
-\item{\code{startTimeUnit}}{Time unit of administration starting time}
-
-\item{\code{endTime}}{End time of administration}
-
-\item{\code{endTimeUnit}}{Time unit of administration end time}
-
-\item{\code{infusionTime}}{Infusion duration (for IV infusion)}
-
-\item{\code{infusionTimeUnit}}{Time unit of infusion duration (for IV infusion )}
-
-\item{\code{waterVolPerBW}}{Water volume per body weight (for oral administration)}
-
-\item{\code{waterVolPerBWUnit}}{Unit of water volume per body weight (for oral administration)}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new \code{SimpleProtocol} object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-setFormulation"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-setFormulation}{}}}
-\subsection{Method \code{setFormulation()}}{
-Add a formulation to oral or user defined protocol
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$setFormulation(formulation)}\if{html}{\out{</div>}}
+\subsection{\code{SimpleProtocol$setFormulation()}}{
+  Add a formulation to oral or user defined protocol
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{SimpleProtocol$setFormulation(formulation)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{formulation}}{Formulation to add to the protocol}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The updated \code{SimpleProtocol} object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{formulation}}{Formulation to add to the protocol}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The updated \code{SimpleProtocol} object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-extractProtocol"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-extractProtocol}{}}}
-\subsection{Method \code{extractProtocol()}}{
-Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$extractProtocol()}\if{html}{\out{</div>}}
+\subsection{\code{SimpleProtocol$extractProtocol()}}{
+  Extract all single administration to be applied by a protocol. For easier mapping to path in the simulation pkml.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{SimpleProtocol$extractProtocol()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A tibble with the type of administration, time of administration, parameters of the administration
+and the formulation name.
+  }
 }
 
-\subsection{Returns}{
-A tibble with the type of administration, time of administration, parameters of the administration
-and the formulation name.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-getAllParameterPaths"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-getAllParameterPaths}{}}}
-\subsection{Method \code{getAllParameterPaths()}}{
-Extract all parameter paths needed to be changed in the simulation
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$getAllParameterPaths(path = self$Path)}\if{html}{\out{</div>}}
+\subsection{\code{SimpleProtocol$getAllParameterPaths()}}{
+  Extract all parameter paths needed to be changed in the simulation
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{SimpleProtocol$getAllParameterPaths(path = self$Path)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{path}}{Prefix path for the administration (if multiple admin give a vector of all available paths)}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A character vector with all parameter paths.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{path}}{Prefix path for the administration (if multiple admin give a vector of all available paths)}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector with all parameter paths.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-toSnapshot"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-toSnapshot}{}}}
-\subsection{Method \code{toSnapshot()}}{
-Convert to snapshot
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$toSnapshot()}\if{html}{\out{</div>}}
+\subsection{\code{SimpleProtocol$toSnapshot()}}{
+  Convert to snapshot
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{SimpleProtocol$toSnapshot()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-print"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-print}{}}}
-\subsection{Method \code{print()}}{
-Print the object to the console
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$print()}\if{html}{\out{</div>}}
+\subsection{\code{SimpleProtocol$print()}}{
+  Print the object to the console
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{SimpleProtocol$print()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-SimpleProtocol-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-SimpleProtocol-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SimpleProtocol$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{SimpleProtocol$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{SimpleProtocol$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

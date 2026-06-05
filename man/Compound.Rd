@@ -8,134 +8,138 @@
 Description of a compound
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{ID}}{Id of the compound}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{ID}}{Id of the compound}
 
-\item{\code{Name}}{Name of the compound as used in the generic simulation}
-}
-\if{html}{\out{</div>}}
+    \item{\code{Name}}{Name of the compound as used in the generic simulation}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{PartitionCoefficientMethod}}{Method used to calculate the partition coefficient}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{PartitionCoefficientMethod}}{Method used to calculate the partition coefficient}
 
-\item{\code{CellularPermeabilityMethod}}{Method used to calculate the cellular permeability coefficient}
+    \item{\code{CellularPermeabilityMethod}}{Method used to calculate the cellular permeability coefficient}
 
-\item{\code{Protocol}}{Protocol used for compoud}
-}
-\if{html}{\out{</div>}}
+    \item{\code{Protocol}}{Protocol used for compoud}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-Compound-new}{\code{Compound$new()}}
-\item \href{#method-Compound-getProperty}{\code{Compound$getProperty()}}
-\item \href{#method-Compound-getAllProperty}{\code{Compound$getAllProperty()}}
-\item \href{#method-Compound-setPropertyValue}{\code{Compound$setPropertyValue()}}
-\item \href{#method-Compound-addProperty}{\code{Compound$addProperty()}}
-\item \href{#method-Compound-removeProperty}{\code{Compound$removeProperty()}}
-\item \href{#method-Compound-addProcessProperty}{\code{Compound$addProcessProperty()}}
-\item \href{#method-Compound-removeProcessProperty}{\code{Compound$removeProcessProperty()}}
-\item \href{#method-Compound-removeProcess}{\code{Compound$removeProcess()}}
-\item \href{#method-Compound-getProcessProperty}{\code{Compound$getProcessProperty()}}
-\item \href{#method-Compound-getAllProcessProperty}{\code{Compound$getAllProcessProperty()}}
-\item \href{#method-Compound-setProcessPropertyValue}{\code{Compound$setProcessPropertyValue()}}
-\item \href{#method-Compound-setProtocol}{\code{Compound$setProtocol()}}
-\item \href{#method-Compound-toSnapshot}{\code{Compound$toSnapshot()}}
-\item \href{#method-Compound-getAllPropertyPaths}{\code{Compound$getAllPropertyPaths()}}
-\item \href{#method-Compound-print}{\code{Compound$print()}}
-\item \href{#method-Compound-clone}{\code{Compound$clone()}}
-}
+  \itemize{
+    \item \href{#method-Compound-initialize}{\code{Compound$new()}}
+    \item \href{#method-Compound-getProperty}{\code{Compound$getProperty()}}
+    \item \href{#method-Compound-getAllProperty}{\code{Compound$getAllProperty()}}
+    \item \href{#method-Compound-setPropertyValue}{\code{Compound$setPropertyValue()}}
+    \item \href{#method-Compound-addProperty}{\code{Compound$addProperty()}}
+    \item \href{#method-Compound-removeProperty}{\code{Compound$removeProperty()}}
+    \item \href{#method-Compound-addProcessProperty}{\code{Compound$addProcessProperty()}}
+    \item \href{#method-Compound-removeProcessProperty}{\code{Compound$removeProcessProperty()}}
+    \item \href{#method-Compound-removeProcess}{\code{Compound$removeProcess()}}
+    \item \href{#method-Compound-getProcessProperty}{\code{Compound$getProcessProperty()}}
+    \item \href{#method-Compound-getAllProcessProperty}{\code{Compound$getAllProcessProperty()}}
+    \item \href{#method-Compound-setProcessPropertyValue}{\code{Compound$setProcessPropertyValue()}}
+    \item \href{#method-Compound-setProtocol}{\code{Compound$setProtocol()}}
+    \item \href{#method-Compound-toSnapshot}{\code{Compound$toSnapshot()}}
+    \item \href{#method-Compound-getAllPropertyPaths}{\code{Compound$getAllPropertyPaths()}}
+    \item \href{#method-Compound-print}{\code{Compound$print()}}
+    \item \href{#method-Compound-clone}{\code{Compound$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Compound-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Compound-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a new instance of the class Compound
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$new(ID, name = "Compound", PCMethod = "PK-Sim", CPMethod = "PK-Sim")}\if{html}{\out{</div>}}
+\if{html}{\out{<a id="method-Compound-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-Compound-initialize}{}}}
+\subsection{\code{Compound$new()}}{
+  Initialize a new instance of the class Compound
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$new(ID, name = "Compound", PCMethod = "PK-Sim", CPMethod = "PK-Sim")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{ID}}{Id of the compound}
+      \item{\code{name}}{Name of the compound in the simulation pkmls}
+      \item{\code{PCMethod}}{Partition coefficient method to use for the compound}
+      \item{\code{CPMethod}}{Cellular permeability method to use for the compound}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A new \code{Compound} object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{ID}}{Id of the compound}
-
-\item{\code{name}}{Name of the compound in the simulation pkmls}
-
-\item{\code{PCMethod}}{Partition coefficient method to use for the compound}
-
-\item{\code{CPMethod}}{Cellular permeability method to use for the compound}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new \code{Compound} object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-getProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-getProperty}{}}}
-\subsection{Method \code{getProperty()}}{
-Get specific property of the compound
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$getProperty(name)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$getProperty()}}{
+  Get specific property of the compound
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$getProperty(name)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Name of the property to retrieve.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The corresponding property object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{Name of the property to retrieve.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The corresponding property object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-getAllProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-getAllProperty}{}}}
-\subsection{Method \code{getAllProperty()}}{
-Get all defined properties of the compound
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$getAllProperty()}\if{html}{\out{</div>}}
+\subsection{\code{Compound$getAllProperty()}}{
+  Get all defined properties of the compound
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$getAllProperty()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A list of all compound properties.
+  }
 }
 
-\subsection{Returns}{
-A list of all compound properties.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-setPropertyValue"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-setPropertyValue}{}}}
-\subsection{Method \code{setPropertyValue()}}{
-Update specific property value for the compound.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$setPropertyValue(name, value, unit = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$setPropertyValue()}}{
+  Update specific property value for the compound.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$setPropertyValue(name, value, unit = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Name of the property to modify.}
+      \item{\code{value}}{New value for the property.}
+      \item{\code{unit}}{New unit to use for the property, if not given the unit is assumed to be the same as previously.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{Name of the property to modify.}
-
-\item{\code{value}}{New value for the property.}
-
-\item{\code{unit}}{New unit to use for the property, if not given the unit is assumed to be the same as previously.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-addProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-addProperty}{}}}
-\subsection{Method \code{addProperty()}}{
-Add a new property for the compound.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$addProperty(
+\subsection{\code{Compound$addProperty()}}{
+  Add a new property for the compound.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$addProperty(
   name,
   parName,
   dimension,
@@ -144,58 +148,55 @@ Add a new property for the compound.
   enum = NULL,
   check = NULL,
   path = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{Name of the property to add.}
-
-\item{\code{parName}}{Corresponding parameter name in the simulation pkml of the property to add.}
-
-\item{\code{dimension}}{Dimension of the property to add.}
-
-\item{\code{value}}{Value for the property.}
-
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Name of the property to add.}
+      \item{\code{parName}}{Corresponding parameter name in the simulation pkml of the property to add.}
+      \item{\code{dimension}}{Dimension of the property to add.}
+      \item{\code{value}}{Value for the property.}
+      \item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
 baseUnit of the dimension.}
-
-\item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
-
-\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property,
+      \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
+      \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property,
 must take value, unit as argument an retrun an error if the test fails.}
-
-\item{\code{path}}{Corresponding full path of the parameter in the simulation pkml of the property to add
+      \item{\code{path}}{Corresponding full path of the parameter in the simulation pkml of the property to add
 (default to NULL to create it automatically based on parName).}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-removeProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-removeProperty}{}}}
-\subsection{Method \code{removeProperty()}}{
-Remove a property from the compound.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$removeProperty(name)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$removeProperty()}}{
+  Remove a property from the compound.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$removeProperty(name)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Name of the property to remove}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{Name of the property to remove}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-addProcessProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-addProcessProperty}{}}}
-\subsection{Method \code{addProcessProperty()}}{
-Add a new process property for the compound.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$addProcessProperty(
+\subsection{\code{Compound$addProcessProperty()}}{
+  Add a new process property for the compound.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$addProcessProperty(
   propertyName,
   processType,
   parName,
@@ -205,220 +206,228 @@ Add a new process property for the compound.
   enum = NULL,
   check = NULL,
   path = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{propertyName}}{Name of the property to add.}
-
-\item{\code{processType}}{Corresponding Process type. Allowed Process types are:
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{propertyName}}{Name of the property to add.}
+      \item{\code{processType}}{Corresponding Process type. Allowed Process types are:
 "Liver Plasma Clearance", "Hep T1/2", "Hep Residuals", "Liver Mic T1/2",
 "Liver Mic Residuals", "Renal Plasma Clearance", "Tub Sec FirstOrder",
 "Tub Sec MM", "GFR", "Biliary Plasma Clearance".}
-
-\item{\code{parName}}{Corresponding parameter name in the simulation pkml of the property to add.}
-
-\item{\code{dimension}}{Dimension of the property to add.}
-
-\item{\code{value}}{Value for the property.}
-
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+      \item{\code{parName}}{Corresponding parameter name in the simulation pkml of the property to add.}
+      \item{\code{dimension}}{Dimension of the property to add.}
+      \item{\code{value}}{Value for the property.}
+      \item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
 baseUnit of the dimension.}
-
-\item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
-
-\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
-
-\item{\code{path}}{(Optional) Corresponding full path of the parameter in the simulation pkml of the
+      \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
+      \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
+      \item{\code{path}}{(Optional) Corresponding full path of the parameter in the simulation pkml of the
 property to add. Needed when using a predefined pkml for the HTPBPK simulation.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-removeProcessProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-removeProcessProperty}{}}}
-\subsection{Method \code{removeProcessProperty()}}{
-Remove a process property from the compound.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$removeProcessProperty(propertyName, processType)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$removeProcessProperty()}}{
+  Remove a process property from the compound.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$removeProcessProperty(propertyName, processType)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{propertyName}}{Name of the property to remove}
+      \item{\code{processType}}{Type of the process to remove the property from}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{propertyName}}{Name of the property to remove}
-
-\item{\code{processType}}{Type of the process to remove the property from}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-removeProcess"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-removeProcess}{}}}
-\subsection{Method \code{removeProcess()}}{
-Remove a all process propertys from the compound.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$removeProcess(processType)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$removeProcess()}}{
+  Remove a all process propertys from the compound.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$removeProcess(processType)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{processType}}{Type of the process to remove the property from}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{processType}}{Type of the process to remove the property from}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-getProcessProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-getProcessProperty}{}}}
-\subsection{Method \code{getProcessProperty()}}{
-Get specific process property of the compound
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$getProcessProperty(propertyName, processType)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$getProcessProperty()}}{
+  Get specific process property of the compound
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$getProcessProperty(propertyName, processType)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{propertyName}}{Name of the property to get values from}
+      \item{\code{processType}}{Type of the process to get the property from}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The corresponding property object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{propertyName}}{Name of the property to get values from}
-
-\item{\code{processType}}{Type of the process to get the property from}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The corresponding property object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-getAllProcessProperty"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-getAllProcessProperty}{}}}
-\subsection{Method \code{getAllProcessProperty()}}{
-Get all process properties defined in the compound (or from a specific process type)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$getAllProcessProperty(processType = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$getAllProcessProperty()}}{
+  Get all process properties defined in the compound (or from a specific process type)
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$getAllProcessProperty(processType = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{processType}}{(optional) process type for which to get all the properties defined in compound
+if NULL or not given all process properties for all process types are retuned}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    List of all process properties defined in the compound (for a specific process type if supplied).
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{processType}}{(optional) process type for which to get all the properties defined in compound
-if NULL or not given all process properties for all process types are retuned}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-List of all process properties defined in the compound (for a specific process type if supplied).
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-setProcessPropertyValue"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-setProcessPropertyValue}{}}}
-\subsection{Method \code{setProcessPropertyValue()}}{
-Update specific process property value for the compound.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$setProcessPropertyValue(propertyName, processType, value, unit = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$setProcessPropertyValue()}}{
+  Update specific process property value for the compound.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$setProcessPropertyValue(propertyName, processType, value, unit = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{propertyName}}{Name of the property to set values for}
+      \item{\code{processType}}{Type of the process to set the property from}
+      \item{\code{value}}{New value for the property.}
+      \item{\code{unit}}{New unit to use for the property, if not given the unit is assumed to be the same as previously.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{propertyName}}{Name of the property to set values for}
-
-\item{\code{processType}}{Type of the process to set the property from}
-
-\item{\code{value}}{New value for the property.}
-
-\item{\code{unit}}{New unit to use for the property, if not given the unit is assumed to be the same as previously.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-setProtocol"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-setProtocol}{}}}
-\subsection{Method \code{setProtocol()}}{
-Set the administration protocol to be used for a compound
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$setProtocol(protocol)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$setProtocol()}}{
+  Set the administration protocol to be used for a compound
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$setProtocol(protocol)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{protocol}}{administration protocol to use for the compound. Must be an object of
+class \code{SimpleProtocol} or \code{AdvancedProtocol}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{protocol}}{administration protocol to use for the compound. Must be an object of
-class \code{SimpleProtocol} or \code{AdvancedProtocol}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-toSnapshot"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-toSnapshot}{}}}
-\subsection{Method \code{toSnapshot()}}{
-Create a snapshot representation of the compound
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$toSnapshot()}\if{html}{\out{</div>}}
+\subsection{\code{Compound$toSnapshot()}}{
+  Create a snapshot representation of the compound
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$toSnapshot()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-getAllPropertyPaths"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-getAllPropertyPaths}{}}}
-\subsection{Method \code{getAllPropertyPaths()}}{
-Get the paths of all parameters defined for the compound
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$getAllPropertyPaths(compoundName = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$getAllPropertyPaths()}}{
+  Get the paths of all parameters defined for the compound
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$getAllPropertyPaths(compoundName = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{compoundName}}{name of the compound in the simulations}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A character vector with the paths of all parameters
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{compoundName}}{name of the compound in the simulations}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector with the paths of all parameters
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-print}{}}}
-\subsection{Method \code{print()}}{
-Print the object to the console
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$print(...)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$print()}}{
+  Print the object to the console
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$print(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Rest arguments.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Rest arguments.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Compound-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-Compound-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Compound$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{Compound$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Compound$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

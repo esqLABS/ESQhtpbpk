@@ -13,10 +13,11 @@
     Message
       Formulation Name: Weibull
       Formulation Type: Weibull
-      * Dissolution time (50% dissolved): 240 min
-      * Lag time: 0 min
-      * Dissolution shape: 0.92
-      * Use as suspension: 1
+    Output
+        * Dissolution time (50% dissolved): 240 min
+        * Lag time: 0 min
+        * Dissolution shape: 0.92
+        * Use as suspension: 1
 
 # createLint80Formulation works
 
@@ -25,9 +26,10 @@
     Message
       Formulation Name: Lint80
       Formulation Type: Lint80
-      * Dissolution time (80% dissolved): 240 min
-      * Lag time: 0 min
-      * Use as suspension: 1
+    Output
+        * Dissolution time (80% dissolved): 240 min
+        * Lag time: 0 min
+        * Use as suspension: 1
 
 # createParticleDissolutionFormulation for monodisperse works
 
@@ -36,9 +38,10 @@
     Message
       Formulation Name: ParticleMono
       Formulation Type: Particle
-      * Thickness (unstirred water layer): 30 µm
-      * Type of particle size distribution: Monodisperse
-      * Particle radius (mean): 10 µm
+    Output
+        * Thickness (unstirred water layer): 30 µm
+        * Type of particle size distribution: Monodisperse
+        * Particle radius (mean): 10 µm
 
 # createParticleDissolutionFormulation for polydisperse normal works
 
@@ -47,14 +50,15 @@
     Message
       Formulation Name: ParticlePolyNormal
       Formulation Type: Particle
-      * Thickness (unstirred water layer): 30 µm
-      * Type of particle size distribution: Polydisperse
-      * Particle size distribution: Normal
-      * Particle radius (mean): 10 µm
-      * Particle radius (SD): 3 µm
-      * Particle radius (min): 1 µm
-      * Particle radius (max): 19 µm
-      * Number of bins: 3
+    Output
+        * Thickness (unstirred water layer): 30 µm
+        * Type of particle size distribution: Polydisperse
+        * Particle size distribution: Normal
+        * Particle radius (mean): 10 µm
+        * Particle radius (SD): 3 µm
+        * Particle radius (min): 1 µm
+        * Particle radius (max): 19 µm
+        * Number of bins: 3
 
 # createParticleDissolutionFormulation for polydisperse lognormal works
 
@@ -63,14 +67,15 @@
     Message
       Formulation Name: ParticlePolyLogNormal
       Formulation Type: Particle
-      * Thickness (unstirred water layer): 30 µm
-      * Type of particle size distribution: Polydisperse
-      * Particle size distribution: LogNormal
-      * Particle radius (geomean): 10 µm
-      * Coefficient of variation: 1.5
-      * Particle radius (min): 1 µm
-      * Particle radius (max): 19 µm
-      * Number of bins: 3
+    Output
+        * Thickness (unstirred water layer): 30 µm
+        * Type of particle size distribution: Polydisperse
+        * Particle size distribution: LogNormal
+        * Particle radius (geomean): 10 µm
+        * Coefficient of variation: 1.5
+        * Particle radius (min): 1 µm
+        * Particle radius (max): 19 µm
+        * Number of bins: 3
 
 # createZeroOrderFormulation works
 
@@ -79,7 +84,8 @@
     Message
       Formulation Name: 0Order
       Formulation Type: ZeroOrder
-      * End time: 60 min
+    Output
+        * End time: 60 min
 
 # createFirstOrderFormulation works
 
@@ -88,7 +94,8 @@
     Message
       Formulation Name: 1stOrder
       Formulation Type: FirstOrder
-      * t1/2: 0.01 min
+    Output
+        * t1/2: 0.01 min
 
 # Export to snapshot works
 

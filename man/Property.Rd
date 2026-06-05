@@ -8,44 +8,45 @@
 Property of a compound, of a formulation
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{name}}{Name of the property}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{name}}{Name of the property}
 
-\item{\code{dimension}}{Dimension of the property}
+    \item{\code{dimension}}{Dimension of the property}
 
-\item{\code{value}}{Value of the property.}
+    \item{\code{value}}{Value of the property.}
 
-\item{\code{unit}}{Unit of the property}
+    \item{\code{unit}}{Unit of the property}
 
-\item{\code{parName}}{Parameter name of the property in the simulation pkmls}
+    \item{\code{parName}}{Parameter name of the property in the simulation pkmls}
 
-\item{\code{path}}{Path of the property in the simulation pkmls}
+    \item{\code{path}}{Path of the property in the simulation pkmls}
 
-\item{\code{enum}}{Enums to convert from user friendly value to PK-Sim allowed value}
+    \item{\code{enum}}{Enums to convert from user friendly value to PK-Sim allowed value}
 
-\item{\code{check}}{Function to check validity of given value, must take value and unit as arguments
+    \item{\code{check}}{Function to check validity of given value, must take value and unit as arguments
 and must return an error if value is not valid}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-Property-new}{\code{Property$new()}}
-\item \href{#method-Property-toBaseUnit}{\code{Property$toBaseUnit()}}
-\item \href{#method-Property-toSnapshot}{\code{Property$toSnapshot()}}
-\item \href{#method-Property-print}{\code{Property$print()}}
-\item \href{#method-Property-clone}{\code{Property$clone()}}
-}
+  \itemize{
+    \item \href{#method-Property-initialize}{\code{Property$new()}}
+    \item \href{#method-Property-toBaseUnit}{\code{Property$toBaseUnit()}}
+    \item \href{#method-Property-toSnapshot}{\code{Property$toSnapshot()}}
+    \item \href{#method-Property-print}{\code{Property$print()}}
+    \item \href{#method-Property-clone}{\code{Property$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Property-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Property-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a new instance of the class.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Property$new(
+\if{html}{\out{<a id="method-Property-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-Property-initialize}{}}}
+\subsection{\code{Property$new()}}{
+  Initialize a new instance of the class.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Property$new(
   name,
   parName,
   dimension,
@@ -57,95 +58,94 @@ Initialize a new instance of the class.
   max = NULL,
   rangeUnit = NULL,
   path = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{Name of the property.}
-
-\item{\code{parName}}{Parameter name of the property in the simulation pkmls.}
-
-\item{\code{dimension}}{Dimension of the property.}
-
-\item{\code{value}}{Value of the property}
-
-\item{\code{unit}}{Unit of the property.}
-
-\item{\code{enum}}{(Optional) Enum to convert from user friendly value to PK-Sim allowed value}
-
-\item{\code{check}}{(Optional) Function to check validity of given value, must take value and unit as arguments
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Name of the property.}
+      \item{\code{parName}}{Parameter name of the property in the simulation pkmls.}
+      \item{\code{dimension}}{Dimension of the property.}
+      \item{\code{value}}{Value of the property}
+      \item{\code{unit}}{Unit of the property.}
+      \item{\code{enum}}{(Optional) Enum to convert from user friendly value to PK-Sim allowed value}
+      \item{\code{check}}{(Optional) Function to check validity of given value, must take value and unit as arguments
 and must return an error if the value is not valid}
-
-\item{\code{min}}{(Optional) Min value allowed to check validity of given value}
-
-\item{\code{max}}{(Optional) Max value allowed to check validity of given value}
-
-\item{\code{rangeUnit}}{(Optional) Unit in which the min/max range is given}
-
-\item{\code{path}}{path of the property in the simulation pkmls. Default to \code{CompoundName|parName}
+      \item{\code{min}}{(Optional) Min value allowed to check validity of given value}
+      \item{\code{max}}{(Optional) Max value allowed to check validity of given value}
+      \item{\code{rangeUnit}}{(Optional) Unit in which the min/max range is given}
+      \item{\code{path}}{path of the property in the simulation pkmls. Default to \code{CompoundName|parName}
 (if not given, the unit is assumed to be the same as the unit of the property).
 valid).}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A new \code{Property} object.
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new \code{Property} object.
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Property-toBaseUnit"></a>}}
 \if{latex}{\out{\hypertarget{method-Property-toBaseUnit}{}}}
-\subsection{Method \code{toBaseUnit()}}{
-Return the value of the property in base unit
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Property$toBaseUnit()}\if{html}{\out{</div>}}
+\subsection{\code{Property$toBaseUnit()}}{
+  Return the value of the property in base unit
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Property$toBaseUnit()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Property-toSnapshot"></a>}}
 \if{latex}{\out{\hypertarget{method-Property-toSnapshot}{}}}
-\subsection{Method \code{toSnapshot()}}{
-Convert to snapshot
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Property$toSnapshot()}\if{html}{\out{</div>}}
+\subsection{\code{Property$toSnapshot()}}{
+  Convert to snapshot
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Property$toSnapshot()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Property-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Property-print}{}}}
-\subsection{Method \code{print()}}{
-Print the object to the console
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Property$print(compoundName = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{Property$print()}}{
+  Print the object to the console
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Property$print(compoundName = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{compoundName}}{compoundName in the simulation to replace placeholder in the path}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{compoundName}}{compoundName in the simulation to replace placeholder in the path}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Property-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-Property-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Property$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{Property$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Property$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

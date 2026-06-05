@@ -8,56 +8,58 @@
 Description of a formulation
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{Type}}{Type of Formulation}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{Type}}{Type of Formulation}
 
-\item{\code{Name}}{Name of formulation}
+    \item{\code{Name}}{Name of formulation}
 
-\item{\code{Parameters}}{Parameters of the formulation}
-}
-\if{html}{\out{</div>}}
+    \item{\code{Parameters}}{Parameters of the formulation}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-Formulation-new}{\code{Formulation$new()}}
-\item \href{#method-Formulation-addParameter}{\code{Formulation$addParameter()}}
-\item \href{#method-Formulation-getAllPropertyPaths}{\code{Formulation$getAllPropertyPaths()}}
-\item \href{#method-Formulation-toSnapshot}{\code{Formulation$toSnapshot()}}
-\item \href{#method-Formulation-print}{\code{Formulation$print()}}
-\item \href{#method-Formulation-clone}{\code{Formulation$clone()}}
-}
+  \itemize{
+    \item \href{#method-Formulation-initialize}{\code{Formulation$new()}}
+    \item \href{#method-Formulation-addParameter}{\code{Formulation$addParameter()}}
+    \item \href{#method-Formulation-getAllPropertyPaths}{\code{Formulation$getAllPropertyPaths()}}
+    \item \href{#method-Formulation-toSnapshot}{\code{Formulation$toSnapshot()}}
+    \item \href{#method-Formulation-print}{\code{Formulation$print()}}
+    \item \href{#method-Formulation-clone}{\code{Formulation$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Formulation-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Formulation-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a new instance of the class Formulation
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$new(type, name = "Formulation")}\if{html}{\out{</div>}}
+\if{html}{\out{<a id="method-Formulation-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-Formulation-initialize}{}}}
+\subsection{\code{Formulation$new()}}{
+  Initialize a new instance of the class Formulation
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Formulation$new(type, name = "Formulation")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{type}}{Type of the formulation}
+      \item{\code{name}}{Name of the formulation}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A new \code{Formulation} object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{Type of the formulation}
-
-\item{\code{name}}{Name of the formulation}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new \code{Formulation} object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Formulation-addParameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Formulation-addParameter}{}}}
-\subsection{Method \code{addParameter()}}{
-Add a new property/parameter for the formulation
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$addParameter(
+\subsection{\code{Formulation$addParameter()}}{
+  Add a new property/parameter for the formulation
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Formulation$addParameter(
   name,
   parName,
   dimension,
@@ -66,103 +68,104 @@ Add a new property/parameter for the formulation
   enum = NULL,
   check = NULL,
   pathPrefix = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{name}}{Name of the property to add.}
-
-\item{\code{parName}}{Corresponding parameter name of the property to add in the simulation}
-
-\item{\code{dimension}}{Dimension of the property to add.}
-
-\item{\code{value}}{Value for the property.}
-
-\item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Name of the property to add.}
+      \item{\code{parName}}{Corresponding parameter name of the property to add in the simulation}
+      \item{\code{dimension}}{Dimension of the property to add.}
+      \item{\code{value}}{Value for the property.}
+      \item{\code{unit}}{(Optional) Unit to use for the property. If not given, it is assumed to be the
 baseUnit of the dimension.}
-
-\item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
-
-\item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
-
-\item{\code{pathPrefix}}{Corresponding path in the simulation pkml of the property to add.
+      \item{\code{enum}}{(Optional) Name list mapping user friendly values to PK-Sim allowed values.}
+      \item{\code{check}}{(Optional) Function to check the validity of the supplied value for the property.}
+      \item{\code{pathPrefix}}{Corresponding path in the simulation pkml of the property to add.
 Default to \code{{protocolPrefix}|{formulationName}}}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Formulation-getAllPropertyPaths"></a>}}
 \if{latex}{\out{\hypertarget{method-Formulation-getAllPropertyPaths}{}}}
-\subsection{Method \code{getAllPropertyPaths()}}{
-Get the paths of all parameters defined for the formulation, using protocolName and formulationName
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$getAllPropertyPaths(
+\subsection{\code{Formulation$getAllPropertyPaths()}}{
+  Get the paths of all parameters defined for the formulation, using protocolName and formulationName
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Formulation$getAllPropertyPaths(
   protocolPrefix = NULL,
   formulationName = self$Name
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{protocolPrefix}}{Name of the protocol in the simulation}
+      \item{\code{formulationName}}{Name of the formulation in the simulation}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A character vector with the paths of all parameters
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{protocolPrefix}}{Name of the protocol in the simulation}
-
-\item{\code{formulationName}}{Name of the formulation in the simulation}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector with the paths of all parameters
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Formulation-toSnapshot"></a>}}
 \if{latex}{\out{\hypertarget{method-Formulation-toSnapshot}{}}}
-\subsection{Method \code{toSnapshot()}}{
-Convert the object to a snapshot
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$toSnapshot()}\if{html}{\out{</div>}}
+\subsection{\code{Formulation$toSnapshot()}}{
+  Convert the object to a snapshot
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Formulation$toSnapshot()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A snapshot representation of the formulation
+  }
 }
 
-\subsection{Returns}{
-A snapshot representation of the formulation
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Formulation-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Formulation-print}{}}}
-\subsection{Method \code{print()}}{
-Print the object to the console
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$print(...)}\if{html}{\out{</div>}}
+\subsection{\code{Formulation$print()}}{
+  Print the object to the console
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Formulation$print(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Rest arguments.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Rest arguments.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Formulation-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-Formulation-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Formulation$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{Formulation$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Formulation$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

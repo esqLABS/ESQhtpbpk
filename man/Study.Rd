@@ -8,285 +8,303 @@
 Description of a study
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{ID}}{of the study}
-}
-\if{html}{\out{</div>}}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{ID}}{of the study}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{Compounds}}{List of administered compounds (with administration protocol), object of class \code{Compound}}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{Compounds}}{List of administered compounds (with administration protocol), object of class \code{Compound}}
 
-\item{\code{Individual}}{Individual used in the study.}
-}
-\if{html}{\out{</div>}}
+    \item{\code{Individual}}{Individual used in the study.}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-Study-new}{\code{Study$new()}}
-\item \href{#method-Study-getAllParameterPaths}{\code{Study$getAllParameterPaths()}}
-\item \href{#method-Study-addDataSets}{\code{Study$addDataSets()}}
-\item \href{#method-Study-getDataSets}{\code{Study$getDataSets()}}
-\item \href{#method-Study-setOutputInterval}{\code{Study$setOutputInterval()}}
-\item \href{#method-Study-addOutputInterval}{\code{Study$addOutputInterval()}}
-\item \href{#method-Study-toSnapshot}{\code{Study$toSnapshot()}}
-\item \href{#method-Study-exportSnapshot}{\code{Study$exportSnapshot()}}
-\item \href{#method-Study-exportPKML}{\code{Study$exportPKML()}}
-\item \href{#method-Study-setGenericModel}{\code{Study$setGenericModel()}}
-\item \href{#method-Study-getGenericModel}{\code{Study$getGenericModel()}}
-\item \href{#method-Study-setSimulation}{\code{Study$setSimulation()}}
-\item \href{#method-Study-getSimulation}{\code{Study$getSimulation()}}
-\item \href{#method-Study-print}{\code{Study$print()}}
-}
+  \itemize{
+    \item \href{#method-Study-initialize}{\code{Study$new()}}
+    \item \href{#method-Study-getAllParameterPaths}{\code{Study$getAllParameterPaths()}}
+    \item \href{#method-Study-addDataSets}{\code{Study$addDataSets()}}
+    \item \href{#method-Study-getDataSets}{\code{Study$getDataSets()}}
+    \item \href{#method-Study-setOutputInterval}{\code{Study$setOutputInterval()}}
+    \item \href{#method-Study-addOutputInterval}{\code{Study$addOutputInterval()}}
+    \item \href{#method-Study-toSnapshot}{\code{Study$toSnapshot()}}
+    \item \href{#method-Study-exportSnapshot}{\code{Study$exportSnapshot()}}
+    \item \href{#method-Study-exportPKML}{\code{Study$exportPKML()}}
+    \item \href{#method-Study-setGenericModel}{\code{Study$setGenericModel()}}
+    \item \href{#method-Study-getGenericModel}{\code{Study$getGenericModel()}}
+    \item \href{#method-Study-setSimulation}{\code{Study$setSimulation()}}
+    \item \href{#method-Study-getSimulation}{\code{Study$getSimulation()}}
+    \item \href{#method-Study-print}{\code{Study$print()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Study-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Study-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a new instance of the class
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$new(ID, compounds, individual, genericModel = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{ID}}{ID of the study}
-
-\item{\code{compounds}}{list of administered compounds, compounds must be object of class \code{Compound}.}
-
-\item{\code{individual}}{individual used in the study}
-
-\item{\code{genericModel}}{path to a generic model to use if pre-generated (for example from MoBi with PD).
+\if{html}{\out{<a id="method-Study-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-Study-initialize}{}}}
+\subsection{\code{Study$new()}}{
+  Initialize a new instance of the class
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$new(ID, compounds, individual, genericModel = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{ID}}{ID of the study}
+      \item{\code{compounds}}{list of administered compounds, compounds must be object of class \code{Compound}.}
+      \item{\code{individual}}{individual used in the study}
+      \item{\code{genericModel}}{path to a generic model to use if pre-generated (for example from MoBi with PD).
 Keep to NULL if a generic model should be automatically generated.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A new \code{Study} object.
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A new \code{Study} object.
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-getAllParameterPaths"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-getAllParameterPaths}{}}}
-\subsection{Method \code{getAllParameterPaths()}}{
-Get the paths of all parameters defined for the study.
+\subsection{\code{Study$getAllParameterPaths()}}{
+  Get the paths of all parameters defined for the study.
 This is a union of all compounds and administration protocol parameters.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$getAllParameterPaths()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$getAllParameterPaths()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A character vector with the paths of all parameters
+  }
 }
 
-\subsection{Returns}{
-A character vector with the paths of all parameters
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-addDataSets"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-addDataSets}{}}}
-\subsection{Method \code{addDataSets()}}{
-Add DataSet objects to the study
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$addDataSets(dataSets)}\if{html}{\out{</div>}}
+\subsection{\code{Study$addDataSets()}}{
+  Add DataSet objects to the study
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$addDataSets(dataSets)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{dataSets}}{a DataSet object}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{dataSets}}{a DataSet object}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-getDataSets"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-getDataSets}{}}}
-\subsection{Method \code{getDataSets()}}{
-Get the DataSet objects of the study
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$getDataSets()}\if{html}{\out{</div>}}
+\subsection{\code{Study$getDataSets()}}{
+  Get the DataSet objects of the study
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$getDataSets()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A list of DataSet objects
+  }
 }
 
-\subsection{Returns}{
-A list of DataSet objects
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setOutputInterval"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-setOutputInterval}{}}}
-\subsection{Method \code{setOutputInterval()}}{
-Clears the output interval from the simulation and adds a new one.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$setOutputInterval(startTime, endTime, timeUnit, resolution)}\if{html}{\out{</div>}}
+\subsection{\code{Study$setOutputInterval()}}{
+  Clears the output interval from the simulation and adds a new one.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$setOutputInterval(startTime, endTime, timeUnit, resolution)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{startTime}}{start time of the interval in time units}
+      \item{\code{endTime}}{end time of the interval in time units}
+      \item{\code{timeUnit}}{time unit of the interval}
+      \item{\code{resolution}}{resolution of the interval in pts/time units}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{startTime}}{start time of the interval in time units}
-
-\item{\code{endTime}}{end time of the interval in time units}
-
-\item{\code{timeUnit}}{time unit of the interval}
-
-\item{\code{resolution}}{resolution of the interval in pts/time units}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-addOutputInterval"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-addOutputInterval}{}}}
-\subsection{Method \code{addOutputInterval()}}{
-Adds an interval to the output schema of the study
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$addOutputInterval(startTime, endTime, timeUnit, resolution)}\if{html}{\out{</div>}}
+\subsection{\code{Study$addOutputInterval()}}{
+  Adds an interval to the output schema of the study
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$addOutputInterval(startTime, endTime, timeUnit, resolution)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{startTime}}{start time of the interval in time units}
+      \item{\code{endTime}}{end time of the interval in time units}
+      \item{\code{timeUnit}}{time unit of the interval}
+      \item{\code{resolution}}{resolution of the interval in pts/time units}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{startTime}}{start time of the interval in time units}
-
-\item{\code{endTime}}{end time of the interval in time units}
-
-\item{\code{timeUnit}}{time unit of the interval}
-
-\item{\code{resolution}}{resolution of the interval in pts/time units}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-toSnapshot"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-toSnapshot}{}}}
-\subsection{Method \code{toSnapshot()}}{
-Convert study to a snapshot
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$toSnapshot()}\if{html}{\out{</div>}}
+\subsection{\code{Study$toSnapshot()}}{
+  Convert study to a snapshot
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$toSnapshot()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-exportSnapshot"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-exportSnapshot}{}}}
-\subsection{Method \code{exportSnapshot()}}{
-Convert study to a snapshot
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$exportSnapshot(file)}\if{html}{\out{</div>}}
+\subsection{\code{Study$exportSnapshot()}}{
+  Convert study to a snapshot
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$exportSnapshot(file)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{file}}{file path to save the snapshot}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{file path to save the snapshot}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-exportPKML"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-exportPKML}{}}}
-\subsection{Method \code{exportPKML()}}{
-Convert study to a pkml
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$exportPKML(file, overwrite = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{Study$exportPKML()}}{
+  Convert study to a pkml
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$exportPKML(file, overwrite = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{file}}{file path to save the pkml}
+      \item{\code{overwrite}}{if TRUE, overwrite existing file}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{file path to save the pkml}
-
-\item{\code{overwrite}}{if TRUE, overwrite existing file}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setGenericModel"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-setGenericModel}{}}}
-\subsection{Method \code{setGenericModel()}}{
-Set generic model to use if pre-generated (for example from MoBi with PD)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$setGenericModel(modelPath)}\if{html}{\out{</div>}}
+\subsection{\code{Study$setGenericModel()}}{
+  Set generic model to use if pre-generated (for example from MoBi with PD)
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$setGenericModel(modelPath)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic
+model should be automatically generated.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{modelPath}}{path of the pkml model to use for the study. Keep to NULL if a generic
-model should be automatically generated.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-getGenericModel"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-getGenericModel}{}}}
-\subsection{Method \code{getGenericModel()}}{
-Get generic model path assigned to the study (either from automatic pkml creation or
+\subsection{\code{Study$getGenericModel()}}{
+  Get generic model path assigned to the study (either from automatic pkml creation or
 preassigned by user).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$getGenericModel(silent = FALSE)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$getGenericModel(silent = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{silent}}{if TRUE, do not print a message if the model is not set.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    path of the pkml model used for the study, or NULL if not set. If path is not
+valid the model is unset.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{silent}}{if TRUE, do not print a message if the model is not set.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-path of the pkml model used for the study, or NULL if not set. If path is not
-valid the model is unset.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-setSimulation"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-setSimulation}{}}}
-\subsection{Method \code{setSimulation()}}{
-Set simulation model to use if pre-generated (for example from MoBi with PD)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$setSimulation(simulation)}\if{html}{\out{</div>}}
+\subsection{\code{Study$setSimulation()}}{
+  Set simulation model to use if pre-generated (for example from MoBi with PD)
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$setSimulation(simulation)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{simulation}}{simulation loaded from pkml (to check )}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{simulation}}{simulation loaded from pkml (to check )}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-getSimulation"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-getSimulation}{}}}
-\subsection{Method \code{getSimulation()}}{
-Get simulation model used for the study
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$getSimulation()}\if{html}{\out{</div>}}
+\subsection{\code{Study$getSimulation()}}{
+  Get simulation model used for the study
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$getSimulation()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Study-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Study-print}{}}}
-\subsection{Method \code{print()}}{
-Print the object to the console
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Study$print(...)}\if{html}{\out{</div>}}
+\subsection{\code{Study$print()}}{
+  Print the object to the console
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Study$print(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Rest arguments.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Rest arguments.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }
