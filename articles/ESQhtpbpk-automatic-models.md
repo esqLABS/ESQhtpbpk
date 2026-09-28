@@ -1,0 +1,319 @@
+# Automatic Generic Models Creation with ESQhtpbpk
+
+## Introduction
+
+The framework allows automatic detection of required processes and
+administrations, and creates the corresponding generic models.
+
+First, the package need to be loaded:
+
+``` r
+
+library(ESQhtpbpk)
+```
+
+## Creating Studies
+
+Next, the user needs to define simulation scenarios (i.e. studies) to be
+simulated. Each study encompasses every component needed for the
+simulation individual to be used, protocol and formulation for each
+compound administration and compound properties.
+
+To simplify this task, various functions have been implemented in the
+framework easing the creation of all required parts of a study.
+
+Additionally, the user can create their custom function to generate a
+list of all `Study` objects to be simulated, tailored to their specific
+data structure, as this part is highly dependent on it.
+
+### Example
+
+The following example shows how to create a single study. This mechanism
+can be wrapped into a custom function to create a list of studies to be
+simulated using specific database as input for parameter value.
+
+#### Compound Definition
+
+First, the user needs to create a compound object with the
+`Compound$new()` function and assign a specific compound ID:
+
+``` r
+
+compound <- Compound$new(ID = "Acetaminophen")
+```
+
+The compound is initialized with the main properties that are needed for
+the simulation. Those can easily be modified with the `setPropertyValue`
+method.
+
+``` r
+
+compound$setPropertyValue("Molecular weight", 151.16, unit = "g/mol")
+compound$setPropertyValue("Solubility", 4.15, unit = "mg/ml")
+compound$setPropertyValue("Lipophilicity", 0.91)
+compound$setPropertyValue("pKa value 0", 9.46)
+compound$setPropertyValue("Compound type 0", "Acidic")
+compound$setPropertyValue("Fraction unbound", 80, unit = "%")
+```
+
+Additionally, various processes (as available in PK-Sim) can be added to
+the compound object using the `addProcessProperty` method. For example
+the following code adds a liver plasma clearance process by defining its
+plasma clearance:
+
+``` r
+
+compound$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Plasma clearance",
+  parName = "Plasma clearance",
+  dimension = "Flow per weight",
+  value = 0.27, unit = "L/h/kg"
+)
+```
+
+Additional properties for the same process can be added and their values
+adjusted if required in a similar fashion:
+
+``` r
+
+compound$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Lipophilicity",
+  parName = "Lipophilicity (experiment)",
+  dimension = "Log Units",
+  value = 0.91
+)
+compound$addProcessProperty(
+  processType = "Liver Plasma Clearance",
+  propertyName = "Fraction unbound",
+  parName = "Fraction unbound (experiment)",
+  dimension = "Fraction",
+  value = 80,
+  unit = "%"
+)
+```
+
+The partition coefficient and cellular permeability methods can be set
+easily with:
+
+``` r
+
+compound$PartitionCoefficientMethod <- "PT"
+compound$CellularPermeabilityMethod <- "PK-Sim"
+```
+
+The compound properties that have been defined can be easily visualized
+with:
+
+``` r
+
+compound
+#> • Compound Properties:
+#>   • Lipophilicity: 0.91 Log Units
+#>   • Fraction unbound: 80 %
+#>   • Plasma protein binding partner: Albumin
+#>   • Is small molecule: 1
+#>   • Molecular weight: 151.16 g/mol
+#>   • Bromine count: 0
+#>   • Chlorine count: 0
+#>   • Fluorine count: 0
+#>   • Iodine count: 0
+#>   • pKa value 0: 9.46
+#>   • Compound type 0: Acidic
+#>   • pKa value 1: 0
+#>   • Compound type 1: Neutral
+#>   • pKa value 2: 0
+#>   • Compound type 2: Neutral
+#>   • Reference pH: 7
+#>   • Solubility: 4.15 mg/ml
+#> • Compound Processes:
+#>   • Liver Plasma Clearance
+#>     • Plasma clearance: 0.27 L/h/kg
+#>     • Lipophilicity: 0.91 Log Units
+#>     • Fraction unbound: 80 %
+#> • Compound Methods:
+#>   • Partition Coefficient Method: Poulin and Theil
+#>   • Cellular Permeability Method: PK-Sim Standard
+```
+
+#### Administration definition
+
+Administration protocol and formulation can be easily defined as well.
+
+The protocol can be defined with either `SimpleProtocol$new()` method
+for a simple protocol or `AdvancedProtocol$new()` for a more complex
+protocol. Here we will use the `SimpleProtocol$new()` method:
+
+``` r
+
+# define protocol used in study and associate formulation used
+protocol <- SimpleProtocol$new(
+  route = "Oral",
+  dosingInterval = "24",
+  dose = 1,
+  doseUnit = "mg/kg",
+  startTime = 0,
+  startTimeUnit = "h",
+  endTime = 48,
+  endTimeUnit = "h"
+)        
+#> Warning: No `WaterVolPerBW` provided, using default value of 3.5 ml/kg.
+#> Warning: No `Formulation` provided, using default of dissolved.
+#> Formulation can be changed with `protocolObject$setFormulation(formulation)`.
+```
+
+For oral administration the formulation needs to be defined as well.
+Helper functions are available for each type of formulation and can be
+set as shown here for a Weibull formulation:
+
+``` r
+
+formulation <- createWeibullFormulation(
+  name = "Weibull",
+  lagTime = 30,
+  lagTimeUnit = "min",
+  dissolutionTime50 = 60,
+  dissolutionTime50Unit = "min"
+)
+```
+
+Then the formulation needs to be associated with the protocol defined
+previously using the `setFormulation` method.
+
+``` r
+
+protocol$setFormulation(formulation = formulation)
+```
+
+Similarly to compounds, administration protocol can be easily
+visualized:
+
+``` r
+
+protocol
+#>   • Route: Oral
+#>   • Dose: 1 mg/kg
+#>   • Dose Interval: Once each 24 hours
+#>   • Start Time: 0 h
+#>   • End Time: 48 h
+#>   • Volume of water per body weight: 3.5 ml/kg
+#>   • Formulation: Weibull
+```
+
+Now that the protocol has been defined, it can be associated with the
+compound using the `setProtocol` method:
+
+``` r
+
+compound$setProtocol(protocol)
+```
+
+#### Study definition
+
+Finally, the study can be defined with the `Study$new()` method. The
+study needs to be given an unique ID:
+
+``` r
+
+study <- Study$new(ID = "Acetaminophen_PO_QD", compounds = list(compound), individual = "Human")
+```
+
+Similarly to the compound and protocol, the study can be easily
+visualized with:
+
+``` r
+
+study
+#> <Study>
+#> ID: Acetaminophen_PO_QD
+#> Individual: Human
+#> Compounds:
+#> 
+#> • Compound with protocol Protocol
+#>   • Compound Properties:
+#>     • Lipophilicity: 0.91 Log Units
+#>     • Fraction unbound: 80 %
+#>     • Plasma protein binding partner: Albumin
+#>     • Is small molecule: 1
+#>     • Molecular weight: 151.16 g/mol
+#>     • Bromine count: 0
+#>     • Chlorine count: 0
+#>     • Fluorine count: 0
+#>     • Iodine count: 0
+#>     • pKa value 0: 9.46
+#>     • Compound type 0: Acidic
+#>     • pKa value 1: 0
+#>     • Compound type 1: Neutral
+#>     • pKa value 2: 0
+#>     • Compound type 2: Neutral
+#>     • Reference pH: 7
+#>     • Solubility: 4.15 mg/ml
+#>   • Compound Processes:
+#>     • Liver Plasma Clearance
+#>       • Plasma clearance: 0.27 L/h/kg
+#>       • Lipophilicity: 0.91 Log Units
+#>       • Fraction unbound: 80 %
+#>   • Compound Methods:
+#>     • Partition Coefficient Method: Poulin and Theil
+#>     • Cellular Permeability Method: PK-Sim Standard
+#>   • Protocol Properties:
+#>       • Route: Oral
+#>       • Dose: 1 mg/kg
+#>       • Dose Interval: Once each 24 hours
+#>       • Start Time: 0 h
+#>       • End Time: 48 h
+#>       • Volume of water per body weight: 3.5 ml/kg
+#>       • Formulation: Weibull
+```
+
+## Running the studies
+
+Once the user created the list of studies required, simulations can be
+run the using the
+[`runPredictions()`](https://esqlabs.github.io/ESQhtpbpk/reference/runPredictions.md)
+function. This function creates the required models, associated them
+with the corresponding studies and run the simulation. All simulation
+generic models files will be saved in the `outputFolder` within a
+time-stamped subfolder under GenericModels and all simulations results
+can be saved under the same time-stamped subfolder under
+SimulationResults by setting the `saveResults` parameter to `TRUE`.
+Additionally the user can save the PKML files for each study with the
+`saveSimulation` parameter.
+
+During this step, the user should also define the output paths to be
+simulated with the `outputSelections` parameter, as well as the
+`simulationResolution` defined by
+`c(start time (min), end time (min), resolution in pts/min)` to cover
+the longest simulation needed with the wanted time resolution.
+
+Additionally the user can also defined the number of cores to be used
+for the simulations and the number studies to be queued (which can be
+needed to reduce the memory usage).
+
+``` r
+
+myresult <- runPredictions(
+    studies = list(study), 
+    outputFolder = "HT-PBPK",
+    numberOfCores = 5,
+    outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma (Peripheral Venous Blood)"),
+    simulationResolution = c(0, 10 * 24 * 60, 1),
+    saveResults = TRUE,
+    saveSimulation = FALSE,
+    queueSize = 200
+  )
+```
+
+## Current limitations
+
+The current implementation does not allows:
+
+- user defined administration route
+- solubility table
+- formulations with dissolution tables
+- custom individual (only default individuals are supported)
+- gene expression use or definition
+- transport or enzymatic processes
+- food administration or other events
+- multiple solubility values at different pH
