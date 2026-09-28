@@ -86,8 +86,9 @@
 
     Code
       study
-    Message
+    Output
       <Study>
+    Message
       ID: Study1
       Individual: Rat
       Compounds:
