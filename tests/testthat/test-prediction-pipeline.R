@@ -7,7 +7,9 @@ suppressWarnings({
     processType = "Liver Plasma Clearance",
     propertyName = "Plasma clearance",
     parName = "Plasma clearance",
-    dimension = "Flow per weight", value = 10, unit = "ml/min/kg"
+    dimension = "Flow per weight",
+    value = 10,
+    unit = "ml/min/kg"
   )
 
   prot1 <- SimpleProtocol$new(
@@ -23,7 +25,11 @@ suppressWarnings({
   )
   comp1$setProtocol(prot1)
 
-  study1 <- Study$new(ID = "Study1", compounds = list(comp1), individual = "Rat")
+  study1 <- Study$new(
+    ID = "Study1",
+    compounds = list(comp1),
+    individual = "Rat"
+  )
 
   ### Study 2 same as study 1 but with an extra compound
   # Compound 2 with Weibull PO
@@ -50,7 +56,11 @@ suppressWarnings({
 
   comp2$setProtocol(prot)
 
-  study2 <- Study$new(ID = "Study2", compounds = list(comp1, comp2), individual = "Rat")
+  study2 <- Study$new(
+    ID = "Study2",
+    compounds = list(comp1, comp2),
+    individual = "Rat"
+  )
 
   ### Study 3 same as study 2 but with more admin of compound 2 with different formulation
   po2 <- SimpleProtocol$new(
@@ -59,7 +69,10 @@ suppressWarnings({
     dose = 10,
     doseUnit = "mg"
   )
-  tablet2 <- createWeibullFormulation(name = "TabletFasterRelease", dissolutionTime50 = 60)
+  tablet2 <- createWeibullFormulation(
+    name = "TabletFasterRelease",
+    dissolutionTime50 = 60
+  )
   po2$setFormulation(tablet2)
 
   prot$addSchema(
@@ -71,10 +84,18 @@ suppressWarnings({
   )
   prot$addProtocolToSchema(schemaName = "Schema 2", protocol = po2)
 
-  study3 <- Study$new(ID = "Study3", compounds = list(comp1, comp2), individual = "Rat")
+  study3 <- Study$new(
+    ID = "Study3",
+    compounds = list(comp1, comp2),
+    individual = "Rat"
+  )
 
   ### Study 4 same as study 1 but in Human
-  study4 <- Study$new(ID = "Study4", compounds = list(comp1), individual = "Human")
+  study4 <- Study$new(
+    ID = "Study4",
+    compounds = list(comp1),
+    individual = "Human"
+  )
 
   ### Study 5 same as study 3 but with compound1 with different process
   comp1$removeProcessProperty(
@@ -85,17 +106,24 @@ suppressWarnings({
     processType = "Liver Mic T1/2",
     propertyName = "Thalf",
     parName = "t1/2 (microsomal assay)",
-    dimension = "Time", value = 10, unit = "min"
+    dimension = "Time",
+    value = 10,
+    unit = "min"
   )
   comp1$addProcessProperty(
     processType = "Liver Mic T1/2",
     propertyName = "Conc Incubation",
     parName = "Amount protein/incubation",
-    dimension = "Concentration (mass)", value = 11, unit = "mg/ml"
+    dimension = "Concentration (mass)",
+    value = 11,
+    unit = "mg/ml"
   )
 
-  study5 <- Study$new(ID = "Study5", compounds = list(comp1, comp2), individual = "Rat")
-
+  study5 <- Study$new(
+    ID = "Study5",
+    compounds = list(comp1, comp2),
+    individual = "Rat"
+  )
 
   studyList <- list(study1, study2, study3, study4, study5)
 
@@ -113,7 +141,10 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
         saveSimulation = FALSE,
         plotFigures = FALSE,
         numberOfCores = 1,
-        queueSize = 2, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        queueSize = 2,
+        outputSelections = c(
+          "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+        ),
         simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
       )
     })
@@ -128,7 +159,10 @@ test_that("Prediction pipeline works with automatic generic pkml.", {
     )
     pc <- ospsuite::DefaultPlotConfiguration$new()
     pc$yAxisScale <- "lin"
-    plot <- ospsuite::plotIndividualTimeProfile(dc, defaultPlotConfiguration = pc)
+    plot <- ospsuite::plotIndividualTimeProfile(
+      dc,
+      defaultPlotConfiguration = pc
+    )
     return(print(plot))
   }
 
@@ -148,7 +182,10 @@ test_that("Test saving simulation and results:", {
       saveSimulation = TRUE,
       plotFigures = FALSE,
       numberOfCores = 1,
-      queueSize = 2, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      queueSize = 2,
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -167,7 +204,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = 1,
       queueSize = 2,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -181,7 +220,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = 1,
       queueSize = 2,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -195,7 +236,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = 1,
       queueSize = 2,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -209,7 +252,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = 1,
       queueSize = 2,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -223,7 +268,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = 1,
       numberOfCores = 1,
       queueSize = 2,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -237,7 +284,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = "a",
       queueSize = 2,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -251,7 +300,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = 1,
       queueSize = "a",
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })
@@ -265,7 +316,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = 1,
       queueSize = 100,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60, 10)
     )
   })
@@ -279,7 +332,9 @@ test_that("Wrong inputs fails:", {
       plotFigures = FALSE,
       numberOfCores = 1,
       queueSize = 100,
-      outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(10 * 24 * 60, 1 * 24 * 60, 1 / 60)
     )
   })
@@ -298,7 +353,9 @@ test_that("Wrong output selection fails:", {
             plotFigures = FALSE,
             numberOfCores = 1,
             queueSize = 2,
-            outputSelections = c("Organism|PVB|**|Plasma *(Peripheral Venous Blood)"),
+            outputSelections = c(
+              "Organism|PVB|**|Plasma *(Peripheral Venous Blood)"
+            ),
             simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
           )
         },
@@ -329,7 +386,10 @@ test_that("Skipping study with wrong param path:", {
         saveSimulation = FALSE,
         plotFigures = FALSE,
         numberOfCores = 1,
-        queueSize = 2, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+        queueSize = 2,
+        outputSelections = c(
+          "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+        ),
         simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
       )
     },
@@ -354,7 +414,11 @@ test_that("Test dose per body weight and infusion time", {
   )
   comp1$setProtocol(prot1)
 
-  study1 <- Study$new(ID = "Study1", compounds = list(comp1), individual = "Rat")
+  study1 <- Study$new(
+    ID = "Study1",
+    compounds = list(comp1),
+    individual = "Rat"
+  )
 
   expect_no_error({
     results <- runPredictions(
@@ -364,7 +428,10 @@ test_that("Test dose per body weight and infusion time", {
       saveSimulation = FALSE,
       plotFigures = FALSE,
       numberOfCores = 1,
-      queueSize = 2, outputSelections = c("Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"),
+      queueSize = 2,
+      outputSelections = c(
+        "Organism|PeripheralVenousBlood|**|Plasma *(Peripheral Venous Blood)"
+      ),
       simulationResolution = c(0, 10 * 24 * 60, 1 / 60)
     )
   })

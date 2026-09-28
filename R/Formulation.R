@@ -43,7 +43,9 @@ Formulation <- R6::R6Class(
       if (missing(value)) {
         private$.Parameters
       } else {
-        if (!is.list(value) || !all(sapply(value, \(x) "Property" %in% class(x)))) {
+        if (
+          !is.list(value) || !all(sapply(value, \(x) "Property" %in% class(x)))
+        ) {
           cli::cli_abort("Supplied Parameters are not valid.")
         } else {
           private$.Parameters <- value
@@ -74,18 +76,24 @@ Formulation <- R6::R6Class(
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
     #' @param pathPrefix Corresponding path in the simulation pkml of the property to add.
     #' Default to `{protocolPrefix}|{formulationName}`
-    addParameter = function(name,
-                            parName,
-                            dimension,
-                            value = 0,
-                            unit = NULL,
-                            enum = NULL,
-                            check = NULL,
-                            pathPrefix = NULL) {
+    addParameter = function(
+      name,
+      parName,
+      dimension,
+      value = 0,
+      unit = NULL,
+      enum = NULL,
+      check = NULL,
+      pathPrefix = NULL
+    ) {
       if (name %in% names(private$.Parameters)) {
         cli::cli_abort(messages$alreadyExist("Property", name))
       }
-      pathPrefix <- ifelse(!is.null(pathPrefix), pathPrefix, paste0("{protocolPrefix}|{formulationName}"))
+      pathPrefix <- ifelse(
+        !is.null(pathPrefix),
+        pathPrefix,
+        paste0("{protocolPrefix}|{formulationName}")
+      )
       private$.Parameters[[name]] <- Property$new(
         name = name,
         parName = parName,
@@ -102,7 +110,10 @@ Formulation <- R6::R6Class(
     #' @param protocolPrefix Name of the protocol in the simulation
     #' @param formulationName Name of the formulation in the simulation
     #' @return A character vector with the paths of all parameters
-    getAllPropertyPaths = function(protocolPrefix = NULL, formulationName = self$Name) {
+    getAllPropertyPaths = function(
+      protocolPrefix = NULL,
+      formulationName = self$Name
+    ) {
       if (is.null(protocolPrefix) || is.null(formulationName)) {
         purrr::list_c(
           purrr::map(self$Parameters, \(x) {
@@ -178,7 +189,8 @@ Formulation <- R6::R6Class(
 #' @return A new `Formulation` object.
 #' @export
 createDissolvedFormulation <- function(
-    name = "Dissolved") {
+  name = "Dissolved"
+) {
   Formulation$new(
     name = name,
     type = "Dissolved"
@@ -199,12 +211,15 @@ createDissolvedFormulation <- function(
 #' @return A new `Formulation` object.
 #' @export
 createWeibullFormulation <- function(
-    name = "Weibull",
-    dissolutionTime50 = 240, dissolutionTime50Unit = "min",
-    lagTime = 0, lagTimeUnit = "min",
-    shape = 0.92,
-    suspension = TRUE,
-    path = NULL) {
+  name = "Weibull",
+  dissolutionTime50 = 240,
+  dissolutionTime50Unit = "min",
+  lagTime = 0,
+  lagTimeUnit = "min",
+  shape = 0.92,
+  suspension = TRUE,
+  path = NULL
+) {
   formulation <- Formulation$new(
     name = name,
     type = "Weibull"
@@ -256,11 +271,14 @@ createWeibullFormulation <- function(
 #' @return A new `Formulation` object.
 #' @export
 createLint80Formulation <- function(
-    name = "Lint80",
-    dissolutionTime80 = 240, dissolutionTime80Unit = "min",
-    lagTime = 0, lagTimeUnit = "min",
-    suspension = TRUE,
-    path = NULL) {
+  name = "Lint80",
+  dissolutionTime80 = 240,
+  dissolutionTime80Unit = "min",
+  lagTime = 0,
+  lagTimeUnit = "min",
+  suspension = TRUE,
+  path = NULL
+) {
   formulation <- Formulation$new(
     name = name,
     type = "Lint80"
@@ -311,12 +329,20 @@ createLint80Formulation <- function(
 #' @return A new `Formulation` object.
 #' @export
 createParticleDissolutionFormulation <- function(
-    name = "ParticleDissolution",
-    thickness = 30, thicknessUnit = "µm",
-    distributionType = "Monodisperse", distribution = "Normal",
-    radius = 10, radiusUnit = "µm", radiusSD = 3, radiusCV = 1.5, radiusMin = 1, radiusMax = 19,
-    nBins = 3,
-    path = NULL) {
+  name = "ParticleDissolution",
+  thickness = 30,
+  thicknessUnit = "µm",
+  distributionType = "Monodisperse",
+  distribution = "Normal",
+  radius = 10,
+  radiusUnit = "µm",
+  radiusSD = 3,
+  radiusCV = 1.5,
+  radiusMin = 1,
+  radiusMax = 19,
+  nBins = 3,
+  path = NULL
+) {
   formulation <- Formulation$new(
     name = name,
     type = "Particle"
@@ -347,7 +373,8 @@ createParticleDissolutionFormulation <- function(
       unit = radiusUnit,
       pathPrefix = path
     )
-  } else { # polydisperse
+  } else {
+    # polydisperse
     formulation$addParameter(
       name = "Particle size distribution",
       parName = "Particle size distribution",
@@ -428,9 +455,11 @@ createParticleDissolutionFormulation <- function(
 #' @return A new `Formulation` object.
 #' @export
 createZeroOrderFormulation <- function(
-    name = "ZeroOrder",
-    endTime = 60, endTimeUnit = "min",
-    path = NULL) {
+  name = "ZeroOrder",
+  endTime = 60,
+  endTimeUnit = "min",
+  path = NULL
+) {
   formulation <- Formulation$new(
     name = name,
     type = "ZeroOrder"
@@ -456,9 +485,11 @@ createZeroOrderFormulation <- function(
 #' @return A new `Formulation` object.
 #' @export
 createFirstOrderFormulation <- function(
-    name = "FirstOrder",
-    tHalf = 0.01, tHalfUnit = "min",
-    path = NULL) {
+  name = "FirstOrder",
+  tHalf = 0.01,
+  tHalfUnit = "min",
+  path = NULL
+) {
   formulation <- Formulation$new(
     name = name,
     type = "FirstOrder"

@@ -26,7 +26,6 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     }
   )
 
-
   # extracting unique structures
   genericStudyStructure <- tryCatch(
     {
@@ -35,7 +34,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     error = function(e) {
       cli::cli_abort(
         c(
-          "x" = messages$stgWrong("the creation of the generic study structure"),
+          "x" = messages$stgWrong(
+            "the creation of the generic study structure"
+          ),
           "Original error message:",
           "{e$message}"
         ),
@@ -48,7 +49,14 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   studyStructureSummary <- dplyr::left_join(
     studyStructureSummary,
     genericStudyStructure,
-    by = c("Individuals", "Compounds", "PC", "CP", "HepaticProcesses", "RenalProcesses")
+    by = c(
+      "Individuals",
+      "Compounds",
+      "PC",
+      "CP",
+      "HepaticProcesses",
+      "RenalProcesses"
+    )
   )
 
   ## adding required protocol/formulation for each generic structure
@@ -62,7 +70,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     error = function(e) {
       cli::cli_abort(
         c(
-          "x" = messages$stgWrong("the addition of required protocols/formulations for each generic structure"),
+          "x" = messages$stgWrong(
+            "the addition of required protocols/formulations for each generic structure"
+          ),
           "Original error message:",
           "{e$message}"
         ),
@@ -104,7 +114,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       cli::cli_process_failed()
       cli::cli_abort(
         c(
-          "x" = messages$stgWrong("renaming of compound/protocol/formulation to match the generic models"),
+          "x" = messages$stgWrong(
+            "renaming of compound/protocol/formulation to match the generic models"
+          ),
           "Original error message:",
           "{e$message}"
         ),
@@ -156,7 +168,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       tibble::tibble(
         "StudyID" = study$ID,
         "Individuals" = study$Individual,
-        "CompoundsID" = list(purrr::list_c(purrr::map(study$Compounds, \(x) as.character(x$ID)))),
+        "CompoundsID" = list(purrr::list_c(purrr::map(study$Compounds, \(x) {
+          as.character(x$ID)
+        }))),
         "Compounds" = list(paste0("Compound", seq_along(study$Compounds))),
         "PC" = list(purrr::map(study$Compounds, \(x) {
           names(PCMethods)[PCMethods == x$PartitionCoefficientMethod]
@@ -167,7 +181,12 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         "FormulationsProtocols" = list(
           purrr::map(study$Compounds, \(x) {
             x$Protocol$extractProtocol() |>
-              dplyr::group_by(type, formulationType, formulationKey, formulationName) |>
+              dplyr::group_by(
+                type,
+                formulationType,
+                formulationKey,
+                formulationName
+              ) |>
               dplyr::summarise(nAdmins = dplyr::n(), .groups = "drop") |>
               dplyr::group_by(type, formulationType) |>
               dplyr::arrange(dplyr::desc(nAdmins), .by_group = TRUE) |>
@@ -183,7 +202,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         "HepaticProcesses" = list(
           purrr::map(study$Compounds, \(x) {
             procNames <- names(x$getAllProcessProperty())
-            if (!is.null(procNames) && any(ProcessTypes[procNames] == "Hepatic")) {
+            if (
+              !is.null(procNames) && any(ProcessTypes[procNames] == "Hepatic")
+            ) {
               procNames[ProcessTypes[procNames] == "Hepatic"]
             } else {
               NULL
@@ -193,7 +214,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         "RenalProcesses" = list(
           purrr::map(study$Compounds, \(x) {
             procNames <- names(x$getAllProcessProperty())
-            if (!is.null(procNames) && any(ProcessTypes[procNames] == "Renal")) {
+            if (
+              !is.null(procNames) && any(ProcessTypes[procNames] == "Renal")
+            ) {
               procNames[ProcessTypes[procNames] == "Renal"]
             } else {
               NULL
@@ -213,7 +236,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         "BiliaryProcesses" = list(
           purrr::map(study$Compounds, \(x) {
             procNames <- names(x$getAllProcessProperty())
-            if (!is.null(procNames) && any(ProcessTypes[procNames] == "Biliary")) {
+            if (
+              !is.null(procNames) && any(ProcessTypes[procNames] == "Biliary")
+            ) {
               procNames[ProcessTypes[procNames] == "Biliary"]
             } else {
               NULL
@@ -239,7 +264,13 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 .createGenericStudyStructure <- function(studyStructureSummary) {
   # for (study in studyList) {
   genericStudyStructure <- studyStructureSummary |>
-    dplyr::select(-StudyID, -FormulationsProtocols, -CompoundsID, -GFRProcesses, -BiliaryProcesses) |>
+    dplyr::select(
+      -StudyID,
+      -FormulationsProtocols,
+      -CompoundsID,
+      -GFRProcesses,
+      -BiliaryProcesses
+    ) |>
     dplyr::distinct(.keep_all = TRUE)
 
   # get generic model based on structure
@@ -265,7 +296,15 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
   for (model in genericStudyStructure$GenericModel) {
     studySubset <- studyStructureSummary |>
       dplyr::filter(GenericModel == model) |>
-      dplyr::select(-GenericModel, -StudyID, -Individuals, -PC, -CP, -HepaticProcesses, -RenalProcesses) |>
+      dplyr::select(
+        -GenericModel,
+        -StudyID,
+        -Individuals,
+        -PC,
+        -CP,
+        -HepaticProcesses,
+        -RenalProcesses
+      ) |>
       tidyr::unnest(cols = tidyselect::everything())
 
     # summarise protocol x formulation needed for each compound accross studies using the same generic model
@@ -286,15 +325,24 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       comp <- Compound$new(ID = x, name = x)
 
       compIdx <- which(
-        unlist(genericStudyStructure |> dplyr::filter(GenericModel == model) |> dplyr::pull(Compounds)) == x
+        unlist(
+          genericStudyStructure |>
+            dplyr::filter(GenericModel == model) |>
+            dplyr::pull(Compounds)
+        ) ==
+          x
       )
       # add PC
       comp$PartitionCoefficientMethod <- unlist(
-        genericStudyStructure |> dplyr::filter(GenericModel == model) |> dplyr::pull(PC)
+        genericStudyStructure |>
+          dplyr::filter(GenericModel == model) |>
+          dplyr::pull(PC)
       )[[compIdx]]
       # add CP
       comp$CellularPermeabilityMethod <- unlist(
-        genericStudyStructure |> dplyr::filter(GenericModel == model) |> dplyr::pull(CP)
+        genericStudyStructure |>
+          dplyr::filter(GenericModel == model) |>
+          dplyr::pull(CP)
       )[[compIdx]]
       # add hepatic process
       hepProc <- unlist(
@@ -339,7 +387,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       }
       # add gfr process
       gfrProc <- unlist(
-        studySubset |> dplyr::filter(Compounds == x) |> dplyr::pull(GFRProcesses)
+        studySubset |>
+          dplyr::filter(Compounds == x) |>
+          dplyr::pull(GFRProcesses)
       )
       if (length(gfrProc) > 0) {
         comp$addProcessProperty(
@@ -347,12 +397,18 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
           propertyName = MainProcessProperty[[gfrProc]]$Name,
           parName = MainProcessProperty[[gfrProc]]$Name,
           dimension = MainProcessProperty[[gfrProc]]$dimension,
-          value = MainProcessProperty[[gfrProc]]$value, unit = NULL, enum = NULL, check = NULL, path = NULL
+          value = MainProcessProperty[[gfrProc]]$value,
+          unit = NULL,
+          enum = NULL,
+          check = NULL,
+          path = NULL
         )
       }
       # add biliary process
       bilProc <- unlist(
-        studySubset |> dplyr::filter(Compounds == x) |> dplyr::pull(BiliaryProcesses)
+        studySubset |>
+          dplyr::filter(Compounds == x) |>
+          dplyr::pull(BiliaryProcesses)
       )
       if (!is.null(bilProc)) {
         comp$addProcessProperty(
@@ -360,13 +416,19 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
           propertyName = MainProcessProperty[[bilProc]]$Name,
           parName = MainProcessProperty[[bilProc]]$Name,
           dimension = MainProcessProperty[[bilProc]]$dimension,
-          value = MainProcessProperty[[bilProc]]$value, unit = NULL, enum = NULL, check = NULL, path = NULL
+          value = MainProcessProperty[[bilProc]]$value,
+          unit = NULL,
+          enum = NULL,
+          check = NULL,
+          path = NULL
         )
       }
       # add protocol
       prot <- AdvancedProtocol$new(name = paste(x, "Protocol"))
 
-      admins <- (studySubset |> dplyr::filter(Compounds == x) |> dplyr::pull(FormulationsProtocols))[[1]]
+      admins <- (studySubset |>
+        dplyr::filter(Compounds == x) |>
+        dplyr::pull(FormulationsProtocols))[[1]]
 
       for (i in seq_len(nrow(admins))) {
         prot$addSchema(
@@ -398,7 +460,9 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       genericStudies,
       Study$new(
         ID = model,
-        individual = genericStudyStructure |> dplyr::filter(GenericModel == model) |> dplyr::pull(Individuals),
+        individual = genericStudyStructure |>
+          dplyr::filter(GenericModel == model) |>
+          dplyr::pull(Individuals),
         compounds = compounds
       )
     )
@@ -420,7 +484,13 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' @return It creates the generic pkmls in the defined outpuFolder and updates the studyList accordingly.
 #' But it return nothing nothing.
 #' @noRd
-.setGenericModel <- function(genericStudies, studyList, studyStructureSummary, outputFolder, overwrite) {
+.setGenericModel <- function(
+  genericStudies,
+  studyList,
+  studyStructureSummary,
+  outputFolder,
+  overwrite
+) {
   cli::cli_progress_bar(
     "Creating generic models:",
     total = length(genericStudies),
@@ -442,10 +512,16 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     # update simulation administration start time all to 0 (was set differently for easier mapping of
     # admin path) and resave
     ospsuite::setParameterValues(
-      parameters = ospsuite::getAllParametersMatching("Events|**|Start time", sim),
+      parameters = ospsuite::getAllParametersMatching(
+        "Events|**|Start time",
+        sim
+      ),
       values = 0
     )
-    ospsuite::saveSimulation(sim, file.path(outputFolder, paste0(genStudy$ID, ".pkml")))
+    ospsuite::saveSimulation(
+      sim,
+      file.path(outputFolder, paste0(genStudy$ID, ".pkml"))
+    )
 
     # add Model path to each study from studyList
     studyIDs <- studyStructureSummary |>
@@ -453,7 +529,10 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
       dplyr::pull(StudyID)
 
     for (idx in which(sapply(studyList, \(x) x$ID) %in% studyIDs)) {
-      studyList[[idx]]$setGenericModel(file.path(outputFolder, paste0(genStudy$ID, ".pkml")))
+      studyList[[idx]]$setGenericModel(file.path(
+        outputFolder,
+        paste0(genStudy$ID, ".pkml")
+      ))
     }
   }
   cli::cli_progress_done()
@@ -471,7 +550,11 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 #' usually the result of .extractStudyStructure function to know which model should be used for which study
 #' @return The updated studyList with names matching the generic models
 #' @noRd
-.remapStudyProtocols <- function(studyList, genericStudies, studyStructureSummary) {
+.remapStudyProtocols <- function(
+  studyList,
+  genericStudies,
+  studyStructureSummary
+) {
   cli::cli_progress_bar(
     "Updating protocols and formulations to match generic models:",
     total = length(studyList),
@@ -486,25 +569,35 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     genericModel <- studyStructureSummary |>
       dplyr::filter(StudyID == study$ID) |>
       dplyr::pull(GenericModel)
-    genStudy <- genericStudies[[which(purrr::map(genericStudies, \(x) x$ID) == genericModel)]]
+    genStudy <- genericStudies[[which(
+      purrr::map(genericStudies, \(x) x$ID) == genericModel
+    )]]
 
-    for (compID in purrr::list_c(purrr::map(study$Compounds, \(x) as.character(x$ID)))) {
+    for (compID in purrr::list_c(purrr::map(study$Compounds, \(x) {
+      as.character(x$ID)
+    }))) {
       compIdx1 <- which(
         purrr::list_c(
           purrr::map(study$Compounds, \(x) as.character(x$ID))
-        ) == compID
+        ) ==
+          compID
       )
       compIdx2 <- which(
         unlist(
-          studyStructureSummary |> dplyr::filter(StudyID == study$ID) |> dplyr::pull(CompoundsID)
-        ) == compID
+          studyStructureSummary |>
+            dplyr::filter(StudyID == study$ID) |>
+            dplyr::pull(CompoundsID)
+        ) ==
+          compID
       )
 
       compound <- study$Compounds[[compIdx1]]
 
       # update compounds names in the study based on the generic model
       compound$Name <- unlist(
-        studyStructureSummary |> dplyr::filter(StudyID == study$ID) |> dplyr::pull(Compounds)
+        studyStructureSummary |>
+          dplyr::filter(StudyID == study$ID) |>
+          dplyr::pull(Compounds)
       )[compIdx2]
 
       # update formulation name in the study based on the generic model
@@ -522,9 +615,20 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
 
           if ("AdvancedProtocol" %in% class(compound$Protocol)) {
             for (scIdx in seq_along(compound$Protocol$Schemas)) {
-              for (sciIdx in seq_along(compound$Protocol$Schemas[[scIdx]]$SchemaItems)) {
-                if (isTRUE(compound$Protocol$Schemas[[scIdx]]$SchemaItems[[sciIdx]]$FormulationKey == formKey)) {
-                  form <- compound$Protocol$Schemas[[scIdx]]$SchemaItems[[sciIdx]]$Formulation
+              for (sciIdx in seq_along(
+                compound$Protocol$Schemas[[scIdx]]$SchemaItems
+              )) {
+                if (
+                  isTRUE(
+                    compound$Protocol$Schemas[[scIdx]]$SchemaItems[[
+                      sciIdx
+                    ]]$FormulationKey ==
+                      formKey
+                  )
+                ) {
+                  form <- compound$Protocol$Schemas[[scIdx]]$SchemaItems[[
+                    sciIdx
+                  ]]$Formulation
                   form$Name <- formKeySim
                 }
               }
@@ -536,12 +640,20 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
         }
       }
 
-      compProtIdx <- which(purrr::map_chr(genStudy$Compounds, \(x) x$Name) == compound$Name)
-      genericProtocol <- genStudy$Compounds[[compProtIdx]]$Protocol$extractProtocol()
+      compProtIdx <- which(
+        purrr::map_chr(genStudy$Compounds, \(x) x$Name) == compound$Name
+      )
+      genericProtocol <- genStudy$Compounds[[
+        compProtIdx
+      ]]$Protocol$extractProtocol()
       if ("AdvancedProtocol" %in% class(compound$Protocol)) {
         for (scIdx in seq_along(compound$Protocol$Schemas)) {
-          for (sciIdx in seq_along(compound$Protocol$Schemas[[scIdx]]$SchemaItems)) {
-            studyProt <- compound$Protocol$Schemas[[scIdx]]$SchemaItems[[sciIdx]]
+          for (sciIdx in seq_along(
+            compound$Protocol$Schemas[[scIdx]]$SchemaItems
+          )) {
+            studyProt <- compound$Protocol$Schemas[[scIdx]]$SchemaItems[[
+              sciIdx
+            ]]
             studyProt$Path <- .extractAllowedPaths(genericProtocol, studyProt)
           }
         }
@@ -569,7 +681,14 @@ createGenericPKMLs <- function(studyList, outputFolder, overwrite = FALSE) {
     genericProtocol |>
       dplyr::filter(
         type == studyProt$Route,
-        identical(formulationName, ifelse(is.null(studyProt$Formulation), NA_character_, studyProt$Formulation$Name))
+        identical(
+          formulationName,
+          ifelse(
+            is.null(studyProt$Formulation),
+            NA_character_,
+            studyProt$Formulation$Name
+          )
+        )
       ) |>
       dplyr::pull(path)
   )

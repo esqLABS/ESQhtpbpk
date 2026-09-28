@@ -12,7 +12,11 @@ Compound <- R6::R6Class(
         private$.pc
       } else {
         if (!is.character(value) || !(value %in% names(PCMethods))) {
-          msg <- messages$valueEnumError("PartitionCoefficientMethod", value, allowed = names(PCMethods))
+          msg <- messages$valueEnumError(
+            "PartitionCoefficientMethod",
+            value,
+            allowed = names(PCMethods)
+          )
           cli::cli_abort("{msg}")
         }
         private$.pc <- PCMethods[[value]]
@@ -24,7 +28,11 @@ Compound <- R6::R6Class(
         private$.cp
       } else {
         if (!is.character(value) || !(value %in% names(CPMethods))) {
-          msg <- messages$valueEnumError("CellularPermeabilityMethod", value, allowed = names(CPMethods))
+          msg <- messages$valueEnumError(
+            "CellularPermeabilityMethod",
+            value,
+            allowed = names(CPMethods)
+          )
           cli::cli_abort("{msg}")
         }
         private$.cp <- CPMethods[[value]]
@@ -35,7 +43,11 @@ Compound <- R6::R6Class(
       if (missing(value)) {
         private$.protocol
       } else {
-        ospsuite.utils::validateIsOfType(value, c("SimpleProtocol", "AdvancedProtocol"), nullAllowed = FALSE)
+        ospsuite.utils::validateIsOfType(
+          value,
+          c("SimpleProtocol", "AdvancedProtocol"),
+          nullAllowed = FALSE
+        )
         private$.protocol <- value
       }
     }
@@ -53,18 +65,31 @@ Compound <- R6::R6Class(
     #' @param PCMethod Partition coefficient method to use for the compound
     #' @param CPMethod Cellular permeability method to use for the compound
     #' @return A new `Compound` object.
-    initialize = function(ID, name = "Compound", PCMethod = "PK-Sim", CPMethod = "PK-Sim") {
+    initialize = function(
+      ID,
+      name = "Compound",
+      PCMethod = "PK-Sim",
+      CPMethod = "PK-Sim"
+    ) {
       self$ID <- ID
       self$Name <- name
       self$PartitionCoefficientMethod <- PCMethod
       self$CellularPermeabilityMethod <- CPMethod
 
       # replace with given ${name}$ in template by given name
-      template <- readr::read_file(system.file("extdata", "generic_compound_template.json", package = "ESQhtpbpk"))
+      template <- readr::read_file(system.file(
+        "extdata",
+        "generic_compound_template.json",
+        package = "ESQhtpbpk"
+      ))
       filledTemplate <- glue::glue(template, .open = "${", .close = "}$")
 
-      private$.allProperties <- private$.initializePropertiesFromJSON(filledTemplate)
-      names(private$.allProperties) <- sapply(private$.allProperties, \(x) x$name)
+      private$.allProperties <- private$.initializePropertiesFromJSON(
+        filledTemplate
+      )
+      names(private$.allProperties) <- sapply(private$.allProperties, \(x) {
+        x$name
+      })
       private$.allPropertyPaths <- sapply(private$.allProperties, \(x) {
         x$path
       })
@@ -101,8 +126,17 @@ Compound <- R6::R6Class(
         prop <- private$.allProperties[[name]]
 
         # check validity of unit with regards to dimension
-        if (!is.null(unit) && !(unit %in% ospsuite::getUnitsForDimension(prop$dimension))) {
-          cli::cli_abort("Unit '", unit, "' not valid for dimension '", prop$dimension, "'.")
+        if (
+          !is.null(unit) &&
+            !(unit %in% ospsuite::getUnitsForDimension(prop$dimension))
+        ) {
+          cli::cli_abort(
+            "Unit '",
+            unit,
+            "' not valid for dimension '",
+            prop$dimension,
+            "'."
+          )
         }
 
         # if unit is not given assume it is unchanged
@@ -134,7 +168,16 @@ Compound <- R6::R6Class(
     #' must take value, unit as argument an retrun an error if the test fails.
     #' @param path Corresponding full path of the parameter in the simulation pkml of the property to add
     #' (default to NULL to create it automatically based on parName).
-    addProperty = function(name, parName, dimension, value = 0, unit = NULL, enum = NULL, check = NULL, path = NULL) {
+    addProperty = function(
+      name,
+      parName,
+      dimension,
+      value = 0,
+      unit = NULL,
+      enum = NULL,
+      check = NULL,
+      path = NULL
+    ) {
       if (name %in% names(private$.allProperties)) {
         cli::cli_abort(messages$alreadyExists(name = "Property", value = name))
       }
@@ -161,7 +204,9 @@ Compound <- R6::R6Class(
     removeProperty = function(name) {
       path <- private$.allProperties[[name]]$path
       private$.allProperties[[name]] <- NULL
-      private$.allPropertyPaths <- private$.allPropertiesPaths[-which(private$.allPropertiesPaths == path)]
+      private$.allPropertyPaths <- private$.allPropertiesPaths[
+        -which(private$.allPropertiesPaths == path)
+      ]
     },
     # Add a new process
     #' @description
@@ -180,26 +225,36 @@ Compound <- R6::R6Class(
     #' @param check (Optional) Function to check the validity of the supplied value for the property.
     #' @param path (Optional) Corresponding full path of the parameter in the simulation pkml of the
     #' property to add. Needed when using a predefined pkml for the HTPBPK simulation.
-    addProcessProperty = function(propertyName,
-                                  processType,
-                                  parName,
-                                  dimension,
-                                  value = 0,
-                                  unit = NULL,
-                                  enum = NULL,
-                                  check = NULL,
-                                  path = NULL) {
+    addProcessProperty = function(
+      propertyName,
+      processType,
+      parName,
+      dimension,
+      value = 0,
+      unit = NULL,
+      enum = NULL,
+      check = NULL,
+      path = NULL
+    ) {
       processTypeValid <- processType %in% names(ProcessTypes)
       if (!processTypeValid) {
-        cli::cli_abort("ProcessType {.var {processType}} not allowed. Allowed values are {names(ProcessTypes)}.")
+        cli::cli_abort(
+          "ProcessType {.var {processType}} not allowed. Allowed values are {names(ProcessTypes)}."
+        )
       }
       # only allow one type of hepatic or renal clearance
-      processSubTypeExist <- processType %in% names(private$.allProcessProperties)
-      processTypeExist <- ProcessTypes[processType] %in% ProcessTypes[names(private$.allProcessProperties)]
+      processSubTypeExist <- processType %in%
+        names(private$.allProcessProperties)
+      processTypeExist <- ProcessTypes[processType] %in%
+        ProcessTypes[names(private$.allProcessProperties)]
       if (!processSubTypeExist && processTypeExist) {
-        cli::cli_abort("Only one {tolower(ProcessTypes[processType])} clearace process is allowed.")
+        cli::cli_abort(
+          "Only one {tolower(ProcessTypes[processType])} clearace process is allowed."
+        )
       }
-      if (propertyName %in% names(private$.allProcessProperties[[processType]])) {
+      if (
+        propertyName %in% names(private$.allProcessProperties[[processType]])
+      ) {
         cli::cli_abort(messages$alreadyExist("Property", propertyName))
       }
 
@@ -210,11 +265,18 @@ Compound <- R6::R6Class(
           paste(ProcessPrefixes[processType], processType, sep = "-")
         )
         if (ProcessTypes[processType] %in% c("Renal", "GFR")) {
-          path <- paste0("Neighborhoods|Kidney_pls_Kidney_ur|", path, "-", "{compoundName}")
+          path <- paste0(
+            "Neighborhoods|Kidney_pls_Kidney_ur|",
+            path,
+            "-",
+            "{compoundName}"
+          )
         }
         path <- paste0(path, "|", parName)
       }
-      private$.allProcessProperties[[processType]][[propertyName]] <- Property$new(
+      private$.allProcessProperties[[processType]][[
+        propertyName
+      ]] <- Property$new(
         name = propertyName,
         parName = parName,
         path = path,
@@ -235,8 +297,12 @@ Compound <- R6::R6Class(
     removeProcessProperty = function(propertyName, processType) {
       path <- private$.allProcessProperties[[processType]][[propertyName]]$path
       private$.allProcessProperties[[processType]][[propertyName]] <- NULL
-      private$.allProcessProperties <- purrr::compact(private$.allProcessProperties)
-      private$.allPropertyPaths <- private$.allPropertyPaths[-which(private$.allPropertyPaths == path)]
+      private$.allProcessProperties <- purrr::compact(
+        private$.allProcessProperties
+      )
+      private$.allPropertyPaths <- private$.allPropertyPaths[
+        -which(private$.allPropertyPaths == path)
+      ]
     },
     # Remove a process
     #' @description
@@ -247,10 +313,17 @@ Compound <- R6::R6Class(
         cli::cli_abort("No {processType} processes found.")
       }
 
-      path <- purrr::list_c(purrr::map(private$.allProcessProperties[[processType]], \(x) x$path))
+      path <- purrr::list_c(purrr::map(
+        private$.allProcessProperties[[processType]],
+        \(x) x$path
+      ))
       private$.allProcessProperties[[processType]] <- NULL
-      private$.allProcessProperties <- purrr::compact(private$.allProcessProperties)
-      private$.allPropertyPaths <- private$.allPropertyPaths[-which(private$.allPropertyPaths %in% path)]
+      private$.allProcessProperties <- purrr::compact(
+        private$.allProcessProperties
+      )
+      private$.allPropertyPaths <- private$.allPropertyPaths[
+        -which(private$.allPropertyPaths %in% path)
+      ]
     },
     # Getter
     #' @description
@@ -262,10 +335,14 @@ Compound <- R6::R6Class(
       if (!processType %in% names(private$.allProcessProperties)) {
         cli::cli_abort(messages$notFound("ProcessType", processType))
       }
-      if (!propertyName %in% names(private$.allProcessProperties[[processType]])) {
+      if (
+        !propertyName %in% names(private$.allProcessProperties[[processType]])
+      ) {
         cli::cli_abort(messages$notFound("Property", propertyName))
       } else {
-        return(private$.allProcessProperties[[processType]][[propertyName]]$print(compoundName = self$name))
+        return(private$.allProcessProperties[[processType]][[
+          propertyName
+        ]]$print(compoundName = self$name))
       }
     },
     #' @description
@@ -290,17 +367,27 @@ Compound <- R6::R6Class(
     #' @param processType Type of the process to set the property from
     #' @param value New value for the property.
     #' @param unit New unit to use for the property, if not given the unit is assumed to be the same as previously.
-    setProcessPropertyValue = function(propertyName, processType, value, unit = NULL) {
+    setProcessPropertyValue = function(
+      propertyName,
+      processType,
+      value,
+      unit = NULL
+    ) {
       if (!processType %in% names(private$.allProcessProperties)) {
         cli::cli_abort(messages$notFound("ProcessType", processType))
       }
-      if (!propertyName %in% names(private$.allProcessProperties[[processType]])) {
+      if (
+        !propertyName %in% names(private$.allProcessProperties[[processType]])
+      ) {
         cli::cli_abort(messages$notFound("Property", propertyName))
       } else {
         prop <- private$.allProcessProperties[[processType]][[propertyName]]
 
         # check validity of unit with regards to dimension
-        if (!is.null(unit) && !(unit %in% ospsuite::getUnitsForDimension(prop$dimension))) {
+        if (
+          !is.null(unit) &&
+            !(unit %in% ospsuite::getUnitsForDimension(prop$dimension))
+        ) {
           cli::cli_abort(messages$unitNotValid(unit, prop$dimension))
         }
 
@@ -334,18 +421,26 @@ Compound <- R6::R6Class(
     toSnapshot = function() {
       snap <- list(
         Name = self$Name,
-        IsSmallMolecule = as.logical(private$.allProperties[["Is small molecule"]]$value),
-        PlasmaProteinBindingPartner = names(private$.allProperties[["Plasma protein binding partner"]]$value),
+        IsSmallMolecule = as.logical(
+          private$.allProperties[["Is small molecule"]]$value
+        ),
+        PlasmaProteinBindingPartner = names(
+          private$.allProperties[["Plasma protein binding partner"]]$value
+        ),
         Lipophilicity = list(
           list(
             Name = "Lipophilicity",
-            Parameters = list(private$.allProperties[["Lipophilicity"]]$toSnapshot())
+            Parameters = list(private$.allProperties[[
+              "Lipophilicity"
+            ]]$toSnapshot())
           )
         ),
         FractionUnbound = list(
           list(
             Name = "FractionUnbound",
-            Parameters = list(private$.allProperties[["Fraction unbound"]]$toSnapshot())
+            Parameters = list(private$.allProperties[[
+              "Fraction unbound"
+            ]]$toSnapshot())
           )
         ),
         Solubility = list(
@@ -361,21 +456,24 @@ Compound <- R6::R6Class(
         ),
         PkaTypes = purrr::compact(
           list(
-            switch(names(private$.allProperties[["Compound type 0"]]$value),
+            switch(
+              names(private$.allProperties[["Compound type 0"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 0"]]$value),
                 Pka = private$.allProperties[["pKa value 0"]]$value
               )
             ),
-            switch(names(private$.allProperties[["Compound type 1"]]$value),
+            switch(
+              names(private$.allProperties[["Compound type 1"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 1"]]$value),
                 Pka = private$.allProperties[["pKa value 1"]]$value
               )
             ),
-            switch(names(private$.allProperties[["Compound type 2"]]$value),
+            switch(
+              names(private$.allProperties[["Compound type 2"]]$value),
               "Neutral" = NULL,
               list(
                 Type = names(private$.allProperties[["Compound type 2"]]$value),
@@ -391,7 +489,9 @@ Compound <- R6::R6Class(
                 InternalName = unname(as.character(ProcessInternalNames[name])),
                 DataSource = name,
                 # Species will be added when generating study snapshot to match used specie in study
-                Parameters = unname(x |> purrr::map(\(y) y$toSnapshot()) |> purrr::compact())
+                Parameters = unname(
+                  x |> purrr::map(\(y) y$toSnapshot()) |> purrr::compact()
+                )
               )
             })
           )
@@ -399,21 +499,29 @@ Compound <- R6::R6Class(
         Parameters = unname(
           purrr::compact(
             purrr::map(private$.allProperties, \(x) {
-              if (!x$name %in% c(
-                "Is small molecule",
-                "Plasma protein binding partner",
-                "Lipophilicity", "Fraction unbound",
-                "Solubility", "Reference pH",
-                paste("Compound type", 0:2),
-                paste("pKa value", 0:2)
-              )) {
+              if (
+                !x$name %in%
+                  c(
+                    "Is small molecule",
+                    "Plasma protein binding partner",
+                    "Lipophilicity",
+                    "Fraction unbound",
+                    "Solubility",
+                    "Reference pH",
+                    paste("Compound type", 0:2),
+                    paste("pKa value", 0:2)
+                  )
+              ) {
                 x$toSnapshot()
               }
             })
           )
         ),
         CalculationMethods = c(
-          paste0("Cellular partition coefficient method - ", self$PartitionCoefficientMethod),
+          paste0(
+            "Cellular partition coefficient method - ",
+            self$PartitionCoefficientMethod
+          ),
           paste0("Cellular permeability - ", self$CellularPermeabilityMethod)
         )
       )
@@ -448,7 +556,9 @@ Compound <- R6::R6Class(
         )
       )
 
-      if (any(c("SimpleProtocol", "AdvancedProtocol") %in% class(self$Protocol))) {
+      if (
+        any(c("SimpleProtocol", "AdvancedProtocol") %in% class(self$Protocol))
+      ) {
         res <- c(res, self$Protocol$getAllParameterPaths())
       }
       return(unique(unname(res)))
@@ -487,8 +597,14 @@ Compound <- R6::R6Class(
       }
       cli::cli_li("Compound Methods:")
       ul <- cli::cli_ul()
-      cli::cli_li(paste0("Partition Coefficient Method: ", self$PartitionCoefficientMethod))
-      cli::cli_li(paste0("Cellular Permeability Method: ", self$CellularPermeabilityMethod))
+      cli::cli_li(paste0(
+        "Partition Coefficient Method: ",
+        self$PartitionCoefficientMethod
+      ))
+      cli::cli_li(paste0(
+        "Cellular Permeability Method: ",
+        self$CellularPermeabilityMethod
+      ))
       cli::cli_end(ul)
       if (length(private$.protocol) != 0) {
         cli::cli_li(paste0("Protocol Properties: "))
@@ -508,7 +624,11 @@ Compound <- R6::R6Class(
     .pc = NULL,
     .cp = NULL,
     .initializePropertiesFromJSON = function(json) {
-      genericCompound <- jsonlite::fromJSON(json, simplifyVector = TRUE, simplifyDataFrame = FALSE)
+      genericCompound <- jsonlite::fromJSON(
+        json,
+        simplifyVector = TRUE,
+        simplifyDataFrame = FALSE
+      )
 
       properties <- lapply(genericCompound$CompoundProperties, \(x) {
         Property$new(

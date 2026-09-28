@@ -32,17 +32,25 @@ SimpleProtocol <- R6::R6Class(
           }
           # ensure infusion time is defined if changing to iv infusion
           if (value == "IV Infusion" && is.null(private$.InfusionTime)) {
-            cli::cli_warn("No {.code infusionTime} provided, using default value of 60 minutes.")
+            cli::cli_warn(
+              "No {.code infusionTime} provided, using default value of 60 minutes."
+            )
             private$.InfusionTime <- 60
             private$.InfusionTimeUnit <- "min"
           }
           # ensure infusion time unit is defined if changing to iv infusion
           if (value == "IV Infusion" && is.null(private$.InfusionTimeUnit)) {
-            cli::cli_warn("No {.code infusionTimeUnit} provided, using default unit of `min`.")
+            cli::cli_warn(
+              "No {.code infusionTimeUnit} provided, using default unit of `min`."
+            )
             private$.InfusionTimeUnit <- "min"
           }
           # ensure infusion time is set to Null if changing from iv infusion
-          if (value != "IV Infusion" && (!is.null(private$.InfusionTime) || !is.null(private$.InfusionTimeUnit))) {
+          if (
+            value != "IV Infusion" &&
+              (!is.null(private$.InfusionTime) ||
+                !is.null(private$.InfusionTimeUnit))
+          ) {
             cli::cli_warn(
               paste(
                 "Removing `InfusionTime` and `InfusionTimeUnit` from protocol as ",
@@ -54,17 +62,25 @@ SimpleProtocol <- R6::R6Class(
           }
           # ensure water volume is defined if changing to oral
           if (value == "Oral" && is.null(private$.WaterVolumePerBW)) {
-            cli::cli_warn("No {.code WaterVolPerBW} provided, using default value of 3.5 ml/kg.")
+            cli::cli_warn(
+              "No {.code WaterVolPerBW} provided, using default value of 3.5 ml/kg."
+            )
             private$.WaterVolumePerBW <- 3.5
             private$.WaterVolumePerBWUnit <- "ml/kg"
           }
           # ensure water volume unit is defined if changing to oral
           if (value == "Oral" && is.null(private$.WaterVolumePerBWUnit)) {
-            cli::cli_warn("No {.code WaterVolPerBWUnit} provided, using default unit of `ml/kg`.")
+            cli::cli_warn(
+              "No {.code WaterVolPerBWUnit} provided, using default unit of `ml/kg`."
+            )
             private$.WaterVolumePerBWUnit <- "ml/kg"
           }
           # ensure water volume is set to Null if changing from Oral
-          if (value != "Oral" && (!is.null(private$.WaterVolumePerBW) || !is.null(private$.WaterVolumePerBWUnit))) {
+          if (
+            value != "Oral" &&
+              (!is.null(private$.WaterVolumePerBW) ||
+                !is.null(private$.WaterVolumePerBWUnit))
+          ) {
             cli::cli_warn(
               paste(
                 "Removing `WaterVolPerBW` and `WaterVolPerBWUnit` from protocol as ",
@@ -83,7 +99,9 @@ SimpleProtocol <- R6::R6Class(
               )
             )
 
-            private$.Formulation <- createDissolvedFormulation(name = "Dissolved")
+            private$.Formulation <- createDissolvedFormulation(
+              name = "Dissolved"
+            )
             private$.FormulationKey <- "Formulation"
           }
           # ensure default formulation is remove if changing from oral
@@ -115,17 +133,24 @@ SimpleProtocol <- R6::R6Class(
         } else {
           # ensure end time is defined if changing to multiple dose
           if (value != "Single" && is.null(private$.EndTime)) {
-            cli::cli_warn("No {.code endTime} provided, using default value of 24 hours.")
+            cli::cli_warn(
+              "No {.code endTime} provided, using default value of 24 hours."
+            )
             private$.EndTime <- 24
             private$.EndTimeUnit <- "h"
           }
           # ensure end time unit is defined if changing to multiple dose
           if (value != "Single" && is.null(private$.EndTimeUnit)) {
-            cli::cli_warn("No {.code endTimeUnit} provided, using default unit of `h`.")
+            cli::cli_warn(
+              "No {.code endTimeUnit} provided, using default unit of `h`."
+            )
             private$.EndTimeUnit <- "h"
           }
           # ensure end time is set to Null if changing to single dose
-          if (value == "Single" && (!is.null(private$.EndTime) || !is.null(private$.EndTimeUnit))) {
+          if (
+            value == "Single" &&
+              (!is.null(private$.EndTime) || !is.null(private$.EndTimeUnit))
+          ) {
             cli::cli_warn(
               paste(
                 "Removing `EndTime` and `EndTimeUnit` from protocol as they are not used for",
@@ -177,7 +202,10 @@ SimpleProtocol <- R6::R6Class(
       } else {
         isValid <- is.numeric(value) && is.finite(value) && value >= 0
         if (!isValid) {
-          cli::cli_abort(messages$valueMustBe("StartTime", "finite positive numeric"))
+          cli::cli_abort(messages$valueMustBe(
+            "StartTime",
+            "finite positive numeric"
+          ))
         } else {
           private$.StartTime <- value
         }
@@ -206,7 +234,10 @@ SimpleProtocol <- R6::R6Class(
           if (private$.DoseInterval != "Single") {
             # if multiple dose required must be not null and valid
             if (!isValid) {
-              cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
+              cli::cli_abort(messages$valueMustBe(
+                "EndTime",
+                "finite positive numeric"
+              ))
             }
           } else {
             if (!is.null(value)) {
@@ -218,7 +249,10 @@ SimpleProtocol <- R6::R6Class(
         } else {
           # during initialisation must be either valid or null
           if (!isValid && !is.null(value)) {
-            cli::cli_abort(messages$valueMustBe("EndTime", "finite positive numeric"))
+            cli::cli_abort(messages$valueMustBe(
+              "EndTime",
+              "finite positive numeric"
+            ))
           }
         }
 
@@ -242,7 +276,9 @@ SimpleProtocol <- R6::R6Class(
           } else {
             if (!is.null(value)) {
               # for single dose set to null and warn if not the case
-              cli::cli_warn("EndTimeUnit is not used for Single administration.")
+              cli::cli_warn(
+                "EndTimeUnit is not used for Single administration."
+              )
               value <- NULL
             }
           }
@@ -267,19 +303,27 @@ SimpleProtocol <- R6::R6Class(
           if (private$.Route == "IV Infusion") {
             # if infusion required must be not null and valid
             if (!isValid) {
-              cli::cli_abort(messages$valueMustBe("InfusionTime", "finite positive numeric"))
+              cli::cli_abort(messages$valueMustBe(
+                "InfusionTime",
+                "finite positive numeric"
+              ))
             }
           } else {
             if (!is.null(value)) {
               # for other types set to null and warn if not the case
-              cli::cli_warn("InfusionTime is not used for {private$.Route} administration.")
+              cli::cli_warn(
+                "InfusionTime is not used for {private$.Route} administration."
+              )
               value <- NULL
             }
           }
         } else {
           # during initialisation must be either valid or null
           if (!isValid && !is.null(value)) {
-            cli::cli_abort(messages$valueMustBe("InfusionTime", "finite positive numeric"))
+            cli::cli_abort(messages$valueMustBe(
+              "InfusionTime",
+              "finite positive numeric"
+            ))
           }
         }
 
@@ -302,7 +346,9 @@ SimpleProtocol <- R6::R6Class(
           } else {
             if (!is.null(value)) {
               # for other types set to null and warn if not the case
-              cli::cli_warn("InfusionTimeUnit is not used for {private$.Route} administration.")
+              cli::cli_warn(
+                "InfusionTimeUnit is not used for {private$.Route} administration."
+              )
               value <- NULL
             }
           }
@@ -327,19 +373,27 @@ SimpleProtocol <- R6::R6Class(
           if (private$.Route == "Oral") {
             # if water volume required must be not null and valid
             if (!isValid) {
-              cli::cli_abort(messages$valueMustBe("WaterVolPerBW", "finite positive numeric"))
+              cli::cli_abort(messages$valueMustBe(
+                "WaterVolPerBW",
+                "finite positive numeric"
+              ))
             }
           } else {
             if (!is.null(value)) {
               # for other types set to null and warn if not the case
-              cli::cli_warn("WaterVolPerBW is not used for {private$.Route} administration.")
+              cli::cli_warn(
+                "WaterVolPerBW is not used for {private$.Route} administration."
+              )
               value <- NULL
             }
           }
         } else {
           # during initialisation must be either valid or null
           if (!isValid && !is.null(value)) {
-            cli::cli_abort(messages$valueMustBe("WaterVolPerBW", "finite positive numeric"))
+            cli::cli_abort(messages$valueMustBe(
+              "WaterVolPerBW",
+              "finite positive numeric"
+            ))
           }
         }
 
@@ -351,25 +405,33 @@ SimpleProtocol <- R6::R6Class(
       if (missing(value)) {
         private$.WaterVolumePerBWUnit
       } else {
-        isValid <- isTRUE(value %in% ospsuite::ospUnits$`Volume per body weight`)
+        isValid <- isTRUE(
+          value %in% ospsuite::ospUnits$`Volume per body weight`
+        )
         if (!is.null(private$.Route)) {
           # after initialisation
           if (private$.Route == "Oral") {
             # if water volume required must be not null and valid
             if (!isValid) {
-              cli::cli_abort("Supplied Water volume per body weight unit is not valid.")
+              cli::cli_abort(
+                "Supplied Water volume per body weight unit is not valid."
+              )
             }
           } else {
             if (!is.null(value)) {
               # for other types set to null and warn if not the case
-              cli::cli_warn("Supplied WaterVolPerBWUnit is not used for {private$.Route} administration.")
+              cli::cli_warn(
+                "Supplied WaterVolPerBWUnit is not used for {private$.Route} administration."
+              )
               value <- NULL
             }
           }
         } else {
           # during initialisation must be either valid or null
           if (!isValid && !is.null(value)) {
-            cli::cli_abort("Supplied Water volume per body weight unit is not valid.")
+            cli::cli_abort(
+              "Supplied Water volume per body weight unit is not valid."
+            )
           }
         }
 
@@ -435,19 +497,27 @@ SimpleProtocol <- R6::R6Class(
           if (private$.Route == "Oral") {
             # formulation required must be not null and valid
             if (!isValid) {
-              cli::cli_abort(messages$valueMustBe("Formulation", "set for {private$.Route} administration"))
+              cli::cli_abort(messages$valueMustBe(
+                "Formulation",
+                "set for {private$.Route} administration"
+              ))
             }
           } else {
             if (!is.null(value)) {
               # for other types set to null and warn if not the case
-              cli::cli_warn("Formulation is not used for {private$.Route} administration.")
+              cli::cli_warn(
+                "Formulation is not used for {private$.Route} administration."
+              )
               value <- NULL
             }
           }
         } else {
           # during initialisation must be either valid or null
           if (!isValid && !is.null(value)) {
-            cli::cli_abort(messages$valueMustBe("Formulation", "set for {private$.Route} administration"))
+            cli::cli_abort(messages$valueMustBe(
+              "Formulation",
+              "set for {private$.Route} administration"
+            ))
           }
         }
 
@@ -468,19 +538,27 @@ SimpleProtocol <- R6::R6Class(
             if (private$.Route == "Oral") {
               # formulation required must be not null and valid
               if (!isValid) {
-                cli::cli_abort(messages$valueMustBe("FormulationKey", "a character string"))
+                cli::cli_abort(messages$valueMustBe(
+                  "FormulationKey",
+                  "a character string"
+                ))
               }
             } else {
               if (!is.null(value)) {
                 # for other types set to null and warn if not the case
-                cli::cli_warn("FormulationKey is not used for {private$.Route} administration.")
+                cli::cli_warn(
+                  "FormulationKey is not used for {private$.Route} administration."
+                )
                 value <- NULL
               }
             }
           } else {
             # during initialisation must be either valid or null
             if (!is.null(value)) {
-              cli::cli_abort(messages$valueMustBe("FormulationKey", "a character string"))
+              cli::cli_abort(messages$valueMustBe(
+                "FormulationKey",
+                "a character string"
+              ))
             }
           }
 
@@ -509,20 +587,22 @@ SimpleProtocol <- R6::R6Class(
     # #' @param targetOrgan Target organ (for user defined administration)
     # #' @param targetCompartment Target compartment (for user defined administration)
     #' @return A new `SimpleProtocol` object.
-    initialize = function(name = "Protocol",
-                          path = NULL,
-                          route = "IV Bolus",
-                          dosingInterval = "Single",
-                          dose = 0,
-                          doseUnit = "mg/kg",
-                          startTime = 0,
-                          startTimeUnit = "h",
-                          endTime = NULL,
-                          endTimeUnit = NULL,
-                          infusionTime = NULL,
-                          infusionTimeUnit = NULL,
-                          waterVolPerBW = NULL,
-                          waterVolPerBWUnit = NULL) {
+    initialize = function(
+      name = "Protocol",
+      path = NULL,
+      route = "IV Bolus",
+      dosingInterval = "Single",
+      dose = 0,
+      doseUnit = "mg/kg",
+      startTime = 0,
+      startTimeUnit = "h",
+      endTime = NULL,
+      endTimeUnit = NULL,
+      infusionTime = NULL,
+      infusionTimeUnit = NULL,
+      waterVolPerBW = NULL,
+      waterVolPerBWUnit = NULL
+    ) {
       private$.UUID <- uuid::UUIDgenerate()
       self$Name <- name
       self$Path <- path
@@ -569,7 +649,9 @@ SimpleProtocol <- R6::R6Class(
       if (self$Route %in% c("Oral", "Custom")) {
         self$Formulation <- formulation
       } else {
-        cli::cli_abort("Formulation can only be set for `Oral` and `Custom` routes.")
+        cli::cli_abort(
+          "Formulation can only be set for `Oral` and `Custom` routes."
+        )
       }
     },
     #' @description
@@ -595,10 +677,19 @@ SimpleProtocol <- R6::R6Class(
       }
 
       # calculate dosing times based on Dosing interval chosen
-      adminTimes <- switch(self$DoseInterval,
+      adminTimes <- switch(
+        self$DoseInterval,
         "Single" = startTime,
-        "12-12" = seq(startTime, endTime, by = ospsuite::toBaseUnit("Time", 12, "h")),
-        "8-8-8" = seq(startTime, endTime, by = ospsuite::toBaseUnit("Time", 8, "h")),
+        "12-12" = seq(
+          startTime,
+          endTime,
+          by = ospsuite::toBaseUnit("Time", 12, "h")
+        ),
+        "8-8-8" = seq(
+          startTime,
+          endTime,
+          by = ospsuite::toBaseUnit("Time", 8, "h")
+        ),
         "6-6-12" = sort(
           c(
             seq(
@@ -618,8 +709,16 @@ SimpleProtocol <- R6::R6Class(
             )
           )
         ),
-        "6_6_6_6" = seq(startTime, endTime, by = ospsuite::toBaseUnit("Time", 6, "h")),
-        "24" = seq(startTime, endTime, by = ospsuite::toBaseUnit("Time", 24, "h"))
+        "6_6_6_6" = seq(
+          startTime,
+          endTime,
+          by = ospsuite::toBaseUnit("Time", 6, "h")
+        ),
+        "24" = seq(
+          startTime,
+          endTime,
+          by = ospsuite::toBaseUnit("Time", 24, "h")
+        )
       )
 
       wantedAdmin <- dplyr::tibble(
@@ -649,12 +748,15 @@ SimpleProtocol <- R6::R6Class(
         mainPath <- paste0(
           "Events|{protocolName}|",
           paste0(self$Formulation$Name, "|", recycle0 = TRUE),
-          "Application_", seq_len(nrow(wantedAdmin))
+          "Application_",
+          seq_len(nrow(wantedAdmin))
         )
       }
 
       if (nrow(wantedAdmin) > length(mainPath)) {
-        cli::cli_warn("For multiple admin, `path` should list all available paths for this type of administrations.")
+        cli::cli_warn(
+          "For multiple admin, `path` should list all available paths for this type of administrations."
+        )
       }
 
       for (i in seq_len(min(nrow(wantedAdmin), length(mainPath)))) {
@@ -676,25 +778,50 @@ SimpleProtocol <- R6::R6Class(
 
       wantedAdmin <- self$extractProtocol()
 
-      if (ospsuite::getDimensionForUnit(self$DoseUnit) == ospsuite::ospDimensions$Mass) {
+      if (
+        ospsuite::getDimensionForUnit(self$DoseUnit) ==
+          ospsuite::ospDimensions$Mass
+      ) {
         doseParamName <- "Dose"
-      } else if (ospsuite::getDimensionForUnit(self$DoseUnit) == ospsuite::ospDimensions$`Dose per body weight`) {
+      } else if (
+        ospsuite::getDimensionForUnit(self$DoseUnit) ==
+          ospsuite::ospDimensions$`Dose per body weight`
+      ) {
         doseParamName <- "DosePerBodyWeight"
-      } else if (ospsuite::getDimensionForUnit(self$DoseUnit) == ospsuite::ospDimensions$`Dose per body surface area`) {
+      } else if (
+        ospsuite::getDimensionForUnit(self$DoseUnit) ==
+          ospsuite::ospDimensions$`Dose per body surface area`
+      ) {
         doseParamName <- "DosePerBodySurfaceArea"
       }
 
       for (i in seq_len(nrow(wantedAdmin))) {
         if (!is.null(wantedAdmin$path[[i]])) {
-          appPath <- paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", sep = "|")
+          appPath <- paste(
+            wantedAdmin$path[[i]],
+            "ProtocolSchemaItem",
+            sep = "|"
+          )
 
-          allParamPaths <- c(allParamPaths, paste(appPath, doseParamName, sep = "|"))
-          allParamPaths <- c(allParamPaths, paste(appPath, "Start time", sep = "|"))
+          allParamPaths <- c(
+            allParamPaths,
+            paste(appPath, doseParamName, sep = "|")
+          )
+          allParamPaths <- c(
+            allParamPaths,
+            paste(appPath, "Start time", sep = "|")
+          )
           if (!is.null(self$InfusionTime)) {
-            allParamPaths <- c(allParamPaths, paste(appPath, "Infusion time", sep = "|"))
+            allParamPaths <- c(
+              allParamPaths,
+              paste(appPath, "Infusion time", sep = "|")
+            )
           }
           if (!is.null(self$WaterVolPerBW)) {
-            allParamPaths <- c(allParamPaths, paste(appPath, "Volume of water/body weight", sep = "|"))
+            allParamPaths <- c(
+              allParamPaths,
+              paste(appPath, "Volume of water/body weight", sep = "|")
+            )
           }
         }
       }
@@ -702,12 +829,19 @@ SimpleProtocol <- R6::R6Class(
       if (!is.null(self$Formulation)) {
         allParamPaths <- c(
           allParamPaths,
-          self$Formulation$getAllPropertyPaths(protocolPrefix = "Events|{protocolName}")
+          self$Formulation$getAllPropertyPaths(
+            protocolPrefix = "Events|{protocolName}"
+          )
         )
       }
       # glue before returning
       allParamPaths <- purrr::map_chr(
-        allParamPaths, ~ glue::glue(.x, protocolName = self$Name, formulationName = self$Formulation$Name)
+        allParamPaths,
+        ~ glue::glue(
+          .x,
+          protocolName = self$Name,
+          formulationName = self$Formulation$Name
+        )
       )
       return(allParamPaths)
     },
@@ -784,19 +918,34 @@ SimpleProtocol <- R6::R6Class(
       ul <- cli::cli_ul()
       cli::cli_li(paste("Route:", AdminType[[self$Route]]$human))
       cli::cli_li(paste("Dose:", self$Dose, self$DoseUnit))
-      cli::cli_li(paste("Dose Interval:", AdminInterval[[self$DoseInterval]]$human))
-      cli::cli_li(paste("Start Time:", paste(self$StartTime, self$StartTimeUnit)))
+      cli::cli_li(paste(
+        "Dose Interval:",
+        AdminInterval[[self$DoseInterval]]$human
+      ))
+      cli::cli_li(paste(
+        "Start Time:",
+        paste(self$StartTime, self$StartTimeUnit)
+      ))
       if (!is.null(self$EndTime)) {
         cli::cli_li(paste("End Time:", paste(self$EndTime, self$EndTimeUnit)))
       }
       if (self$Route == "IV Infusion") {
-        cli::cli_li(paste("Infusion Time:", paste(self$InfusionTime, self$InfusionTimeUnit)))
+        cli::cli_li(paste(
+          "Infusion Time:",
+          paste(self$InfusionTime, self$InfusionTimeUnit)
+        ))
       }
       if (self$Route == "Oral") {
-        cli::cli_li(paste("Volume of water per body weight:", paste(self$WaterVolPerBW, self$WaterVolPerBWUnit)))
+        cli::cli_li(paste(
+          "Volume of water per body weight:",
+          paste(self$WaterVolPerBW, self$WaterVolPerBWUnit)
+        ))
       }
       if (self$Route == "Custom") {
-        cli::cli_li(paste("Target:", paste(self$TagetOrgan, self$TargetCompartment, sep = "|")))
+        cli::cli_li(paste(
+          "Target:",
+          paste(self$TagetOrgan, self$TargetCompartment, sep = "|")
+        ))
       }
       if (self$Route %in% c("Oral", "Custom")) {
         cli::cli_li(paste("Formulation:", self$Formulation$Name))
@@ -945,7 +1094,13 @@ AdvancedProtocol <- R6::R6Class(
     #' @param timeUnit Time unit for `startTime` and `timeBetweenRepetitions` of the schema
     #' @param schemaName Name of the schema
     #' @return The updated `AdvancedProtocol` object.
-    addSchema = function(startTime, numberOfRepetitions, timeBetweenRepetitions, timeUnit, schemaName) {
+    addSchema = function(
+      startTime,
+      numberOfRepetitions,
+      timeBetweenRepetitions,
+      timeUnit,
+      schemaName
+    ) {
       # ensure schema name does not exist
       if (schemaName %in% sapply(self$Schemas, \(x) x$Name)) {
         cli::cli_abort("Schema {.var {schemaName}} already exists.")
@@ -975,29 +1130,45 @@ AdvancedProtocol <- R6::R6Class(
       schemaIndex <- which(
         sapply(private$.Schemas, \(x) {
           x$Name
-        }) == schemaName
+        }) ==
+          schemaName
       )
       if (length(schemaIndex) == 0) {
         cli::cli_abort("Could not find schema {.var {schemaName}}.")
       }
       # check that protocol is single
-      if (!("SimpleProtocol" %in% class(protocol)) || protocol$DoseInterval != "Single") {
-        cli::cli_abort("Only `SimpleProtocol` objects with a `Single` dose interval can be added to a schema.")
+      if (
+        !("SimpleProtocol" %in% class(protocol)) ||
+          protocol$DoseInterval != "Single"
+      ) {
+        cli::cli_abort(
+          "Only `SimpleProtocol` objects with a `Single` dose interval can be added to a schema."
+        )
       }
       # check that if protocol contains a formulation, the formulation name is not already used
       # for a different formulation
       if (!is.null(protocol$Formulation)) {
         # check that name is unused or that formulation is identical
         existingForm <- self$Formulations
-        if (protocol$Formulation$Name %in% purrr::list_c(purrr::map(existingForm, ~ .x$Name))) {
-          identicalIdx <- which(purrr::list_c(purrr::map(existingForm, ~ .x$Name)) == protocol$Formulation$Name)
+        if (
+          protocol$Formulation$Name %in%
+            purrr::list_c(purrr::map(existingForm, ~ .x$Name))
+        ) {
+          identicalIdx <- which(
+            purrr::list_c(purrr::map(existingForm, ~ .x$Name)) ==
+              protocol$Formulation$Name
+          )
           for (idx in identicalIdx) {
             if (
-              !(
-                identical(existingForm[[idx]]$Name, protocol$Formulation$Name) &&
-                  identical(existingForm[[idx]]$Parameters, protocol$Formulation$Parameters) &&
-                  identical(existingForm[[idx]]$Type, protocol$Formulation$Type)
-              )
+              !(identical(
+                existingForm[[idx]]$Name,
+                protocol$Formulation$Name
+              ) &&
+                identical(
+                  existingForm[[idx]]$Parameters,
+                  protocol$Formulation$Parameters
+                ) &&
+                identical(existingForm[[idx]]$Type, protocol$Formulation$Type))
             ) {
               cli::cli_abort(
                 paste(
@@ -1010,13 +1181,22 @@ AdvancedProtocol <- R6::R6Class(
           protocol$FormulationKey <- paste0("Formulation", identicalIdx[1])
         } else {
           # update protocol with correct formulation key
-          protocol$FormulationKey <- paste0("Formulation", length(existingForm) + 1)
+          protocol$FormulationKey <- paste0(
+            "Formulation",
+            length(existingForm) + 1
+          )
         }
       }
 
       # rename protocol to ensure uniqueness
-      protocol$Name <- paste0("Schema Item ", length(private$.Schemas[[schemaIndex]]$SchemaItems) + 1)
-      private$.Schemas[[schemaIndex]]$SchemaItems <- c(private$.Schemas[[schemaIndex]]$SchemaItems, protocol)
+      protocol$Name <- paste0(
+        "Schema Item ",
+        length(private$.Schemas[[schemaIndex]]$SchemaItems) + 1
+      )
+      private$.Schemas[[schemaIndex]]$SchemaItems <- c(
+        private$.Schemas[[schemaIndex]]$SchemaItems,
+        protocol
+      )
       return(invisible(self))
     },
     #' @description
@@ -1035,7 +1215,10 @@ AdvancedProtocol <- R6::R6Class(
       wantedAdmin <- vector(mode = "list", length = length(self$Schemas))
 
       for (schemaIdx in seq_along(self$Schemas)) {
-        wantedAdmin[[schemaIdx]] <- vector(mode = "list", length = length(self$Schemas[[schemaIdx]]$SchemaItems))
+        wantedAdmin[[schemaIdx]] <- vector(
+          mode = "list",
+          length = length(self$Schemas[[schemaIdx]]$SchemaItems)
+        )
         startTimeSchema <- ospsuite::toBaseUnit(
           quantityOrDimension = "Time",
           values = self$Schemas[[schemaIdx]]$StartTime,
@@ -1052,8 +1235,12 @@ AdvancedProtocol <- R6::R6Class(
           length.out = self$Schemas[[schemaIdx]]$NumberOfRepetitions
         )
 
-        for (schemaItemsIdx in seq_along(self$Schemas[[schemaIdx]]$SchemaItems)) {
-          wantedAdminProt <- self$Schemas[[schemaIdx]]$SchemaItems[[schemaItemsIdx]]$extractProtocol()
+        for (schemaItemsIdx in seq_along(
+          self$Schemas[[schemaIdx]]$SchemaItems
+        )) {
+          wantedAdminProt <- self$Schemas[[schemaIdx]]$SchemaItems[[
+            schemaItemsIdx
+          ]]$extractProtocol()
           wantedAdmin[[schemaIdx]][[schemaItemsIdx]] <- dplyr::tibble(
             type = wantedAdminProt$type,
             time = wantedAdminProt$time + schemaTimes,
@@ -1102,24 +1289,35 @@ AdvancedProtocol <- R6::R6Class(
           form <- wantedAdmin[i, ]$formulationName
           mainPath <- paste0(path, paste0("|", na.omit(form), recycle0 = TRUE))
 
-          wantedAdmin$path[[i]] <- paste(mainPath, paste0("Application_", i), sep = "|")
+          wantedAdmin$path[[i]] <- paste(
+            mainPath,
+            paste0("Application_", i),
+            sep = "|"
+          )
         }
       } else {
         if (any(is.null(unlist(wantedAdmin$allowedPath)))) {
-          cli::cli_abort("Check your protocol, either all allowed path should be set or none.")
+          cli::cli_abort(
+            "Check your protocol, either all allowed path should be set or none."
+          )
         }
 
         wantedAdmin <- wantedAdmin |> dplyr::group_by(allowedPath)
 
         tooManyAdminWanted <- wantedAdmin |>
-          dplyr::summarize(N = dplyr::n() > length(unique(unlist(allowedPath)))) |>
+          dplyr::summarize(
+            N = dplyr::n() > length(unique(unlist(allowedPath)))
+          ) |>
           dplyr::pull(N)
 
         if (any(tooManyAdminWanted)) {
-          cli::cli_warn("For multiple admin path, should list all available paths for this type of administrations.")
+          cli::cli_warn(
+            "For multiple admin path, should list all available paths for this type of administrations."
+          )
         }
 
-        wantedAdmin <- wantedAdmin |> dplyr::mutate(path = unlist(allowedPath)[dplyr::row_number()])
+        wantedAdmin <- wantedAdmin |>
+          dplyr::mutate(path = unlist(allowedPath)[dplyr::row_number()])
       }
 
       return(wantedAdmin)
@@ -1140,22 +1338,38 @@ AdvancedProtocol <- R6::R6Class(
       # loop across admin to set admin number in time order if allowed path were not set
       for (i in seq_len(nrow(wantedAdmin))) {
         appPath <- paste(wantedAdmin$path[[i]], "ProtocolSchemaItem", sep = "|")
-        ospDim <- ospsuite::getDimensionForUnit(wantedAdmin$parameters[[i]]$DoseUnit)
+        ospDim <- ospsuite::getDimensionForUnit(
+          wantedAdmin$parameters[[i]]$DoseUnit
+        )
         if (ospDim == ospsuite::ospDimensions$Mass) {
           doseParamName <- "Dose"
         } else if (ospDim == ospsuite::ospDimensions$`Dose per body weight`) {
           doseParamName <- "DosePerBodyWeight"
-        } else if (ospDim == ospsuite::ospDimensions$`Dose per body surface area`) {
+        } else if (
+          ospDim == ospsuite::ospDimensions$`Dose per body surface area`
+        ) {
           doseParamName <- "DosePerBodySurfaceArea"
         }
 
-        allParamPaths <- c(allParamPaths, paste(appPath, doseParamName, sep = "|"))
-        allParamPaths <- c(allParamPaths, paste(appPath, "Start time", sep = "|"))
+        allParamPaths <- c(
+          allParamPaths,
+          paste(appPath, doseParamName, sep = "|")
+        )
+        allParamPaths <- c(
+          allParamPaths,
+          paste(appPath, "Start time", sep = "|")
+        )
         if (!is.null(wantedAdmin$parameters[[i]]$InfusionTime)) {
-          allParamPaths <- c(allParamPaths, paste(appPath, "Infusion time", sep = "|"))
+          allParamPaths <- c(
+            allParamPaths,
+            paste(appPath, "Infusion time", sep = "|")
+          )
         }
         if (!is.null(wantedAdmin$parameters[[i]]$WaterVolPerBW)) {
-          allParamPaths <- c(allParamPaths, paste(appPath, "Volume of water/body weight", sep = "|"))
+          allParamPaths <- c(
+            allParamPaths,
+            paste(appPath, "Volume of water/body weight", sep = "|")
+          )
         }
       }
       # add formulations parameters
@@ -1172,7 +1386,10 @@ AdvancedProtocol <- R6::R6Class(
           )
         )
       }
-      return(purrr::map_chr(allParamPaths, ~ glue::glue(.x, protocolName = self$Name)))
+      return(purrr::map_chr(
+        allParamPaths,
+        ~ glue::glue(.x, protocolName = self$Name)
+      ))
     },
     #' @description
     #' Convert to snapshot
@@ -1222,7 +1439,11 @@ AdvancedProtocol <- R6::R6Class(
         ul2 <- cli::cli_ul()
         cli::cli_li(paste("Start time:", x$StartTime, x$TimeUnit))
         cli::cli_li(paste("Number of repetitions:", x$NumberOfRepetitions))
-        cli::cli_li(paste("Time between repetitions:", x$TimeBetweenRepetitions, x$TimeUnit))
+        cli::cli_li(paste(
+          "Time between repetitions:",
+          x$TimeBetweenRepetitions,
+          x$TimeUnit
+        ))
         purrr::imap(x$SchemaItems, \(y, i) {
           cli::cli_text("Schema item ", i)
           ul3 <- cli::cli_ul()
