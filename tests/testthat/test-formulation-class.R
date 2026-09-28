@@ -108,7 +108,10 @@ test_that("getAllPropertyPaths method works", {
     formulation$getAllPropertyPaths()
   )
   expect_snapshot(
-    formulation$getAllPropertyPaths(protocolPrefix = "Events|Protocol", formulationName = formulation$Name)
+    formulation$getAllPropertyPaths(
+      protocolPrefix = "Events|Protocol",
+      formulationName = formulation$Name
+    )
   )
 })
 

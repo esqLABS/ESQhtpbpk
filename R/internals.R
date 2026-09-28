@@ -9,7 +9,15 @@
 #' @param rangeUnit Unit of the lower and upper values for unit conversion
 #' @keywords internal
 #' @noRd
-.checkValueInRangeEq <- function(name, dimension, value, unit, lower, upper, rangeUnit) {
+.checkValueInRangeEq <- function(
+  name,
+  dimension,
+  value,
+  unit,
+  lower,
+  upper,
+  rangeUnit
+) {
   # ensure that the lower and upper bounds are numeric and that lower <= upper
   stopifnot(is.numeric(lower), is.numeric(upper), lower <= upper)
 

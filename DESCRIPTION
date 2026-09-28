@@ -37,14 +37,20 @@ Suggests:
     ggplot2,
     ggrepel,
     knitr,
+    ospsuite.plots,
     plotly,
     readxl,
     rmarkdown,
+    rSharp,
     scales,
+    tlf,
     vdiffr
 Config/testthat/edition: 3
 Remotes: 
-    ospsuite.utils=Open-Systems-Pharmacology/OSPSuite.RUtils,
-    ospsuite=Open-Systems-Pharmacology/OSPSuite-R
+    ospsuite.utils=Open-Systems-Pharmacology/OSPSuite.RUtils@*release,
+    ospsuite=Open-Systems-Pharmacology/OSPSuite-R@*release,
+    rSharp=Open-Systems-Pharmacology/rSharp@v1.2.3,
+    ospsuite.plots=Open-Systems-Pharmacology/OSPSuite.Plots@*release,
+    tlf=Open-Systems-Pharmacology/TLF-Library@*release
 URL: https://esqlabs.github.io/ESQhtpbpk/
 VignetteBuilder: knitr

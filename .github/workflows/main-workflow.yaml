@@ -21,6 +21,11 @@ jobs:
     if: ${{ !cancelled() }}
     needs: [bump-dev-version]
     uses: Open-Systems-Pharmacology/Workflows/.github/workflows/R-CMD-check-build.yaml@main
+    with:
+      # ospsuite::runSimulationsFromSnapshot() is not supported on macOS
+      os-matrix: >-
+        [{"os": "windows-latest", "r": "release"},
+        {"os": "ubuntu-latest", "r": "release"}]
 
   test-coverage:
     if: ${{ !cancelled() }}

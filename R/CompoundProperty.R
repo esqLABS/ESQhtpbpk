@@ -29,7 +29,11 @@ Property <- R6::R6Class(
       } else {
         if (!is.null(private$.enum)) {
           if (!(value %in% names(private$.enum))) {
-            msg <- messages$valueEnumError(private$.name, value, allowed = names(private$.enum))
+            msg <- messages$valueEnumError(
+              private$.name,
+              value,
+              allowed = names(private$.enum)
+            )
             cli::cli_abort("{msg}")
           }
           private$.value <- private$.enum[value]
@@ -103,17 +107,19 @@ Property <- R6::R6Class(
 
     #' valid).
     #' @return A new `Property` object.
-    initialize = function(name,
-                          parName,
-                          dimension,
-                          value = 0,
-                          unit = NULL,
-                          enum = NULL,
-                          check = NULL,
-                          min = NULL,
-                          max = NULL,
-                          rangeUnit = NULL,
-                          path = NULL) {
+    initialize = function(
+      name,
+      parName,
+      dimension,
+      value = 0,
+      unit = NULL,
+      enum = NULL,
+      check = NULL,
+      min = NULL,
+      max = NULL,
+      rangeUnit = NULL,
+      path = NULL
+    ) {
       private$.name <- name
       private$.parName <- parName
       if (is.null(path)) {
@@ -140,7 +146,15 @@ Property <- R6::R6Class(
       # check validity of constraint function
       if (is.null(check) && !is.null(min) && !is.null(max)) {
         check <- function(value, unit) {
-          .checkValueInRangeEq(name, dimension, value, unit, min, max, rangeUnit)
+          .checkValueInRangeEq(
+            name,
+            dimension,
+            value,
+            unit,
+            min,
+            max,
+            rangeUnit
+          )
         }
       }
       if (!is.null(check) && !is.function(check)) {
