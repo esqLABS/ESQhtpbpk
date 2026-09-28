@@ -6,7 +6,8 @@
 .saveResults <- function(simulationResults, outputFolder) {
   for (res in names(simulationResults)) {
     outputPath <- file.path(
-      outputFolder, paste0(.clearPath(res), ".csv")
+      outputFolder,
+      paste0(.clearPath(res), ".csv")
     )
     tryCatch(
       {

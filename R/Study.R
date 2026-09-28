@@ -58,7 +58,12 @@ Study <- R6::R6Class(
       self$Compounds <- compounds
       self$setGenericModel(genericModel)
       self$Individual <- individual
-      private$.outputSchema <- self$addOutputInterval(startTime = 0, endTime = 24, timeUnit = "h", resolution = 4)
+      private$.outputSchema <- self$addOutputInterval(
+        startTime = 0,
+        endTime = 24,
+        timeUnit = "h",
+        resolution = 4
+      )
       return(self)
     },
 
@@ -76,7 +81,9 @@ Study <- R6::R6Class(
         if (!all(paths %in% availablePaths)) {
           cli::cli_abort(
             cli::cli_fmt({
-              cli::cli_text("Some paths were not found in the simulation. Please check.")
+              cli::cli_text(
+                "Some paths were not found in the simulation. Please check."
+              )
               cli::cli_text("Following paths were not found:")
               cli::cli_li(paths[!(paths %in% availablePaths)])
             })
@@ -144,12 +151,24 @@ Study <- R6::R6Class(
               ),
               list(
                 Name = "Resolution",
-                Value = if (paste0("pts/", timeUnit) %in% ospsuite::getUnitsForDimension("Resolution")) {
+                Value = if (
+                  paste0("pts/", timeUnit) %in%
+                    ospsuite::getUnitsForDimension("Resolution")
+                ) {
                   resolution
                 } else {
-                  resolution / ospsuite::toUnit("Time", values = 1, sourceUnit = timeUnit, targetUnit = "min")
+                  resolution /
+                    ospsuite::toUnit(
+                      "Time",
+                      values = 1,
+                      sourceUnit = timeUnit,
+                      targetUnit = "min"
+                    )
                 },
-                Unit = if (paste0("pts/", timeUnit) %in% ospsuite::getUnitsForDimension("Resolution")) {
+                Unit = if (
+                  paste0("pts/", timeUnit) %in%
+                    ospsuite::getUnitsForDimension("Resolution")
+                ) {
                   paste0("pts/", timeUnit)
                 } else {
                   paste0("pts/min")
@@ -170,11 +189,19 @@ Study <- R6::R6Class(
             Name = self$Individual,
             OriginData = purrr::compact(
               list(
-                Species = ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual),
-                Population = if (self$Individual %in% ospsuite::HumanPopulation) {
+                Species = ifelse(
+                  self$Individual %in% ospsuite::HumanPopulation,
+                  "Human",
+                  self$Individual
+                ),
+                Population = if (
+                  self$Individual %in% ospsuite::HumanPopulation
+                ) {
                   self$Individual
                 } else if (self$Individual == "Human") {
-                  cli::cli_warn("Using default of `European_ICRP_2002` for population.")
+                  cli::cli_warn(
+                    "Using default of `European_ICRP_2002` for population."
+                  )
                   "European_ICRP_2002"
                 } else {
                   NULL
@@ -203,7 +230,8 @@ Study <- R6::R6Class(
           })
         ),
         "Protocols" = purrr::map(
-          self$Compounds, \(x) {
+          self$Compounds,
+          \(x) {
             x$Protocol$toSnapshot()
           }
         ),
@@ -221,8 +249,14 @@ Study <- R6::R6Class(
                   list(
                     Name = x$Name,
                     CalculationMethods = list(
-                      paste0("Cellular partition coefficient method - ", x$PartitionCoefficientMethod),
-                      paste0("Cellular permeability - ", x$CellularPermeabilityMethod)
+                      paste0(
+                        "Cellular partition coefficient method - ",
+                        x$PartitionCoefficientMethod
+                      ),
+                      paste0(
+                        "Cellular permeability - ",
+                        x$CellularPermeabilityMethod
+                      )
                     ),
                     Processes = unname(
                       purrr::imap(x$getAllProcessProperty(), \(y, i) {
@@ -235,12 +269,16 @@ Study <- R6::R6Class(
                     Protocol = purrr::compact(
                       list(
                         Name = x$Protocol$Name,
-                        Formulations = purrr::map2(x$Protocol$Formulations, x$Protocol$FormulationKey, \(y, z) {
-                          list(
-                            Name = y$Name,
-                            Key = z
-                          )
-                        })
+                        Formulations = purrr::map2(
+                          x$Protocol$Formulations,
+                          x$Protocol$FormulationKey,
+                          \(y, z) {
+                            list(
+                              Name = y$Name,
+                              Key = z
+                            )
+                          }
+                        )
                       )
                     )
                   )
@@ -254,7 +292,11 @@ Study <- R6::R6Class(
       # update Fu species
       for (compIndex in seq_along(data$Compounds)) {
         data$Compounds[[compIndex]]$FractionUnbound[[1]]$Species <-
-          ifelse(self$Individual %in% ospsuite::HumanPopulation, "Human", self$Individual)
+          ifelse(
+            self$Individual %in% ospsuite::HumanPopulation,
+            "Human",
+            self$Individual
+          )
       }
       return(data)
     },
@@ -262,7 +304,12 @@ Study <- R6::R6Class(
     #' Convert study to a snapshot
     #' @param file file path to save the snapshot
     exportSnapshot = function(file) {
-      jsonlite::write_json(self$toSnapshot(), auto_unbox = TRUE, pretty = TRUE, path = file)
+      jsonlite::write_json(
+        self$toSnapshot(),
+        auto_unbox = TRUE,
+        pretty = TRUE,
+        path = file
+      )
     },
     #' @description
     #' Convert study to a pkml
@@ -277,16 +324,33 @@ Study <- R6::R6Class(
 
       self$exportSnapshot(tempFile)
 
-      ospsuite::runSimulationsFromSnapshot(tempFile, exportPKML = TRUE, exportCSV = FALSE, output = tempDir)
+      ospsuite::runSimulationsFromSnapshot(
+        tempFile,
+        exportPKML = TRUE,
+        exportCSV = FALSE,
+        output = tempDir
+      )
 
       if (!dir.exists(dirname(file))) {
         dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
       }
-      if (!file.exists(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml"))) {
+      if (
+        !file.exists(paste0(
+          gsub(tempFile, pattern = "\\.json$", replacement = ""),
+          "-",
+          self$ID,
+          ".pkml"
+        ))
+      ) {
         cli::cli_abort("Something went wrong with the export of the pkml file.")
       }
       fs::file_copy(
-        path = fs::path(paste0(gsub(tempFile, pattern = "\\.json$", replacement = ""), "-", self$ID, ".pkml")),
+        path = fs::path(paste0(
+          gsub(tempFile, pattern = "\\.json$", replacement = ""),
+          "-",
+          self$ID,
+          ".pkml"
+        )),
         new_path = file,
         overwrite = overwrite
       )
@@ -315,7 +379,9 @@ Study <- R6::R6Class(
       # check it exist and is a pkml file
       if (!is.null(pkmlpath)) {
         if (!file.exists(pkmlpath) || !grepl(".pkml$", pkmlpath)) {
-          cli::cli_warn("Model path {pkmlpath} does not exist or is not a pkml file. Unsetting.")
+          cli::cli_warn(
+            "Model path {pkmlpath} does not exist or is not a pkml file. Unsetting."
+          )
           pkmlpath <- NULL
           self$setGenericModel(pkmlpath)
         }

@@ -16,7 +16,9 @@ test_that("`addProperty` method works", {
       name = "Total Hepatic Clearance half life",
       parName = "t1/2 (microsomal assay)",
       path = "{compoundName}-Total Hepatic Clearance-In vitro microsomes Rat|t1/2 (microsomal assay)",
-      dimension = "Inversed time", value = 0.1, unit = "1/min"
+      dimension = "Inversed time",
+      value = 0.1,
+      unit = "1/min"
     )
   )
   expect_snapshot(myCompound$print())
@@ -27,7 +29,8 @@ test_that("`addProperty` method throws an error when adding a new property with 
     myCompound$addProperty(
       name = "Lipophilicity",
       parName = "Lipo",
-      dimension = "Log Units", value = 0.1
+      dimension = "Log Units",
+      value = 0.1
     )
   )
 })
@@ -68,7 +71,10 @@ test_that("`setProperty` throws an error if supplied value is not compatible wit
 })
 
 test_that("`setProperty` throws an error if supplied value is not compatible with enums", {
-  expect_error(myCompound$setPropertyValue("Plasma protein binding partner", "Albunim"))
+  expect_error(myCompound$setPropertyValue(
+    "Plasma protein binding partner",
+    "Albunim"
+  ))
 })
 
 
@@ -78,7 +84,9 @@ test_that("`addProcessProperty` method works", {
       processType = "Liver Mic T1/2",
       propertyName = "Thalf",
       parName = "t1/2 (microsomal assay)",
-      dimension = "Time", value = 0.1, unit = "min"
+      dimension = "Time",
+      value = 0.1,
+      unit = "min"
     )
   )
   expect_snapshot(myCompound$print())
@@ -90,7 +98,9 @@ test_that("`addProcessProperty` method throws an error when adding a new propert
       processType = "Liver Mic T1/2",
       propertyName = "Thalf",
       parName = "t1/2 (microsomal assay)",
-      dimension = "Time", value = 0.1, unit = "min"
+      dimension = "Time",
+      value = 0.1,
+      unit = "min"
     )
   )
 })
@@ -101,7 +111,9 @@ test_that("`addProcessProperty` method throws an error when adding property to a
       processType = "Liver Mic",
       propertyName = "Thalf",
       parName = "t1/2 (microsomal assay)",
-      dimension = "Time", value = 0.1, unit = "min"
+      dimension = "Time",
+      value = 0.1,
+      unit = "min"
     )
   )
 })
@@ -126,15 +138,19 @@ test_that(
 )
 
 
-
 test_that("`removeProcessProperty` works", {
   myCompound$addProcessProperty(
     processType = "Liver Mic T1/2",
     propertyName = "Fu assay",
     parName = "Fraction unbound (assay)",
-    dimension = "Fraction", value = 0.5, unit = ""
+    dimension = "Fraction",
+    value = 0.5,
+    unit = ""
   )
-  expect_no_error(myCompound$removeProcessProperty(processType = "Liver Mic T1/2", propertyName = "Thalf"))
+  expect_no_error(myCompound$removeProcessProperty(
+    processType = "Liver Mic T1/2",
+    propertyName = "Thalf"
+  ))
   expect_snapshot(myCompound$print())
 })
 
@@ -144,20 +160,31 @@ test_that("`getProcessProperty` throws an error if the property is not found", {
     processType = "Liver Mic T1/2",
     propertyName = "Thalf",
     parName = "t1/2 (microsomal assay)",
-    dimension = "Time", value = 0.1, unit = "min",
+    dimension = "Time",
+    value = 0.1,
+    unit = "min",
     check = function(value, unit) {
       if (value < 0) {
         stop("Value must be positive")
       }
     }
   )
-  expect_error(myCompound$getProcessProperty(processType = "Liver Mic T1/2", propertyName = "PPB"))
-  expect_error(myCompound$getProcessProperty(processType = "Liver Mic", propertyName = "Thalf"))
+  expect_error(myCompound$getProcessProperty(
+    processType = "Liver Mic T1/2",
+    propertyName = "PPB"
+  ))
+  expect_error(myCompound$getProcessProperty(
+    processType = "Liver Mic",
+    propertyName = "Thalf"
+  ))
 })
 
 test_that("`getProcessProperty` works", {
   expect_snapshot(
-    myCompound$getProcessProperty(propertyName = "Thalf", processType = "Liver Mic T1/2")
+    myCompound$getProcessProperty(
+      propertyName = "Thalf",
+      processType = "Liver Mic T1/2"
+    )
   )
 })
 
@@ -168,7 +195,10 @@ test_that("`getAllProcessProperty` works", {
 })
 
 test_that("`getAllProcessProperty` throws an error if the property is not found", {
-  expect_error(myCompound$getAllProcessProperty(processType = "Liver Mic"),  "not found")
+  expect_error(
+    myCompound$getAllProcessProperty(processType = "Liver Mic"),
+    "not found"
+  )
 })
 
 test_that("`getAllProcessProperty` works", {
@@ -179,25 +209,49 @@ test_that("`getAllProcessProperty` works", {
 
 test_that("`setProcessProperty` works", {
   expect_no_error(
-    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic T1/2", value = 0.5)
+    myCompound$setProcessPropertyValue(
+      propertyName = "Thalf",
+      processType = "Liver Mic T1/2",
+      value = 0.5
+    )
   )
   expect_snapshot(
-    myCompound$getProcessProperty(propertyName = "Thalf", processType = "Liver Mic T1/2")
+    myCompound$getProcessProperty(
+      propertyName = "Thalf",
+      processType = "Liver Mic T1/2"
+    )
   )
 })
 
 test_that("`setProcessProperty` throws an error when removing unknown thinks or setting wrong values", {
   expect_error(
-    myCompound$setProcessPropertyValue(propertyName = "T1/2", processType = "Liver Mic T1/2", value = 0.5)
+    myCompound$setProcessPropertyValue(
+      propertyName = "T1/2",
+      processType = "Liver Mic T1/2",
+      value = 0.5
+    )
   )
   expect_error(
-    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic", value = 0.5)
+    myCompound$setProcessPropertyValue(
+      propertyName = "Thalf",
+      processType = "Liver Mic",
+      value = 0.5
+    )
   )
   expect_error(
-    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic T1/2", value = 0.5, unit = "l")
+    myCompound$setProcessPropertyValue(
+      propertyName = "Thalf",
+      processType = "Liver Mic T1/2",
+      value = 0.5,
+      unit = "l"
+    )
   )
   expect_error(
-    myCompound$setProcessPropertyValue(propertyName = "Thalf", processType = "Liver Mic T1/2", value = -5)
+    myCompound$setProcessPropertyValue(
+      propertyName = "Thalf",
+      processType = "Liver Mic T1/2",
+      value = -5
+    )
   )
 })
 
