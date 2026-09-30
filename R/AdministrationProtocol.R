@@ -709,7 +709,7 @@ SimpleProtocol <- R6::R6Class(
             )
           )
         ),
-        "6_6_6_6" = seq(
+        "6-6-6-6" = seq(
           startTime,
           endTime,
           by = ospsuite::toBaseUnit("Time", 6, "h")

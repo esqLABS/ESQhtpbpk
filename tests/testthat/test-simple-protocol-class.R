@@ -450,6 +450,21 @@ test_that("Extracting protocol works.", {
   expect_snapshot(tmp$parameters)
 })
 
+test_that("extractProtocol doses every 6 hours for dosing interval 6-6-6-6.", {
+  prot <- SimpleProtocol$new(
+    route = "IV Bolus",
+    dosingInterval = "6-6-6-6",
+    dose = 1,
+    doseUnit = "mg",
+    startTime = 0,
+    startTimeUnit = "h",
+    endTime = 24,
+    endTimeUnit = "h"
+  )
+
+  expect_equal(prot$extractProtocol()$time, c(0, 360, 720, 1080))
+})
+
 test_that("getAllParameterPaths works.", {
   prot <- SimpleProtocol$new(
     route = "IV Infusion",
